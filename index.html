@@ -142,19 +142,19 @@
     }
 
     .slide-in-right {
-      animation: slideInRight .3s ease forwards;
+      animation: slideInRight .5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .slide-out-left {
-      animation: slideOutLeft .3s ease forwards;
+      animation: slideOutLeft .5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .slide-in-left {
-      animation: slideInLeft .3s ease forwards;
+      animation: slideInLeft .5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .slide-out-right {
-      animation: slideOutRight .3s ease forwards;
+      animation: slideOutRight .5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     @keyframes slideInRight {
@@ -1511,7 +1511,7 @@
           'slide-in-left',
           'slide-in-right'
         );
-      }, 300);
+      }, 500);
 
       document.querySelectorAll('.nav-btn').forEach((b, i) => {
         b.classList.toggle(
