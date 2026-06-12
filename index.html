@@ -126,15 +126,26 @@
 
     /* SCREEN TRANSITIONS */
     .screen {
-      display: none;
+      position: absolute;
+      inset: 0;
+      display: flex;
       flex-direction: column;
-      flex: 1;
       overflow: hidden;
       min-height: 0;
+
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
     }
 
     .screen.active {
-      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
 
     .screen.slide-in {
