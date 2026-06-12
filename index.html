@@ -1595,9 +1595,16 @@
    <div class="result-body">
      <div class="result-model">${e.model}</div>
      <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
-     ${stockBadge(e.stock)}
+     <div id="sb-${CSS.escape(e.model)}">${stockBadge(e.stock)}</div>
    </div>
-   <div class="result-arrow">›</div>
+   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+     <div class="stock-stepper">
+       <button class="stepper-btn minus" onclick="quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+       <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
+       <button class="stepper-btn plus" onclick="quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+     </div>
+     <span style="color:var(--text3);font-size:20px;cursor:pointer" onclick="event.stopPropagation();showDetail('${CSS.escape(e.model)}')">›</span>
+   </div>
  </div>`).join('');
     }
     // ── BADGE ─────────────────────────────────────────────────────────
@@ -1647,10 +1654,14 @@
     <div class="detail-section">
       <div class="section-eyebrow">📦 Stock</div>
       <div class="stock-display">
-        <div class="stock-num">${e.stock}</div>
+        <div class="stock-num" id="detail-stock-num">${e.stock}</div>
         <div class="stock-meta">
           <div class="stock-label">units available</div>
-          ${stockBadge(e.stock)}
+          <div id="detail-stock-badge">${stockBadge(e.stock)}</div>
+        </div>
+        <div class="stock-stepper" style="margin-left:auto">
+          <button class="stepper-btn minus" style="width:36px;height:36px;font-size:20px" onclick="quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+          <button class="stepper-btn plus" style="width:36px;height:36px;font-size:20px" onclick="quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
         </div>
       </div>
     </div>
@@ -1892,11 +1903,22 @@
         const result = await response.json();
         if (result.success) {
           entry.stock = newStock;
-          // Update the counter display inline without full re-render
+          // Update inline counter in search results and inventory
           const countEl = document.getElementById('sc-' + CSS.escape(model));
           if (countEl) {
             countEl.textContent = newStock;
             countEl.style.color = newStock === 0 ? 'var(--red)' : newStock <= 5 ? 'var(--amber)' : 'var(--text)';
+          }
+          // Update badge in search result card
+          const badgeSearchEl = document.getElementById('sb-' + CSS.escape(model));
+          if (badgeSearchEl) { badgeSearchEl.innerHTML = stockBadge(newStock); }
+          // Update detail screen if it's currently showing this model
+          const detailTitle = document.getElementById('detail-title');
+          if (detailTitle && detailTitle.textContent === model) {
+            const numEl = document.getElementById('detail-stock-num');
+            const badgeEl = document.getElementById('detail-stock-badge');
+            if (numEl) { numEl.textContent = newStock; }
+            if (badgeEl) { badgeEl.innerHTML = stockBadge(newStock); }
           }
           toast(delta > 0 ? `+1 → ${newStock} in stock` : `-1 → ${newStock} in stock`);
         } else {
