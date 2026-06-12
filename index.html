@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BBuy Case Finder">
+  <meta name="theme-color" content="#1a56db">
+  <title>B Buy Case Finder — Store Inventory</title>
+  <style>
+    :root {
+      --blue: #1a56db;
+      --blue-dark: #1240a8;
+      --blue-light: #e8f0fe;
+      --blue-mid: #c7d9fc;
+      --green: #057a55;
+      --green-bg: #def7ec;
+      --amber: #92400e;
+      --amber-bg: #fef3c7;
+      --red: #9b1c1c;
+      --red-bg: #fde8e8;
+      --text: #111827;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --border: #e5e7eb;
+      --border2: #d1d5db;
+      --surface: #ffffff;
+      --bg: #f3f4f6;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, .1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+    }
+
+    /* APP SHELL */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: #000;
+      color: #fff;
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .topbar-back {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 6px 0 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar-icon {
+      font-size: 22px;
+      opacity: .9;
+    }
+
+    .topbar-title {
+      font-size: 18px;
+      font-weight: 600;
+      flex: 1;
+      letter-spacing: -.2px;
+    }
+
+    .topbar-sub {
+      font-size: 12px;
+      opacity: .75;
+      margin-top: 1px;
+    }
+
+    .topbar-badge {
+      background: rgba(255, 255, 255, .2);
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* TOPBAR LOGO IMAGE */
+    .topbar-logo {
+      height: 40px;
+      width: auto;
+      flex-shrink: 0;
+      border-radius: 4px;
+      background: #000;
+    }
+
+    /* SCREEN TRANSITIONS */
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .screen.slide-in {
+      animation: screenSlideIn .3s cubic-bezier(.25,.46,.45,.94) both;
+    }
+
+    .screen.slide-in-back {
+      animation: screenSlideInBack .3s cubic-bezier(.25,.46,.45,.94) both;
+    }
+
+    .screen.fade-out {
+      animation: screenFadeOut .2s ease forwards;
+    }
+
+    @keyframes screenSlideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes screenSlideInBack {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes screenFadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 14px 20px;
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-shrink: 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 10px 4px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text3);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color .15s;
+    }
+
+    .nav-btn .nav-icon {
+      font-size: 20px;
+      line-height: 1;
+      display: block;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-btn.active {
+      color: var(--blue);
+    }
+
+    /* SEARCH SCREEN */
+    .search-box {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border2);
+      background: var(--surface);
+      font-size: 16px;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: border-color .2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .search-box .ico {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: var(--text3);
+      pointer-events: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text3);
+    }
+
+    .result-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: box-shadow .15s, border-color .15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .result-card:active {
+      box-shadow: none;
+      border-color: var(--blue);
+    }
+
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .result-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-model {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-loc {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .result-arrow {
+      font-size: 20px;
+      color: var(--text3);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-ok {
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .badge-low {
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .badge-out {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    /* DETAIL SCREEN */
+    .detail-section {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+
+    .loc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .loc-tile {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .loc-tile-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .loc-tile-lbl {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    .floor-banner {
+      background: var(--blue-light);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .floor-banner span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue-dark);
+    }
+
+    .stock-display {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stock-num {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stock-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stock-label {
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    /* FORM */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+      letter-spacing: .01em;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border2);
+      background: var(--surface);
+      font-size: 16px;
+      color: var(--text);
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text3);
+      font-size: 14px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+      opacity: .9;
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-outline-red {
+      background: none;
+      border: 1.5px solid #fca5a5;
+      color: var(--red);
+    }
+
+    .btn-sm {
+      padding: 9px 14px;
+      font-size: 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-row .btn {
+      flex: 1;
+    }
+
+    /* INVENTORY */
+    .floor-heading {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin: 18px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-left: 2px;
+    }
+
+    .floor-heading:first-child {
+      margin-top: 0;
+    }
+
+    .inv-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .inv-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .1s;
+      gap: 12px;
+    }
+
+    .inv-item:last-child {
+      border-bottom: none;
+    }
+
+    .inv-item:active {
+      background: var(--bg);
+    }
+
+    .inv-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .inv-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .inv-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .inv-loc {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 3px;
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 50px 24px;
+    }
+
+    .empty-icon {
+      font-size: 52px;
+      margin-bottom: 12px;
+      opacity: .25;
+    }
+
+    .empty h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .empty p {
+      font-size: 14px;
+      color: var(--text3);
+      line-height: 1.5;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: #1f2937;
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+      box-shadow: var(--shadow-md);
+      max-width: 90vw;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* CONFIRM DIALOG */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 500;
+      display: none;
+      align-items: flex-end;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .dialog {
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 20px 32px;
+      width: 100%;
+    }
+
+    .dialog h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .dialog p {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .dialog-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* HEADER LOGO MARK */
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    /* STOCK QUICK-UPDATE BUTTONS */
+    .stock-stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 6px;
+    }
+
+    .stepper-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .1s, opacity .15s;
+      flex-shrink: 0;
+    }
+
+    .stepper-btn:active {
+      transform: scale(.88);
+      opacity: .75;
+    }
+
+    .stepper-btn.minus {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    .stepper-btn.plus {
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .stepper-count {
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
+      color: var(--text);
+    }
+
+    @media (min-width: 481px) {
+      #app {
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+    }
+
+    /* TOPBAR ACTION BUTTONS */
+    .topbar-action-btn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .topbar-action-btn:active {
+      background: rgba(255,255,255,.25);
+    }
+
+    /* FILTER ROW */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-select-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .filter-select-wrap select {
+      width: 100%;
+      padding: 9px 30px 9px 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border2);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      appearance: none;
+      -webkit-appearance: none;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    .filter-select-wrap select:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .filter-select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text3);
+      font-size: 13px;
+    }
+
+    .filter-check-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+    }
+
+    .filter-check-wrap input[type="checkbox"] {
+      accent-color: var(--blue);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* USERS LIST */
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-role-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--blue-light);
+      color: var(--blue-dark);
+    }
+
+    .user-role-badge.manager {
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .user-action-btn {
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .user-action-btn.edit {
+      background: var(--blue-light);
+      color: var(--blue-dark);
+    }
+
+    .user-action-btn.delete {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    .user-action-btn:active {
+      opacity: .75;
+    }
+
+    /* LOGIN SCREEN */
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px 40px;
+      background: #000;
+    }
+
+    .login-logo-wrap {
+      margin-bottom: 32px;
+      animation: loginLogoIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    .login-logo {
+      width: 220px;
+      max-width: 75vw;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .login-card {
+      width: 100%;
+      background: #1a1a1a;
+      border-radius: var(--radius);
+      border: 1px solid #2e2e2e;
+      padding: 20px 18px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      animation: loginCardIn .5s .15s cubic-bezier(.34,1.3,.64,1) both;
+    }
+
+    .login-card .field label {
+      color: #9ca3af;
+    }
+
+    .login-card .field input {
+      background: #111;
+      border-color: #333;
+      color: #fff;
+    }
+
+    .login-card .field input::placeholder {
+      color: #4b5563;
+    }
+
+    .login-card .field input:focus {
+      border-color: var(--blue);
+      background: #111;
+    }
+
+    .login-heading {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+      letter-spacing: -.3px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 18px;
+    }
+
+    .login-btn {
+      width: 100%;
+      animation: loginCardIn .5s .25s cubic-bezier(.34,1.3,.64,1) both;
+    }
+
+    @keyframes loginLogoIn {
+      from { opacity: 0; transform: translateY(-24px) scale(.85); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes loginCardIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- LOGIN SCREEN -->
+    <div class="screen active" id="s-login">
+      <div class="login-wrap">
+
+        <div class="login-logo-wrap">
+          <img src="data:image/png;base64,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" class="login-logo" alt="BBuy Logo" />
+        </div>
+
+        <div class="login-card">
+          <div class="login-heading">Case Finder</div>
+          <div class="login-sub">Sign in to your account</div>
+
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="login-user" autocorrect="off" autocapitalize="none" placeholder="Enter username">
+          </div>
+
+          <div class="field" style="margin-bottom:0">
+            <label>Password</label>
+            <input type="password" id="login-pass" placeholder="Enter password">
+          </div>
+        </div>
+
+        <button class="btn btn-blue login-btn" onclick="login()">
+          Sign In
+        </button>
+
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- CONFIRM DIALOG -->
+    <div class="overlay" id="confirm-overlay">
+      <div class="dialog">
+        <h3>Delete this entry?</h3>
+        <p id="confirm-msg">This will permanently remove the model from the inventory.</p>
+        <div class="dialog-btns">
+          <button class="btn btn-outline-red btn-sm" style="flex:1" onclick="confirmDelete()">Yes, delete</button>
+          <button class="btn btn-blue btn-sm" style="flex:1" onclick="closeConfirm()">Keep it</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT USER DIALOG -->
+    <div class="overlay" id="edit-user-overlay">
+      <div class="dialog">
+        <h3 id="edit-user-title">Edit staff account</h3>
+        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">Leave password blank to keep it unchanged.</p>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="edit-user-name" autocorrect="off" autocapitalize="none">
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>New password</label>
+          <input type="password" id="edit-user-pass" placeholder="Leave blank to keep current">
+        </div>
+        <div class="dialog-btns">
+          <button class="btn btn-blue btn-sm" style="flex:1" onclick="submitEditUser()">Save changes</button>
+          <button class="btn btn-sm" style="flex:0 0 auto;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2)" onclick="closeEditUser()">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div class="screen" id="s-search">
+      <div class="topbar">
+        <img src="data:image/png;base64,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" class="topbar-logo" alt="BBuy" />
+        <div style="flex:1;min-width:0">
+          <div class="topbar-title">B Buy Case Finder</div>
+          <div class="topbar-sub" id="topbar-count">Loading…</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="loadDB()" class="topbar-action-btn">🔄 Refresh</button>
+          <button onclick="logout()" class="topbar-action-btn">🚪 Logout</button>
+        </div>
+      </div>
+      <div class="scroll-area">
+
+        <div class="filter-row">
+          <div class="filter-select-wrap">
+            <select id="result-limit" onchange="doSearch(document.getElementById('search-input').value)">
+              <option value="10">Show 10</option>
+              <option value="20">Show 20</option>
+              <option value="30">Show 30</option>
+              <option value="50">Show 50</option>
+            </select>
+          </div>
+          <div class="filter-select-wrap">
+            <select id="sort-by" onchange="doSearch(document.getElementById('search-input').value)">
+              <option value="az">A–Z</option>
+              <option value="stock">Stock ↓</option>
+            </select>
+          </div>
+          <div class="filter-select-wrap">
+            <select id="floor-filter" onchange="doSearch(document.getElementById('search-input').value)">
+              <option value="">All Floors</option>
+              <option value="Ground Floor">Ground Floor</option>
+              <option value="1st Floor">1st Floor</option>
+            </select>
+          </div>
+          <label class="filter-check-wrap">
+            <input type="checkbox" id="low-stock" onchange="doSearch(document.getElementById('search-input').value)">
+            Low stock
+          </label>
+        </div>
+
+        <div class="search-box">
+          <span class="ico">🔍</span>
+          <input type="text" id="search-input" placeholder="Search phone model…" oninput="doSearch(this.value)"
+            autocomplete="off" autocorrect="off" spellcheck="false" />
+        </div>
+        <div id="search-results">
+          <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <h3>Search any phone model</h3>
+            <p>Type a model name above to find its case, shelf location, and stock.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <button class="nav-btn active" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+
+    <!-- ── DETAIL SCREEN ── -->
+    <div class="screen" id="s-detail">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div style="flex:1">
+          <div class="topbar-title" id="detail-title"></div>
+          <div class="topbar-sub">Case location &amp; stock</div>
+        </div>
+        
+      </div>
+      <div class="scroll-area" id="detail-content"></div>
+    </div>
+
+    <!-- ── ADD / EDIT SCREEN ── -->
+    <div class="screen" id="s-add">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">➕</div>
+        <div style="flex:1">
+          <div class="topbar-title" id="add-title">Add new model</div>
+          <div class="topbar-sub">Fill in the details below</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="form-card">
+          <div class="field">
+            <label>Phone model name</label>
+            <input type="text" id="f-model" placeholder="e.g. iPhone 15 Pro Max" autocorrect="off" />
+          </div>
+          <div class="field">
+            <label>Shelf</label>
+            <div class="select-wrap">
+              <select id="f-shelf">
+                <option value="">Select shelf…</option>
+                <optgroup label="Ground Floor (Downstairs)">
+                  <option value="Shelf 1|Ground Floor">Shelf 1 — Ground Floor</option>
+                  <option value="Shelf 2|Ground Floor">Shelf 2 — Ground Floor</option>
+                  <option value="Shelf 3|Ground Floor">Shelf 3 — Ground Floor</option>
+                </optgroup>
+                <optgroup label="1st Floor (Upstairs)">
+                  <option value="Shelf 4|1st Floor">Shelf 4 — 1st Floor</option>
+                  <option value="Shelf 5|1st Floor">Shelf 5 — 1st Floor</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Row</label>
+              <div class="select-wrap">
+                <select id="f-row">
+                  <option value="">Row…</option>
+                  <option>Row 1</option>
+                  <option>Row 2</option>
+                  <option>Row 3</option>
+                  <option>Row 4</option>
+                  <option>Row 5</option>
+                  <option>Row 6</option>
+                  <option>Row 7</option>
+                  <option>Row 8</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Column</label>
+              <div class="select-wrap">
+                <select id="f-col">
+                  <option value="">Col…</option>
+                  <option>Col 1</option>
+                  <option>Col 2</option>
+                  <option>Col 3</option>
+                  <option>Col 4</option>
+                  <option>Col 5</option>
+                  <option>Col 6</option>
+                  <option>Col 7</option>
+                  <option>Col 8</option>
+                  <option>Col 9</option>
+                  <option>Col 10</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Stock quantity</label>
+            <input type="number" id="f-stock" placeholder="e.g. 12" min="0" inputmode="numeric" />
+          </div>
+        </div>
+        <button class="btn btn-blue" onclick="saveEntry()">&nbsp;Save entry</button>
+        <div id="edit-delete-btn" style="display:none;margin-top:10px">
+          <button class="btn btn-outline-red" onclick="promptDelete(editingModel)">&nbsp;Delete this entry</button>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn active" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+
+    <!-- ── INVENTORY SCREEN ── -->
+    <div class="screen" id="s-inventory">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">📋</div>
+        <div style="flex:1">
+          <div class="topbar-title">Inventory</div>
+          <div class="topbar-sub" id="inv-sub">All models</div>
+        </div>
+      </div>
+      <div class="scroll-area" id="inv-content"></div>
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn active" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+    <!-- ── USERS SCREEN ── -->
+    <div class="screen" id="s-users">
+
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">👥</div>
+        <div style="flex:1">
+          <div class="topbar-title">Users</div>
+          <div class="topbar-sub">Manage staff accounts</div>
+        </div>
+      </div>
+
+      <div class="scroll-area">
+
+        <div class="section-eyebrow" style="margin-bottom:8px">Add new staff account</div>
+        <div class="form-card">
+
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="new-user" autocorrect="off" autocapitalize="none">
+          </div>
+
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="new-pass">
+          </div>
+
+          <div class="field" style="margin-bottom:0">
+            <label>Role</label>
+            <div class="select-wrap">
+              <select id="new-role">
+                <option value="staff">Staff</option>
+                <option value="manager">Manager</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="btn btn-blue" onclick="createUser()">
+          Create User
+        </button>
+
+        <div class="section-eyebrow" style="margin-top:20px;margin-bottom:8px">Existing staff accounts</div>
+        <div class="inv-card" id="users-list"></div>
+
+      </div>
+
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn active" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+
+    </div>
+  </div><!-- #app -->
+
+  <script>
+    // ── DATA ──────────────────────────────────────────────────────────
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxSNR2MHz6z70ysnouIFvzr0QUAOxy15OdOcJsPDl3oPeqvM-_Eg6iLEo5740D9NBVo6A/exec';
+
+    let db = [];
+    let currentUser = null;
+    let currentRole = null;
+    let prevScreen = 's-search';
+    let editingModel = null;
+    let pendingDelete = null;
+
+    async function loadDB() {
+
+      try {
+
+        const response = await fetch(API_URL);
+
+        const data = await response.json();
+
+        db = data.map(item => ({
+          model: item.Model,
+          shelf: item.Shelf + "|" + item.Floor,
+          row: item.Row,
+          col: item.Col,
+          stock: Number(item.Stock)
+        }));
+
+        updateTopbarCount();
+
+        doSearch('');
+
+        renderInventory();
+
+      } catch (err) {
+
+        console.error(err);
+
+        toast('Unable to load inventory');
+
+      }
+    }
+
+    function saveDB() {
+
+      toast('Inventory is managed from Google Sheets');
+
+    }
+    function updateTopbarCount() {
+      const el = document.getElementById('topbar-count');
+      if (el) el.textContent = db.length + ' model' + (db.length !== 1 ? 's' : '') + ' in inventory';
+    }
+
+    // ── NAV ───────────────────────────────────────────────────────────
+    function showTab(id) {
+      if (id === "s-users") {
+        loadUsers();
+      }
+      const current = document.querySelector('.screen.active');
+      const next = document.getElementById(id);
+      if (current && current !== next) {
+        current.classList.remove('active');
+        next.classList.add('active');
+        next.classList.add('slide-in');
+        setTimeout(() => next.classList.remove('slide-in'), 350);
+      } else {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        next.classList.add('active');
+      }
+      document.querySelectorAll('.nav-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['s-search', 's-add', 's-inventory'][i] === id);
+      });
+      if (id === 's-inventory') renderInventory();
+      if (id === 's-add') {
+        const wasEditing = !!editingModel;
+        if (!wasEditing) clearForm();
+      }
+      prevScreen = id;
+    }
+
+    function goBack() {
+      const current = document.querySelector('.screen.active');
+      const target = (prevScreen === 's-detail' || prevScreen === current.id) ? 's-search' : prevScreen;
+      const next = document.getElementById(target);
+      if (current && current !== next) {
+        current.classList.remove('active');
+        next.classList.add('active');
+        next.classList.add('slide-in-back');
+        setTimeout(() => next.classList.remove('slide-in-back'), 350);
+      } else {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        next.classList.add('active');
+      }
+      document.querySelectorAll('.nav-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['s-search', 's-add', 's-inventory'][i] === target);
+      });
+      prevScreen = 's-search';
+    }
+
+    // ── TOAST ─────────────────────────────────────────────────────────
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._tid);
+      t._tid = setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    // ── SEARCH ────────────────────────────────────────────────────────
+
+    function doSearch(q) {
+      const el = document.getElementById('search-results');
+      const limit = parseInt(document.getElementById('result-limit')?.value || 10);
+      const sortBy = document.getElementById('sort-by')?.value || 'az';
+      const floor = document.getElementById('floor-filter')?.value || '';
+      const lowStock = document.getElementById('low-stock')?.checked;
+
+      let results = [...db];
+
+      if (q.trim()) {
+        results = results.filter(e => e.model.toLowerCase().includes(q.toLowerCase()));
+      }
+
+      if (floor) {
+        results = results.filter(e => e.shelf.includes(floor));
+      }
+
+      if (lowStock) {
+        results = results.filter(e => parseInt(e.stock) <= 5);
+      }
+
+      if (sortBy === 'az') {
+        results.sort((a, b) => a.model.localeCompare(b.model));
+      } else {
+        results.sort((a, b) => (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0));
+      }
+
+      results = results.slice(0, limit);
+
+      if (!results.length) {
+        el.innerHTML = '<div class="empty"><h3>No matching entries</h3></div>';
+        return;
+      }
+
+      el.innerHTML = results.map(e => `
+ <div class="result-card" onclick="showDetail('${CSS.escape(e.model)}')">
+   <div class="result-icon">📱</div>
+   <div class="result-body">
+     <div class="result-model">${e.model}</div>
+     <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
+     ${stockBadge(e.stock)}
+   </div>
+   <div class="result-arrow">›</div>
+ </div>`).join('');
+    }
+    // ── BADGE ─────────────────────────────────────────────────────────
+    function stockBadge(n) {
+      n = parseInt(n) || 0;
+      if (n === 0) return `<span class="badge badge-out">⚠ Out of stock</span>`;
+      if (n <= 5) return `<span class="badge badge-low">⚡ ${n} left — low</span>`;
+      return `<span class="badge badge-ok">✓ ${n} in stock</span>`;
+    }
+
+    function dotColor(n) {
+      n = parseInt(n) || 0;
+      if (n === 0) return '#ef4444';
+      if (n <= 5) return '#f59e0b';
+      return '#10b981';
+    }
+
+    // ── DETAIL ────────────────────────────────────────────────────────
+    function showDetail(model) {
+      prevScreen = document.querySelector('.screen.active').id;
+      const e = db.find(x => x.model === model);
+      if (!e) return;
+      const [shelfName, floor] = e.shelf.split('|');
+      document.getElementById('detail-title').textContent = e.model;
+      document.getElementById('detail-content').innerHTML = `
+    <div class="detail-section">
+      <div class="section-eyebrow">📍 Location</div>
+      <div class="loc-grid">
+        <div class="loc-tile">
+          <div class="loc-tile-val">${shelfName || e.shelf}</div>
+          <div class="loc-tile-lbl">Shelf</div>
+        </div>
+        <div class="loc-tile">
+          <div class="loc-tile-val">${e.row.replace('Row ', '')}</div>
+          <div class="loc-tile-lbl">Row</div>
+        </div>
+        <div class="loc-tile">
+          <div class="loc-tile-val">${e.col.replace('Col ', '')}</div>
+          <div class="loc-tile-lbl">Column</div>
+        </div>
+      </div>
+      <div class="floor-banner">
+        <span>${floor === '1st Floor' ? '🔼 Upstairs' : '🔽 Downstairs'}</span>
+        <span>${floor || ''}</span>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-eyebrow">📦 Stock</div>
+      <div class="stock-display">
+        <div class="stock-num">${e.stock}</div>
+        <div class="stock-meta">
+          <div class="stock-label">units available</div>
+          ${stockBadge(e.stock)}
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
+    </div>`;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const detailEl = document.getElementById('s-detail');
+      detailEl.classList.add('active');
+      detailEl.classList.add('slide-in');
+      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+    }
+
+    function editCurrent() {
+      const title = document.getElementById('detail-title').textContent;
+      editEntry(title);
+    }
+
+    // ── ADD / EDIT ────────────────────────────────────────────────────
+    function clearForm() {
+
+      editingModel = null;
+
+      document.getElementById('f-model').value = '';
+      document.getElementById('f-shelf').value = '';
+      document.getElementById('f-row').value = '';
+      document.getElementById('f-col').value = '';
+      document.getElementById('f-stock').value = '';
+
+      document.getElementById(
+        'add-title'
+      ).textContent =
+        'Add new model';
+
+      document.getElementById(
+        'edit-delete-btn'
+      ).style.display = 'none';
+    }
+
+    function editEntry(model) {
+      const e = db.find(x => x.model === model);
+      if (!e) return;
+      editingModel = model;
+      document.getElementById('add-title').textContent = 'Edit entry';
+      document.getElementById('f-model').value = e.model;
+      document.getElementById('f-shelf').value = e.shelf;
+      document.getElementById('f-row').value = e.row;
+      document.getElementById('f-col').value = e.col;
+      document.getElementById('f-stock').value = e.stock;
+      document.getElementById('edit-delete-btn').style.display = 'block';
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const addEl = document.getElementById('s-add');
+      addEl.classList.add('active');
+      addEl.classList.add('slide-in');
+      setTimeout(() => addEl.classList.remove('slide-in'), 350);
+      document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
+    }
+
+    async function saveEntry() {
+
+      const model =
+        document.getElementById('f-model').value.trim();
+
+      const shelfValue =
+        document.getElementById('f-shelf').value;
+
+      const row =
+        document.getElementById('f-row').value;
+
+      const col =
+        document.getElementById('f-col').value;
+
+      const stock =
+        Number(
+          document.getElementById('f-stock').value
+        );
+
+      if (
+        !model ||
+        !shelfValue ||
+        !row ||
+        !col
+      ) {
+        toast('Please fill all fields');
+        return;
+      }
+
+      const parts = shelfValue.split('|');
+      const shelf = parts[0];
+      const floor = parts[1];
+
+      // ── DUPLICATE MODEL CHECK ─────────────────────────────────────────
+      if (!editingModel) {
+        const dupModel = db.find(e => e.model.trim().toLowerCase() === model.toLowerCase());
+        if (dupModel) {
+          toast(`"${dupModel.model}" already exists in inventory`);
+          return;
+        }
+      } else {
+        const dupModel = db.find(e =>
+          e.model.trim().toLowerCase() === model.toLowerCase() &&
+          e.model.trim().toLowerCase() !== editingModel.trim().toLowerCase()
+        );
+        if (dupModel) {
+          toast(`"${dupModel.model}" already exists — choose a different name`);
+          return;
+        }
+      }
+
+      // ── DUPLICATE POSITION CHECK ──────────────────────────────────────
+      const normalise = str => String(str).trim().toLowerCase().replace(/^(row|col|shelf)\s*/i, '');
+      const posConflict = db.find(e => {
+        const isItself = editingModel && e.model.toLowerCase() === editingModel.toLowerCase();
+        return !isItself &&
+          e.shelf.split('|')[0].trim().toLowerCase() === shelf.trim().toLowerCase() &&
+          normalise(e.row) === normalise(row) &&
+          normalise(e.col) === normalise(col);
+      });
+      if (posConflict) {
+        toast(`${shelf} · ${row} · ${col} is taken by "${posConflict.model}"`);
+        return;
+      }
+
+      let payload;
+
+      // EDIT MODE
+      if (editingModel) {
+
+        payload = {
+
+          action: "updateInventory",
+
+          originalModel: editingModel,
+
+          model: model,
+          shelf: shelf,
+          row: row,
+          col: col,
+          stock: stock,
+          floor: floor
+
+        };
+
+      }
+
+      // ADD MODE
+      else {
+
+        payload = {
+
+          action: "addInventory",
+
+          model: model,
+          shelf: shelf,
+          row: row,
+          col: col,
+          stock: stock,
+          floor: floor
+
+        };
+
+      }
+
+      const response =
+        await fetch(API_URL, {
+
+          method: "POST",
+
+          body: JSON.stringify(payload)
+
+        });
+
+      const result =
+        await response.json();
+
+      if (result.success) {
+
+        toast(
+          editingModel
+            ? "Inventory updated"
+            : "Inventory added"
+        );
+
+        clearForm();
+
+        editingModel = null;
+
+        document.getElementById(
+          'add-title'
+        ).textContent =
+          'Add new model';
+
+        document.getElementById(
+          'edit-delete-btn'
+        ).style.display = 'none';
+
+        await loadDB();
+
+        showTab('s-inventory');
+
+      } else {
+
+        toast('Operation failed');
+
+      }
+    }
+
+
+    // ── DELETE ────────────────────────────────────────────────────────
+    function promptDelete(model) {
+      pendingDelete = model;
+      document.getElementById('confirm-msg').textContent = `"${model}" will be permanently removed from the inventory.`;
+      document.getElementById('confirm-overlay').dataset.mode = 'inventory';
+      document.getElementById('confirm-overlay').classList.add('show');
+    }
+    function closeConfirm() {
+      pendingDelete = null;
+      pendingDeleteUser = null;
+      document.getElementById('confirm-overlay').classList.remove('show');
+    }
+
+    // ── QUICK STOCK UPDATE ────────────────────────────────────────────
+    async function quickUpdateStock(model, delta) {
+      const entry = db.find(x => x.model === model);
+      if (!entry) return;
+      const newStock = Math.max(0, parseInt(entry.stock) + delta);
+      const payload = {
+        action: "updateInventory",
+        originalModel: model,
+        model: entry.model,
+        shelf: entry.shelf.split('|')[0],
+        row: entry.row,
+        col: entry.col,
+        stock: newStock,
+        floor: entry.shelf.split('|')[1]
+      };
+      try {
+        const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.success) {
+          entry.stock = newStock;
+          // Update the counter display inline without full re-render
+          const countEl = document.getElementById('sc-' + CSS.escape(model));
+          if (countEl) {
+            countEl.textContent = newStock;
+            countEl.style.color = newStock === 0 ? 'var(--red)' : newStock <= 5 ? 'var(--amber)' : 'var(--text)';
+          }
+          toast(delta > 0 ? `+1 → ${newStock} in stock` : `-1 → ${newStock} in stock`);
+        } else {
+          toast('Update failed');
+        }
+      } catch (e) {
+        toast('Update failed');
+      }
+    }
+
+    // ── INVENTORY ─────────────────────────────────────────────────────
+    function renderInventory() {
+      const el = document.getElementById('inv-content');
+      const sub = document.getElementById('inv-sub');
+      if (!db.length) {
+        el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>No entries yet</h3><p>Add your first phone model using the Add tab.</p></div>`;
+        if (sub) sub.textContent = '0 models';
+        return;
+      }
+      const total = db.length;
+      const lowStock = db.filter(e => parseInt(e.stock) <= 5 && parseInt(e.stock) > 0).length;
+      const outStock = db.filter(e => parseInt(e.stock) === 0).length;
+      if (sub) sub.textContent = `${total} models tracked`;
+
+      const ground = db.filter(e => e.shelf.includes('Ground Floor'));
+      const upper = db.filter(e => e.shelf.includes('1st Floor'));
+
+      let html = `
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--amber)">${lowStock}</div><div class="stat-lbl">Low stock</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--red)">${outStock}</div><div class="stat-lbl">Out of stock</div></div>
+    </div>`;
+
+      if (ground.length) {
+        html += `<div class="floor-heading">🔽 Ground Floor (Downstairs)</div><div class="inv-card">`;
+        html += ground.map(e => `
+      <div class="inv-item">
+        <div class="inv-dot" style="background:${dotColor(e.stock)}"></div>
+        <div class="inv-info" onclick="showDetail('${CSS.escape(e.model)}')" style="cursor:pointer">
+          <div class="inv-name">${e.model}</div>
+          <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="stock-stepper">
+            <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+            <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
+            <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+          </div>
+          <span style="color:var(--text3);font-size:18px;cursor:pointer" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
+        </div>
+      </div>`).join('');
+        html += '</div>';
+      }
+
+      if (upper.length) {
+        html += `<div class="floor-heading">🔼 1st Floor (Upstairs)</div><div class="inv-card">`;
+        html += upper.map(e => `
+      <div class="inv-item">
+        <div class="inv-dot" style="background:${dotColor(e.stock)}"></div>
+        <div class="inv-info" onclick="showDetail('${CSS.escape(e.model)}')" style="cursor:pointer">
+          <div class="inv-name">${e.model}</div>
+          <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="stock-stepper">
+            <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+            <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
+            <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+          </div>
+          <span style="color:var(--text3);font-size:18px;cursor:pointer" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
+        </div>
+      </div>`).join('');
+        html += '</div>';
+      }
+
+      el.innerHTML = html;
+    }
+
+    async function login() {
+
+      const username =
+        document.getElementById('login-user').value;
+
+      const password =
+        document.getElementById('login-pass').value;
+
+      if (!username || !password) {
+        toast('Enter username and password');
+        return;
+      }
+
+      const response = await fetch(
+        API_URL +
+        '?action=login' +
+        '&username=' + encodeURIComponent(username) +
+        '&password=' + encodeURIComponent(password)
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        toast('Invalid login');
+        return;
+      }
+
+      currentUser = result.username;
+      currentRole = result.role;
+
+      sessionStorage.setItem(
+        'currentUser',
+        currentUser
+      );
+
+      sessionStorage.setItem(
+        'currentRole',
+        currentRole
+      );
+
+      setupRole();
+
+      // Animate login → home transition
+      const loginScreen = document.getElementById('s-login');
+      loginScreen.classList.add('fade-out');
+      setTimeout(() => {
+        showTab('s-search');
+        const searchScreen = document.getElementById('s-search');
+        searchScreen.classList.add('slide-in');
+        setTimeout(() => searchScreen.classList.remove('slide-in'), 400);
+        loadDB();
+      }, 240);
+
+      toast(
+        'Welcome ' +
+        currentUser +
+        ' (' +
+        currentRole +
+        ')'
+      );
+    }
+
+    currentUser =
+      sessionStorage.getItem('currentUser');
+
+    currentRole =
+      sessionStorage.getItem('currentRole');
+
+    if (currentUser) {
+
+      setupRole();
+
+      document
+        .getElementById('s-search')
+        .classList.add('active');
+
+      loadDB();
+
+    } else {
+
+      document
+        .getElementById('s-login')
+        .classList.add('active');
+    }
+
+    function setupRole() {
+
+      const addButtons =
+        document.querySelectorAll(
+          '[onclick="showTab(\'s-add\')"]'
+        );
+
+      const userButtons =
+        document.querySelectorAll(
+          '[onclick="showTab(\'s-users\')"]'
+        );
+
+      if (currentRole === "staff") {
+
+        addButtons.forEach(btn => {
+          btn.style.display = "none";
+        });
+
+        userButtons.forEach(btn => {
+          btn.style.display = "none";
+        });
+
+      }
+    }
+
+    function logout() {
+
+      sessionStorage.clear();
+
+      location.reload();
+    }
+    async function createUser() {
+
+      const username =
+        document.getElementById(
+          'new-user'
+        ).value.trim();
+
+      const password =
+        document.getElementById(
+          'new-pass'
+        ).value.trim();
+
+      const role =
+        document.getElementById('new-role').value;
+
+      if (!username || !password) {
+        toast('Enter username and password');
+        return;
+      }
+
+      // ── DUPLICATE USER CHECK ──────────────────────────────────────────
+      const existingUsers = document.querySelectorAll('#users-list .user-name');
+      const isDupUser = Array.from(existingUsers).some(
+        el => el.textContent.trim().toLowerCase() === username.toLowerCase()
+      );
+      if (isDupUser) {
+        toast(`Username "${username}" already exists`);
+        return;
+      }
+
+      const response =
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'createUser',
+            username,
+            password,
+            role
+          })
+        });
+
+      const result =
+        await response.json();
+
+      if (result.success) {
+
+        toast('User created');
+
+        document.getElementById('new-user').value = '';
+        document.getElementById('new-pass').value = '';
+        document.getElementById('new-role').value = 'staff';
+
+        loadUsers();
+      }
+    }
+    async function loadUsers() {
+
+      const response =
+        await fetch(
+          API_URL +
+          '?action=getUsers'
+        );
+
+      const users =
+        await response.json();
+
+      let html = '';
+
+      users.forEach(user => {
+
+        const isAdmin = user.role === 'manager';
+        const actionBtns = currentRole === 'manager' ? `
+          <div class="user-actions">
+            <button class="user-action-btn edit" onclick="openEditUser('${user.username}', '${user.role}')">Edit</button>
+            <button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>
+          </div>` : '';
+
+        html += `
+      <div class="user-item">
+        <div class="user-name">${user.username}</div>
+        <span class="user-role-badge ${isAdmin ? 'manager' : ''}">${user.role}</span>
+        ${actionBtns}
+      </div>
+    `;
+
+      });
+
+      document
+        .getElementById(
+          'users-list'
+        ).innerHTML = html || '<div class="empty" style="padding:24px"><p>No staff accounts found.</p></div>';
+    }
+
+    // ── EDIT USER ─────────────────────────────────────────────────────
+    let editingUsername = null;
+
+    function openEditUser(username, role) {
+      editingUsername = username;
+      document.getElementById('edit-user-name').value = username;
+      document.getElementById('edit-user-pass').value = '';
+      document.getElementById('edit-user-title').textContent = `Edit — ${username}`;
+      document.getElementById('edit-user-overlay').classList.add('show');
+    }
+
+    function closeEditUser() {
+      editingUsername = null;
+      document.getElementById('edit-user-overlay').classList.remove('show');
+    }
+
+    async function submitEditUser() {
+      const newUsername = document.getElementById('edit-user-name').value.trim();
+      const newPassword = document.getElementById('edit-user-pass').value.trim();
+
+      if (!newUsername) {
+        toast('Username cannot be empty');
+        return;
+      }
+
+      // Check duplicate username (ignore itself)
+      const existingUsers = document.querySelectorAll('#users-list .user-name');
+      const isDup = Array.from(existingUsers).some(
+        el => el.textContent.trim().toLowerCase() === newUsername.toLowerCase() &&
+              newUsername.toLowerCase() !== editingUsername.toLowerCase()
+      );
+      if (isDup) {
+        toast(`Username "${newUsername}" already exists`);
+        return;
+      }
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateUser',
+          originalUsername: editingUsername,
+          newUsername,
+          newPassword: newPassword || null
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast('User updated');
+        closeEditUser();
+        loadUsers();
+      } else {
+        toast('Update failed');
+      }
+    }
+
+    // ── DELETE USER ───────────────────────────────────────────────────
+    let pendingDeleteUser = null;
+
+    function promptDeleteUser(username) {
+      pendingDeleteUser = username;
+      document.getElementById('confirm-msg').textContent = `"${username}" will be permanently removed.`;
+      document.getElementById('confirm-overlay').classList.add('show');
+      // Swap confirm action to deleteUser
+      document.getElementById('confirm-overlay').dataset.mode = 'user';
+    }
+
+    async function confirmDelete() {
+      const mode = document.getElementById('confirm-overlay').dataset.mode;
+
+      if (mode === 'user') {
+        if (!pendingDeleteUser) return;
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'deleteUser',
+            username: pendingDeleteUser
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast('User deleted');
+          closeConfirm();
+          pendingDeleteUser = null;
+          loadUsers();
+        } else {
+          toast('Delete failed');
+        }
+
+      } else {
+        // Original inventory delete
+        if (!pendingDelete) return;
+
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "deleteInventory",
+            model: pendingDelete
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast('Inventory deleted');
+          closeConfirm();
+          clearForm();
+          editingModel = null;
+          await loadDB();
+          showTab('s-inventory');
+        } else {
+          toast('Delete failed');
+        }
+      }
+    }
+
+
+    // ── INIT ──────────────────────────────────────────────────────────
+    loadDB();
+  </script>
+</body>
+
+</html>
