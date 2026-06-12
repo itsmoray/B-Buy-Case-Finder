@@ -1048,7 +1048,7 @@
 
     .login-btn {
       width: 100%;
-      margin-top: 36px;
+      margin-top: 38px;
       animation: loginCardIn .5s .25s cubic-bezier(.34, 1.3, .64, 1) both;
     }
 
@@ -1075,6 +1075,118 @@
         transform: translateY(0);
       }
     }
+    /* HAMBURGER MENU */
+    .hamburger-btn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: background .15s;
+      position: relative;
+      z-index: 201;
+    }
+    .hamburger-btn:active { background: rgba(255,255,255,.25); }
+    .ham-icon { line-height: 1; user-select: none; }
+
+    .hamburger-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: var(--radius);
+      min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      overflow: hidden;
+      z-index: 200;
+      animation: hamMenuIn .18s cubic-bezier(.25,.46,.45,.94) both;
+    }
+    .hamburger-menu.open { display: block; }
+
+    @keyframes hamMenuIn {
+      from { opacity: 0; transform: translateY(-6px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .ham-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 16px;
+      background: none;
+      border: none;
+      color: #f3f4f6;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: background .1s;
+    }
+    .ham-item:active { background: rgba(255,255,255,.08); }
+    .ham-item-red { color: #f87171; }
+    .ham-divider { height: 1px; background: #374151; margin: 0; }
+
+    /* ACCOUNT SCREEN */
+    .account-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 32px 20px 24px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .account-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 30px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .account-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -.3px;
+    }
+    .account-role-wrap { display: flex; justify-content: center; }
+    .account-role-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: var(--blue-light);
+      color: var(--blue-dark);
+    }
+    .account-role-badge.manager {
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+    .account-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .account-row-label { font-size: 14px; color: var(--text2); }
+    .account-row-val { font-size: 14px; font-weight: 600; color: var(--text); }
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1565ff">
@@ -1166,9 +1278,18 @@
           <div class="topbar-title">B Buy Case Finder</div>
           <div class="topbar-sub" id="topbar-count">Loading…</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <button onclick="loadDB()" class="topbar-action-btn">🔄 Refresh</button>
-          <button onclick="logout()" class="topbar-action-btn">🚪 Logout</button>
+          <div style="position:relative">
+            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleHamburger()" aria-label="Menu">
+              <span class="ham-icon" id="ham-icon">☰</span>
+            </button>
+            <div class="hamburger-menu" id="hamburger-menu">
+              <button class="ham-item" onclick="showTab('s-account');toggleHamburger()">👤 Your Profile</button>
+              <div class="ham-divider"></div>
+              <button class="ham-item ham-item-red" onclick="logout()">⏻ Logout</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="scroll-area">
@@ -1397,6 +1518,39 @@
       </div>
 
     </div>
+
+    <!-- ── ACCOUNT SCREEN ── -->
+    <div class="screen" id="s-account">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">👤</div>
+        <div style="flex:1">
+          <div class="topbar-title">Account</div>
+          <div class="topbar-sub">Signed in details</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="account-card">
+          <div class="account-avatar" id="account-avatar"></div>
+          <div class="account-name" id="account-name"></div>
+          <div class="account-role-wrap"><span class="account-role-badge" id="account-role-badge"></span></div>
+        </div>
+        <div class="detail-section" style="margin-top:14px">
+          <div class="section-eyebrow" style="margin-bottom:12px">User info</div>
+          <div class="account-row"><span class="account-row-label">Username</span><span class="account-row-val" id="acct-username"></span></div>
+          <div class="account-row"><span class="account-row-label">Role</span><span class="account-row-val" id="acct-role"></span></div>
+          <div class="account-row" style="border:none"><span class="account-row-label">Status</span><span class="account-row-val" style="color:var(--green)">● Active</span></div>
+        </div>
+        <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()">⏻ Sign out</button>
+      </div>
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+
   </div><!-- #app -->
 
   <script>
@@ -1452,12 +1606,22 @@
     }
 
     // ── NAV ───────────────────────────────────────────────────────────
-    const tabOrder = ['s-search', 's-add', 's-inventory', 's-users'];
+    const tabOrder = ['s-search', 's-add', 's-inventory', 's-users', 's-account'];
 
     function showTab(id) {
 
       if (id === "s-users") {
         loadUsers();
+      }
+
+      if (id === "s-account") {
+        document.getElementById('account-avatar').textContent = (currentUser || '?')[0].toUpperCase();
+        document.getElementById('account-name').textContent = currentUser || '';
+        document.getElementById('acct-username').textContent = currentUser || '';
+        document.getElementById('acct-role').textContent = currentRole || '';
+        const badge = document.getElementById('account-role-badge');
+        badge.textContent = currentRole || '';
+        badge.className = 'account-role-badge' + (currentRole === 'manager' ? ' manager' : '');
       }
 
       const current = document.querySelector('.screen.active');
@@ -1543,6 +1707,23 @@
       });
       prevScreen = 's-search';
     }
+
+    // ── HAMBURGER MENU ────────────────────────────────────────────────
+    function toggleHamburger() {
+      const menu = document.getElementById('hamburger-menu');
+      const icon = document.getElementById('ham-icon');
+      const isOpen = menu.classList.toggle('open');
+      icon.textContent = isOpen ? '✕' : '☰';
+    }
+    document.addEventListener('click', function(e) {
+      const btn = document.getElementById('hamburger-btn');
+      const menu = document.getElementById('hamburger-menu');
+      if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.remove('open');
+        const icon = document.getElementById('ham-icon');
+        if (icon) icon.textContent = '☰';
+      }
+    });
 
     // ── TOAST ─────────────────────────────────────────────────────────
     function toast(msg) {
