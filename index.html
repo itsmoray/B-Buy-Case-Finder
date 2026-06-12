@@ -138,34 +138,41 @@
 
     .screen.active {
       display: flex;
-      /* ADD THIS */
     }
 
-    .slide-in-right {
-      animation: slideInRight .35s cubic-bezier(.22, 1, .36, 1) forwards;
+    .screen.slide-in {
+      animation: screenSlideIn .3s cubic-bezier(.25, .46, .45, .94) both;
     }
 
-    .slide-out-left {
-      animation: slideOutLeft .35s cubic-bezier(.22, 1, .36, 1) forwards;
+    .screen.slide-in-back {
+      animation: screenSlideInBack .3s cubic-bezier(.25, .46, .45, .94) both;
     }
 
-    @keyframes slideInRight {
+    .screen.fade-out {
+      animation: screenFadeOut .2s ease forwards;
+    }
+
+    @keyframes screenSlideIn {
       from {
-        transform: translateX(20px);
+        opacity: 0;
+        transform: translateX(40px);
       }
 
       to {
+        opacity: 1;
         transform: translateX(0);
       }
     }
 
-    @keyframes slideOutLeft {
+    @keyframes screenSlideInBack {
       from {
-        transform: translateX(0);
+        opacity: 0;
+        transform: translateX(-40px);
       }
 
       to {
-        transform: translateX(-20px);
+        opacity: 1;
+        transform: translateX(0);
       }
     }
 
@@ -1433,37 +1440,25 @@
       if (id === "s-users") {
         loadUsers();
       }
-
       const current = document.querySelector('.screen.active');
       const next = document.getElementById(id);
-
-      if (!next || current === next) return;
-
-      // Prepare next screen
-      next.classList.add('active', 'slide-in-right');
-
-      // Animate current screen out
-      current.classList.add('slide-out-left');
-
-      setTimeout(() => {
-        current.classList.remove('active', 'slide-out-left');
-        next.classList.remove('slide-in-right');
-      }, 350);
-
+      if (current && current !== next) {
+        current.classList.remove('active');
+        next.classList.add('active');
+        next.classList.add('slide-in');
+        setTimeout(() => next.classList.remove('slide-in'), 350);
+      } else {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        next.classList.add('active');
+      }
       document.querySelectorAll('.nav-btn').forEach((b, i) => {
-        b.classList.toggle(
-          'active',
-          ['s-search', 's-add', 's-inventory'][i] === id
-        );
+        b.classList.toggle('active', ['s-search', 's-add', 's-inventory'][i] === id);
       });
-
       if (id === 's-inventory') renderInventory();
-
       if (id === 's-add') {
         const wasEditing = !!editingModel;
         if (!wasEditing) clearForm();
       }
-
       prevScreen = id;
     }
 
