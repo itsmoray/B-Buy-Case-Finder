@@ -47,28 +47,38 @@
       background: #000;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: var(--text);
+      margin: 0;
+      overflow: hidden;
     }
 
     /* APP SHELL */
     #app {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100dvh;
       max-width: 480px;
       margin: 0 auto;
       background: var(--bg);
       position: relative;
+      overflow: hidden;
     }
 
     /* TOP BAR */
     .topbar {
       background: #000;
       color: #fff;
-      padding: 14px 16px 12px;
+      padding:
+        calc(env(safe-area-inset-top) + 14px)
+        16px
+        12px;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
+    }
+    
+    .bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     .topbar-back {
