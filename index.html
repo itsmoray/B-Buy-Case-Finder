@@ -229,6 +229,18 @@
       color: var(--blue);
     }
 
+    /* STICKY SEARCH HEADER */
+    .search-sticky-header {
+      background: var(--bg);
+      padding: 12px 14px 10px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-sticky-header .filter-row {
+      margin-bottom: 10px;
+    }
+
     /* SEARCH SCREEN */
     .search-box {
       position: relative;
@@ -237,7 +249,7 @@
 
     .search-box input {
       width: 100%;
-      padding: 12px 16px 12px 44px;
+      padding: 12px 42px 12px 44px;
       border-radius: var(--radius);
       border: 1.5px solid var(--border2);
       background: var(--surface);
@@ -264,6 +276,36 @@
 
     .search-box input::placeholder {
       color: var(--text3);
+    }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--border2);
+      border: none;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+
+    .search-clear-btn:active {
+      background: var(--border);
+    }
+
+    .search-clear-btn.visible {
+      display: flex;
     }
 
     .result-card {
@@ -349,6 +391,12 @@
     .badge-out {
       background: var(--red-bg);
       color: var(--red);
+    }
+
+    .badge-floor {
+      background: var(--surface2, rgba(255,255,255,0.06));
+      color: var(--text2);
+      border: 1px solid var(--border2, var(--border));
     }
 
     /* DETAIL SCREEN */
@@ -924,7 +972,7 @@
       color: var(--blue-dark);
     }
 
-    .user-role-badge.manager {
+    .user-role-badge.Manager {
       background: var(--amber-bg);
       color: var(--amber);
     }
@@ -1174,7 +1222,7 @@
       background: var(--blue-light);
       color: var(--blue-dark);
     }
-    .account-role-badge.manager {
+    .account-role-badge.Manager {
       background: var(--amber-bg);
       color: var(--amber);
     }
@@ -1252,8 +1300,9 @@
 
     <!-- EDIT USER DIALOG -->
     <div class="overlay" id="edit-user-overlay">
-      <div class="dialog">
-        <h3 id="edit-user-title">Edit staff account</h3>
+      <div class="dialog" style="position:relative">
+        <button onclick="closeEditUser()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        <h3 id="edit-user-title" style="padding-right:36px">Edit Staff account</h3>
         <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">Leave password blank to keep it unchanged.</p>
         <div class="field">
           <label>Username</label>
@@ -1263,12 +1312,28 @@
           <label>New password</label>
           <input type="password" id="edit-user-pass" placeholder="Leave blank to keep current">
         </div>
-        <div class="dialog-btns">
-          <button class="btn btn-blue btn-sm" style="flex:1" onclick="submitEditUser()">Save changes</button>
-          <button class="btn btn-sm"
-            style="flex:0 0 auto;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2)"
-            onclick="closeEditUser()">Cancel</button>
+        <button class="btn btn-blue" onclick="submitEditUser()">💾 Save changes</button>
+      </div>
+    </div>
+    <!-- CHANGE PASSWORD DIALOG -->
+    <div class="overlay" id="change-pass-overlay">
+      <div class="dialog" style="position:relative">
+        <button onclick="closeChangePassword()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        <h3 style="padding-right:36px">Change password</h3>
+        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">Update the password for your account.</p>
+        <div class="field">
+          <label>Current password</label>
+          <input type="password" id="change-pass-current" autocomplete="off">
         </div>
+        <div class="field">
+          <label>New password</label>
+          <input type="password" id="change-pass-new" autocomplete="off">
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>Confirm new password</label>
+          <input type="password" id="change-pass-confirm" autocomplete="off">
+        </div>
+        <button class="btn btn-blue" onclick="submitChangePassword()">💾 Update password</button>
       </div>
     </div>
     <div class="screen" id="s-search">
@@ -1292,8 +1357,7 @@
           </div>
         </div>
       </div>
-      <div class="scroll-area">
-
+      <div class="search-sticky-header">
         <div class="filter-row">
           <div class="filter-select-wrap">
             <select id="result-limit" onchange="doSearch(document.getElementById('search-input').value)">
@@ -1322,11 +1386,14 @@
           </label>
         </div>
 
-        <div class="search-box">
+        <div class="search-box" style="margin-bottom:0">
           <span class="ico">🔍</span>
-          <input type="text" id="search-input" placeholder="Search phone model…" oninput="doSearch(this.value)"
+          <input type="text" id="search-input" placeholder="Search phone model…" oninput="onSearchInput(this.value)"
             autocomplete="off" autocorrect="off" spellcheck="false" />
+          <button class="search-clear-btn" id="search-clear-btn" onclick="clearSearch()" aria-label="Clear search">✕</button>
         </div>
+      </div>
+      <div class="scroll-area">
         <div id="search-results">
           <div class="empty">
             <div class="empty-icon">🔍</div>
@@ -1470,13 +1537,13 @@
         <div class="logo-mark">👥</div>
         <div style="flex:1">
           <div class="topbar-title">Users</div>
-          <div class="topbar-sub">Manage staff accounts</div>
+          <div class="topbar-sub">Manage Staff accounts</div>
         </div>
       </div>
 
       <div class="scroll-area">
 
-        <div class="section-eyebrow" style="margin-bottom:8px">Add new staff account</div>
+        <div class="section-eyebrow" style="margin-bottom:8px">Add new Staff account</div>
         <div class="form-card">
 
           <div class="field">
@@ -1493,8 +1560,8 @@
             <label>Role</label>
             <div class="select-wrap">
               <select id="new-role">
-                <option value="staff">Staff</option>
-                <option value="manager">Manager</option>
+                <option value="Staff">Staff</option>
+                <option value="Manager">Manager</option>
               </select>
             </div>
           </div>
@@ -1505,7 +1572,7 @@
           Create User
         </button>
 
-        <div class="section-eyebrow" style="margin-top:20px;margin-bottom:8px">Existing staff accounts</div>
+        <div class="section-eyebrow" style="margin-top:20px;margin-bottom:8px">Existing Staff accounts</div>
         <div class="inv-card" id="users-list"></div>
 
       </div>
@@ -1541,6 +1608,7 @@
           <div class="account-row"><span class="account-row-label">Role</span><span class="account-row-val" id="acct-role"></span></div>
           <div class="account-row" style="border:none"><span class="account-row-label">Status</span><span class="account-row-val" style="color:var(--green)">● Active</span></div>
         </div>
+        <button class="btn btn-blue" style="margin-top:8px" onclick="openChangePassword()">🔒 Change password</button>
         <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()">⏻ Sign out</button>
       </div>
       <div class="bottom-nav">
@@ -1621,7 +1689,7 @@
         document.getElementById('acct-role').textContent = currentRole || '';
         const badge = document.getElementById('account-role-badge');
         badge.textContent = currentRole || '';
-        badge.className = 'account-role-badge' + (currentRole === 'manager' ? ' manager' : '');
+        badge.className = 'account-role-badge' + (currentRole === 'Manager' ? ' Manager' : '');
       }
 
       const current = document.querySelector('.screen.active');
@@ -1736,6 +1804,20 @@
 
     // ── SEARCH ────────────────────────────────────────────────────────
 
+    function onSearchInput(val) {
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (clearBtn) clearBtn.classList.toggle('visible', val.length > 0);
+      doSearch(val);
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (input) { input.value = ''; input.focus(); }
+      if (clearBtn) clearBtn.classList.remove('visible');
+      doSearch('');
+    }
+
     function doSearch(q) {
       const el = document.getElementById('search-results');
       const limit = parseInt(document.getElementById('result-limit')?.value || 10);
@@ -1776,7 +1858,7 @@
    <div class="result-body">
      <div class="result-model">${e.model}</div>
      <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
-     <div id="sb-${CSS.escape(e.model)}">${stockBadge(e.stock)}</div>
+     <div id="sb-${CSS.escape(e.model)}">${stockBadge(e.stock)} ${!floor ? floorBadge(e.shelf.split('|')[1]) : ''}</div>
    </div>
    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
      <div class="stock-stepper">
@@ -1794,6 +1876,12 @@
       if (n === 0) return `<span class="badge badge-out">⚠ Out of stock</span>`;
       if (n <= 5) return `<span class="badge badge-low">⚡ ${n} left — low</span>`;
       return `<span class="badge badge-ok">✓ ${n} in stock</span>`;
+    }
+
+    function floorBadge(floor) {
+      if (floor === '1st Floor') return `<span class="badge badge-floor">1st Floor</span>`;
+      if (floor === 'Ground Floor') return `<span class="badge badge-floor">Ground Floor</span>`;
+      return '';
     }
 
     function dotColor(n) {
@@ -2282,7 +2370,7 @@
           '[onclick="showTab(\'s-users\')"]'
         );
 
-      if (currentRole === "staff") {
+      if (currentRole === "Staff") {
 
         addButtons.forEach(btn => {
           btn.style.display = "none";
@@ -2351,7 +2439,7 @@
 
         document.getElementById('new-user').value = '';
         document.getElementById('new-pass').value = '';
-        document.getElementById('new-role').value = 'staff';
+        document.getElementById('new-role').value = 'Staff';
 
         loadUsers();
       }
@@ -2371,8 +2459,8 @@
 
       users.forEach(user => {
 
-        const isAdmin = user.role === 'manager';
-        const actionBtns = currentRole === 'manager' ? `
+        const isAdmin = user.role === 'Manager';
+        const actionBtns = currentRole === 'Manager' ? `
           <div class="user-actions">
             <button class="user-action-btn edit" onclick="openEditUser('${user.username}', '${user.role}')">Edit</button>
             <button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>
@@ -2381,7 +2469,7 @@
         html += `
       <div class="user-item">
         <div class="user-name">${user.username}</div>
-        <span class="user-role-badge ${isAdmin ? 'manager' : ''}">${user.role}</span>
+        <span class="user-role-badge ${isAdmin ? 'Manager' : ''}">${user.role}</span>
         ${actionBtns}
       </div>
     `;
@@ -2391,7 +2479,7 @@
       document
         .getElementById(
           'users-list'
-        ).innerHTML = html || '<div class="empty" style="padding:24px"><p>No staff accounts found.</p></div>';
+        ).innerHTML = html || '<div class="empty" style="padding:24px"><p>No Staff accounts found.</p></div>';
     }
 
     // ── EDIT USER ─────────────────────────────────────────────────────
@@ -2451,10 +2539,75 @@
       }
     }
 
+    // ── CHANGE PASSWORD ──────────────────────────────────────────────
+    function openChangePassword() {
+      document.getElementById('change-pass-current').value = '';
+      document.getElementById('change-pass-new').value = '';
+      document.getElementById('change-pass-confirm').value = '';
+      document.getElementById('change-pass-overlay').classList.add('show');
+    }
+
+    function closeChangePassword() {
+      document.getElementById('change-pass-overlay').classList.remove('show');
+    }
+
+    async function submitChangePassword() {
+      const currentPass = document.getElementById('change-pass-current').value.trim();
+      const newPass = document.getElementById('change-pass-new').value.trim();
+      const confirmPass = document.getElementById('change-pass-confirm').value.trim();
+
+      if (!currentPass || !newPass || !confirmPass) {
+        toast('Please fill in all fields');
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        toast('New passwords do not match');
+        return;
+      }
+
+      // Verify current password by re-attempting login
+      const loginCheck = await fetch(
+        API_URL +
+        '?action=login' +
+        '&username=' + encodeURIComponent(currentUser) +
+        '&password=' + encodeURIComponent(currentPass)
+      );
+      const loginResult = await loginCheck.json();
+
+      if (!loginResult.success) {
+        toast('Current password is incorrect');
+        return;
+      }
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateUser',
+          originalUsername: currentUser,
+          newUsername: currentUser,
+          newPassword: newPass
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast('Password updated');
+        closeChangePassword();
+      } else {
+        toast('Password update failed');
+      }
+    }
+
     // ── DELETE USER ───────────────────────────────────────────────────
     let pendingDeleteUser = null;
 
     function promptDeleteUser(username) {
+      if (username === currentUser) {
+        toast('Invalid action (User account currently in use)');
+        return;
+      }
       pendingDeleteUser = username;
       document.getElementById('confirm-msg').textContent = `"${username}" will be permanently removed.`;
       document.getElementById('confirm-overlay').classList.add('show');
