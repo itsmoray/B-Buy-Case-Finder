@@ -1501,6 +1501,10 @@
         <div id="edit-delete-btn" style="display:none;margin-top:10px">
           <button class="btn btn-outline-red" onclick="promptDelete(editingModel)">&nbsp;Delete this entry</button>
         </div>
+        <div id="recent-added-wrap" style="display:none;margin-top:14px">
+          <div class="section-eyebrow" style="margin-bottom:8px">Recently added</div>
+          <div class="inv-card" id="recent-added-list"></div>
+        </div>
       </div>
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
@@ -1631,6 +1635,7 @@
     let prevScreen = 's-search';
     let editingModel = null;
     let pendingDelete = null;
+    let recentAdded = [];
 
     async function loadDB() {
 
@@ -1702,6 +1707,8 @@
 
       const movingForward = nextIndex > currentIndex;
 
+      prevScreen = current.id;
+
       current.classList.remove(
         'slide-in-left',
         'slide-in-right',
@@ -1750,10 +1757,12 @@
 
       if (id === 's-add') {
         const wasEditing = !!editingModel;
-        if (!wasEditing) clearForm();
+        if (!wasEditing) {
+          clearForm();
+          recentAdded = [];
+          renderRecentAdded();
+        }
       }
-
-      prevScreen = id;
     }
 
     function goBack() {
@@ -1970,6 +1979,24 @@
       ).style.display = 'none';
     }
 
+    function renderRecentAdded() {
+      const wrap = document.getElementById('recent-added-wrap');
+      const list = document.getElementById('recent-added-list');
+
+      if (!recentAdded.length) {
+        wrap.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+
+      wrap.style.display = 'block';
+
+      list.innerHTML = recentAdded.map(name => `
+      <div class="user-item" style="cursor:pointer" onclick="showDetail('${CSS.escape(name)}')">
+        <div class="user-name">${name}</div>
+      </div>`).join('');
+    }
+
     function editEntry(model) {
       const e = db.find(x => x.model === model);
       if (!e) return;
@@ -1980,7 +2007,8 @@
       document.getElementById('f-row').value = e.row;
       document.getElementById('f-col').value = e.col;
       document.getElementById('f-stock').value = e.stock;
-      document.getElementById('edit-delete-btn').style.display = 'block';
+      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
+      document.getElementById('recent-added-wrap').style.display = 'none';
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const addEl = document.getElementById('s-add');
       addEl.classList.add('active');
@@ -2114,6 +2142,8 @@
             : "Inventory added"
         );
 
+        const wasEditing = !!editingModel;
+
         clearForm();
 
         editingModel = null;
@@ -2129,7 +2159,13 @@
 
         await loadDB();
 
-        showTab('s-inventory');
+        if (wasEditing) {
+          showTab('s-inventory');
+        } else {
+          recentAdded.unshift(model);
+          renderRecentAdded();
+          document.getElementById('f-model').focus();
+        }
 
       } else {
 
@@ -2142,8 +2178,8 @@
     // ── DELETE ────────────────────────────────────────────────────────
     function promptDelete(model) {
       pendingDelete = model;
-      document.getElementById('confirm-msg').textContent = `"${model}" will be permanently removed from the inventory.`;
-      document.getElementById('confirm-overlay').dataset.mode = 'inventory';
+      document.getElementById('confirm-msg').textContent = `Delete "${model}" from the inventory? This will be permanently removed.`;
+      document.getElementById('confirm-overlay').dataset.mode = 'inventory-step1';
       document.getElementById('confirm-overlay').classList.add('show');
     }
     function closeConfirm() {
@@ -2617,6 +2653,15 @@
 
     async function confirmDelete() {
       const mode = document.getElementById('confirm-overlay').dataset.mode;
+
+      if (mode === 'inventory-step1') {
+        if (!pendingDelete) return;
+
+        // Move to final, stricter confirmation
+        document.getElementById('confirm-msg').textContent = `Are you absolutely sure? "${pendingDelete}" will be permanently deleted and cannot be recovered.`;
+        document.getElementById('confirm-overlay').dataset.mode = 'inventory';
+        return;
+      }
 
       if (mode === 'user') {
         if (!pendingDeleteUser) return;
