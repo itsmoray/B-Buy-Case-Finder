@@ -1456,7 +1456,7 @@
     <!-- ── ADD / EDIT SCREEN ── -->
     <div class="screen" id="s-add">
       <div class="topbar">
-        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <button class="topbar-back" id="add-back-btn" onclick="goBack()" style="display:none">&#8592;</button>
         <div class="logo-mark" id="add-logo">➕</div>
         <div style="flex:1">
           <div class="topbar-title" id="add-title">Add new model</div>
@@ -1549,7 +1549,6 @@
     <!-- ── INVENTORY SCREEN ── -->
     <div class="screen" id="s-inventory">
       <div class="topbar">
-        <button class="topbar-back" onclick="goBack()">&#8592;</button>
         <div class="logo-mark">📋</div>
         <div style="flex:1">
           <div class="topbar-title">Inventory</div>
@@ -1569,7 +1568,6 @@
     <div class="screen" id="s-users">
 
       <div class="topbar">
-        <button class="topbar-back" onclick="goBack()">&#8592;</button>
         <div class="logo-mark">👥</div>
         <div style="flex:1">
           <div class="topbar-title">Users</div>
@@ -1729,8 +1727,9 @@
         badge.className = 'account-role-badge' + (currentRole === 'Manager' ? ' Manager' : '');
       }
 
-      // If we're on s-add in edit mode and user taps Add nav, reset to fresh add
-      if (id === 's-add' && editingModel) {
+      // If we're ALREADY on s-add in edit mode and user taps Add nav again, reset to fresh add
+      const currentScreenId = document.querySelector('.screen.active')?.id;
+      if (id === 's-add' && editingModel && currentScreenId === 's-add') {
         clearForm();
         recentAdded = [];
         renderRecentAdded();
@@ -1744,6 +1743,11 @@
           b.classList.toggle('active', onclick.includes("'s-add'") || onclick.includes('"s-add"'));
         });
         return;
+      }
+
+      // If navigating to s-add from a different screen, always clear edit state first
+      if (id === 's-add' && editingModel) {
+        clearForm();
       }
 
       if (id === 's-add') {
@@ -1768,9 +1772,11 @@
 
       if (navLock) {
         // Cancel any stale animations on all screens before switching
+        // Re-apply 'active' only to the intended destination so the screen doesn't get stuck
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
+        next.classList.add('active');
         navLock = false;
       }
 
@@ -1815,6 +1821,7 @@
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
+        next.classList.add('active');
         navLock = false;
       }
 
@@ -2038,6 +2045,7 @@
         'Add new model';
 
       document.getElementById('add-logo').textContent = '➕';
+      document.getElementById('add-back-btn').style.display = 'none';
 
       document.getElementById(
         'edit-delete-btn'
@@ -2074,6 +2082,7 @@
       document.getElementById('f-row').value = e.row;
       document.getElementById('f-col').value = e.col;
       document.getElementById('f-stock').value = e.stock;
+      document.getElementById('add-back-btn').style.display = 'flex';
       document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
       document.getElementById('recent-added-wrap').style.display = 'none';
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2795,7 +2804,7 @@
 
     // ── SWIPE TO GO BACK ──────────────────────────────────────────────
     (function () {
-      const BACK_SCREENS = new Set(['s-detail', 's-add', 's-account']);
+      const BACK_SCREENS = new Set(['s-detail', 's-account']);
       const EDGE_ZONE    = 30;   // px from left edge to start swipe
       const MIN_SWIPE_X  = 70;   // minimum horizontal travel
       const MAX_RATIO    = 1.2;  // x must be > y * this to be horizontal
@@ -2821,7 +2830,9 @@
       document.addEventListener('touchstart', function (e) {
         const touch = e.touches[0];
         const screen = document.querySelector('.screen.active');
-        if (!screen || !BACK_SCREENS.has(screen.id)) return;
+        if (!screen) return;
+        const isBackScreen = BACK_SCREENS.has(screen.id) || (screen.id === 's-add' && !!editingModel);
+        if (!isBackScreen) return;
         if (touch.clientX > EDGE_ZONE) return;
         startX = touch.clientX;
         startY = touch.clientY;
