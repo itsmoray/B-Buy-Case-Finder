@@ -342,8 +342,7 @@
       box-shadow: var(--shadow);
       transition: box-shadow .15s, border-color .15s;
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      flex-direction: column;
     }
 
     .result-card:active {
@@ -381,7 +380,7 @@
     .result-loc {
       font-size: 13px;
       color: var(--text2);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .result-arrow {
@@ -1402,6 +1401,7 @@
               <option value="">All Floors</option>
               <option value="Ground Floor">Ground Floor</option>
               <option value="1st Floor">1st Floor</option>
+              <option value="Flip Cover">Flip Cover</option>
             </select>
           </div>
           <label class="filter-check-wrap">
@@ -1457,7 +1457,7 @@
     <div class="screen" id="s-add">
       <div class="topbar">
         <button class="topbar-back" onclick="goBack()">&#8592;</button>
-        <div class="logo-mark">➕</div>
+        <div class="logo-mark" id="add-logo">➕</div>
         <div style="flex:1">
           <div class="topbar-title" id="add-title">Add new model</div>
           <div class="topbar-sub">Fill in the details below</div>
@@ -1478,10 +1478,12 @@
                   <option value="Shelf 1|Ground Floor">Shelf 1 — Ground Floor</option>
                   <option value="Shelf 2|Ground Floor">Shelf 2 — Ground Floor</option>
                   <option value="Shelf 3|Ground Floor">Shelf 3 — Ground Floor</option>
+                  <option value="Flip Cover|Ground Floor">Flip Cover — Ground Floor</option>
                 </optgroup>
                 <optgroup label="1st Floor (Upstairs)">
                   <option value="Shelf 4|1st Floor">Shelf 4 — 1st Floor</option>
                   <option value="Shelf 5|1st Floor">Shelf 5 — 1st Floor</option>
+                  <option value="Flip Cover|1st Floor">Flip Cover — 1st Floor</option>
                 </optgroup>
               </select>
             </div>
@@ -1711,11 +1713,11 @@
     // ── NAV ───────────────────────────────────────────────────────────
     const tabOrder = ['s-search', 's-add', 's-inventory', 's-users', 's-account'];
 
+    let navLock = false;
+
     function showTab(id) {
 
-      if (id === "s-users") {
-        loadUsers();
-      }
+      if (id === "s-users") loadUsers();
 
       if (id === "s-account") {
         document.getElementById('account-avatar').textContent = (currentUser || '?')[0].toUpperCase();
@@ -1727,91 +1729,117 @@
         badge.className = 'account-role-badge' + (currentRole === 'Manager' ? ' Manager' : '');
       }
 
+      // If we're on s-add in edit mode and user taps Add nav, reset to fresh add
+      if (id === 's-add' && editingModel) {
+        clearForm();
+        recentAdded = [];
+        renderRecentAdded();
+        const addEl = document.getElementById('s-add');
+        addEl.classList.remove('slide-in');
+        void addEl.offsetWidth; // force reflow to restart animation
+        addEl.classList.add('slide-in');
+        setTimeout(() => addEl.classList.remove('slide-in'), 300);
+        document.querySelectorAll('.nav-btn').forEach((b) => {
+          const onclick = b.getAttribute('onclick') || '';
+          b.classList.toggle('active', onclick.includes("'s-add'") || onclick.includes('"s-add"'));
+        });
+        return;
+      }
+
+      if (id === 's-add') {
+        clearForm();
+        recentAdded = [];
+        renderRecentAdded();
+      }
+
+      if (id === 's-inventory') renderInventory();
+
       const current = document.querySelector('.screen.active');
       const next = document.getElementById(id);
 
-      if (!current || current === next) return;
+      if (!current || current === next) {
+        // Still update nav highlight
+        document.querySelectorAll('.nav-btn').forEach((b) => {
+          const onclick = b.getAttribute('onclick') || '';
+          b.classList.toggle('active', onclick.includes("'" + id + "'") || onclick.includes('"' + id + '"'));
+        });
+        return;
+      }
+
+      if (navLock) {
+        // Cancel any stale animations on all screens before switching
+        document.querySelectorAll('.screen').forEach(s => {
+          s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
+        });
+        navLock = false;
+      }
 
       const currentIndex = tabOrder.indexOf(current.id);
       const nextIndex = tabOrder.indexOf(id);
-
       const movingForward = nextIndex > currentIndex;
 
       prevScreen = current.id;
 
-      current.classList.remove(
-        'slide-in-left',
-        'slide-in-right',
-        'slide-out-left',
-        'slide-out-right'
-      );
+      // Clean slate for both screens
+      ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'].forEach(c => {
+        current.classList.remove(c);
+        next.classList.remove(c);
+      });
 
-      next.classList.remove(
-        'slide-in-left',
-        'slide-in-right',
-        'slide-out-left',
-        'slide-out-right'
-      );
-
-      current.classList.add(
-        movingForward ? 'slide-out-left' : 'slide-out-right'
-      );
-
+      current.classList.add(movingForward ? 'slide-out-left' : 'slide-out-right');
       next.classList.add('active');
+      next.classList.add(movingForward ? 'slide-in-right' : 'slide-in-left');
 
-      next.classList.add(
-        movingForward ? 'slide-in-right' : 'slide-in-left'
-      );
-
+      navLock = true;
+      const animCurrent = current;
       setTimeout(() => {
-        current.classList.remove('active');
-
-        current.classList.remove(
-          'slide-out-left',
-          'slide-out-right'
-        );
-
-        next.classList.remove(
-          'slide-in-left',
-          'slide-in-right'
-        );
+        animCurrent.classList.remove('active','slide-out-left','slide-out-right');
+        next.classList.remove('slide-in-left','slide-in-right');
+        navLock = false;
       }, 300);
 
       document.querySelectorAll('.nav-btn').forEach((b) => {
         const onclick = b.getAttribute('onclick') || '';
-        const matches = onclick.includes("'" + id + "'") || onclick.includes('"' + id + '"');
-        b.classList.toggle('active', matches);
+        b.classList.toggle('active', onclick.includes("'" + id + "'") || onclick.includes('"' + id + '"'));
       });
-
-      if (id === 's-inventory') renderInventory();
-
-      if (id === 's-add') {
-        const wasEditing = !!editingModel;
-        if (!wasEditing) {
-          clearForm();
-          recentAdded = [];
-          renderRecentAdded();
-        }
-      }
     }
 
     function goBack() {
       const current = document.querySelector('.screen.active');
-      const target = (prevScreen === current.id) ? 's-search' : prevScreen;
+      const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
       const next = document.getElementById(target);
-      if (current && current !== next) {
-        current.classList.remove('active');
-        next.classList.add('active');
-        next.classList.add('slide-in-back');
-        setTimeout(() => next.classList.remove('slide-in-back'), 350);
-      } else {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        next.classList.add('active');
+
+      if (!current || !next || current === next) return;
+
+      if (navLock) {
+        document.querySelectorAll('.screen').forEach(s => {
+          s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
+        });
+        navLock = false;
       }
+
+      ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'].forEach(c => {
+        current.classList.remove(c);
+        next.classList.remove(c);
+      });
+
+      current.classList.add('slide-out-right');
+      next.classList.add('active');
+      next.classList.add('slide-in-back');
+
+      navLock = true;
+      const animCurrent = current;
+      setTimeout(() => {
+        animCurrent.classList.remove('active','slide-out-right');
+        next.classList.remove('slide-in-back');
+        navLock = false;
+      }, 300);
+
       document.querySelectorAll('.nav-btn').forEach((b) => {
         const onclick = b.getAttribute('onclick') || '';
         b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
       });
+
       prevScreen = 's-search';
     }
 
@@ -1870,8 +1898,10 @@
         results = results.filter(e => e.model.toLowerCase().includes(q.toLowerCase()));
       }
 
-      if (floor) {
-        results = results.filter(e => e.shelf.includes(floor));
+      if (floor === 'Flip Cover') {
+        results = results.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
+      } else if (floor) {
+        results = results.filter(e => e.shelf.includes(floor) && e.shelf.split('|')[0] !== 'Flip Cover');
       }
 
       if (lowStock) {
@@ -1893,20 +1923,22 @@
 
       el.innerHTML = results.map(e => `
  <div class="result-card" onclick="showDetail('${CSS.escape(e.model)}')">
-   <div class="result-icon">📱</div>
-   <div class="result-body">
-     <div class="result-model">${e.model}</div>
-     <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
-     <div id="sb-${CSS.escape(e.model)}">${stockBadge(e.stock)} ${!floor ? floorBadge(e.shelf.split('|')[1]) : ''}</div>
-   </div>
-   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
-     <div class="stock-stepper">
-       <button class="stepper-btn minus" onclick="quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
-       <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
-       <button class="stepper-btn plus" onclick="quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+   <div style="display:flex;align-items:center;gap:10px">
+     <div class="result-icon">📱</div>
+     <div class="result-body">
+       <div class="result-model">${e.model}</div>
+       <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
      </div>
-     <span style="color:var(--text3);font-size:20px;cursor:pointer" onclick="event.stopPropagation();showDetail('${CSS.escape(e.model)}')">›</span>
+     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+       <div class="stock-stepper">
+         <button class="stepper-btn minus" onclick="quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+         <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
+         <button class="stepper-btn plus" onclick="quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+       </div>
+       <span style="color:var(--text3);font-size:20px;cursor:pointer" onclick="event.stopPropagation();showDetail('${CSS.escape(e.model)}')">›</span>
+     </div>
    </div>
+   <div id="sb-${CSS.escape(e.model)}" style="display:flex;flex-wrap:nowrap;align-items:center;gap:5px;margin-top:8px">${stockBadge(e.stock)} ${!floor ? floorBadge(e.shelf.split('|')[1], e.shelf.split('|')[0]) : ''}</div>
  </div>`).join('');
     }
     // ── BADGE ─────────────────────────────────────────────────────────
@@ -1917,7 +1949,8 @@
       return `<span class="badge badge-ok">✓ ${n} in stock</span>`;
     }
 
-    function floorBadge(floor) {
+    function floorBadge(floor, shelfName) {
+      if (shelfName === 'Flip Cover') return `<span class="badge badge-floor">Flip Cover · ${floor}</span>`;
       if (floor === '1st Floor') return `<span class="badge badge-floor">1st Floor</span>`;
       if (floor === 'Ground Floor') return `<span class="badge badge-floor">Ground Floor</span>`;
       return '';
@@ -2004,6 +2037,8 @@
       ).textContent =
         'Add new model';
 
+      document.getElementById('add-logo').textContent = '➕';
+
       document.getElementById(
         'edit-delete-btn'
       ).style.display = 'none';
@@ -2033,6 +2068,7 @@
       prevScreen = document.querySelector('.screen.active').id;
       editingModel = model;
       document.getElementById('add-title').textContent = 'Edit entry';
+      document.getElementById('add-logo').textContent = '✏️';
       document.getElementById('f-model').value = e.model;
       document.getElementById('f-shelf').value = e.shelf;
       document.getElementById('f-row').value = e.row;
@@ -2104,7 +2140,7 @@
       const posConflict = db.find(e => {
         const isItself = editingModel && e.model.toLowerCase() === editingModel.toLowerCase();
         return !isItself &&
-          e.shelf.split('|')[0].trim().toLowerCase() === shelf.trim().toLowerCase() &&
+          e.shelf.trim().toLowerCase() === shelfValue.trim().toLowerCase() &&
           normalise(e.row) === normalise(row) &&
           normalise(e.col) === normalise(col);
       });
@@ -2210,7 +2246,7 @@
     function promptDelete(model) {
       pendingDelete = model;
       document.getElementById('confirm-msg').textContent = `Delete "${model}" from the inventory? This will be permanently removed.`;
-      document.getElementById('confirm-overlay').dataset.mode = 'inventory-step1';
+      document.getElementById('confirm-overlay').dataset.mode = 'inventory';
       document.getElementById('confirm-overlay').classList.add('show');
     }
     function closeConfirm() {
@@ -2279,8 +2315,9 @@
       const outStock = db.filter(e => parseInt(e.stock) === 0).length;
       if (sub) sub.textContent = `${total} models tracked`;
 
-      const ground = db.filter(e => e.shelf.includes('Ground Floor'));
-      const upper = db.filter(e => e.shelf.includes('1st Floor'));
+      const ground = db.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
+      const upper = db.filter(e => e.shelf.includes('1st Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
+      const flipCover = db.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
 
       let html = `
     <div class="stats-bar">
@@ -2313,6 +2350,27 @@
       if (upper.length) {
         html += `<div class="floor-heading">🔼 1st Floor (Upstairs)</div><div class="inv-card">`;
         html += upper.map(e => `
+      <div class="inv-item">
+        <div class="inv-dot" style="background:${dotColor(e.stock)}"></div>
+        <div class="inv-info" onclick="showDetail('${CSS.escape(e.model)}')" style="cursor:pointer">
+          <div class="inv-name">${e.model}</div>
+          <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="stock-stepper">
+            <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+            <span class="stepper-count" id="sc-${CSS.escape(e.model)}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
+            <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+          </div>
+          <span style="color:var(--text3);font-size:18px;cursor:pointer" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
+        </div>
+      </div>`).join('');
+        html += '</div>';
+      }
+
+      if (flipCover.length) {
+        html += `<div class="floor-heading">📱 Flip Cover</div><div class="inv-card">`;
+        html += flipCover.map(e => `
       <div class="inv-item">
         <div class="inv-dot" style="background:${dotColor(e.stock)}"></div>
         <div class="inv-info" onclick="showDetail('${CSS.escape(e.model)}')" style="cursor:pointer">
@@ -2685,15 +2743,6 @@
     async function confirmDelete() {
       const mode = document.getElementById('confirm-overlay').dataset.mode;
 
-      if (mode === 'inventory-step1') {
-        if (!pendingDelete) return;
-
-        // Move to final, stricter confirmation
-        document.getElementById('confirm-msg').textContent = `Are you absolutely sure? "${pendingDelete}" will be permanently deleted and cannot be recovered.`;
-        document.getElementById('confirm-overlay').dataset.mode = 'inventory';
-        return;
-      }
-
       if (mode === 'user') {
         if (!pendingDeleteUser) return;
 
@@ -2743,6 +2792,74 @@
       }
     }
 
+
+    // ── SWIPE TO GO BACK ──────────────────────────────────────────────
+    (function () {
+      const BACK_SCREENS = new Set(['s-detail', 's-add', 's-account']);
+      const EDGE_ZONE    = 30;   // px from left edge to start swipe
+      const MIN_SWIPE_X  = 70;   // minimum horizontal travel
+      const MAX_RATIO    = 1.2;  // x must be > y * this to be horizontal
+
+      let startX = 0, startY = 0, tracking = false;
+      let indicator = null;
+
+      function createIndicator() {
+        indicator = document.createElement('div');
+        Object.assign(indicator.style, {
+          position: 'fixed', top: '0', left: '0', bottom: '0',
+          width: '4px',
+          background: 'var(--blue)',
+          opacity: '0',
+          zIndex: '9999',
+          transition: 'opacity .1s',
+          borderRadius: '0 4px 4px 0',
+          pointerEvents: 'none'
+        });
+        document.body.appendChild(indicator);
+      }
+
+      document.addEventListener('touchstart', function (e) {
+        const touch = e.touches[0];
+        const screen = document.querySelector('.screen.active');
+        if (!screen || !BACK_SCREENS.has(screen.id)) return;
+        if (touch.clientX > EDGE_ZONE) return;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        tracking = true;
+        if (!indicator) createIndicator();
+        indicator.style.opacity = '0.5';
+      }, { passive: true });
+
+      document.addEventListener('touchmove', function (e) {
+        if (!tracking) return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = Math.abs(touch.clientY - startY);
+        if (dx > 0) {
+          const progress = Math.min(dx / 120, 1);
+          if (indicator) indicator.style.width = (4 + progress * 8) + 'px';
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', function (e) {
+        if (!tracking) return;
+        tracking = false;
+        if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
+
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - startX;
+        const dy = Math.abs(touch.clientY - startY);
+
+        if (dx >= MIN_SWIPE_X && dx > dy * MAX_RATIO) {
+          goBack();
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchcancel', function () {
+        tracking = false;
+        if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
+      }, { passive: true });
+    })();
 
     // ── INIT ──────────────────────────────────────────────────────────
     loadDB();
