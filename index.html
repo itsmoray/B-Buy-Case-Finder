@@ -153,8 +153,32 @@
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
+    .slide-in {
+      animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .slide-in-back {
+      animation: fadeSlideInBack .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes fadeSlideInBack {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .slide-out-right {
       animation: fadeSlideOut .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .fade-out {
+      animation: fadeSlideOut .24s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
     @keyframes fadeSlideIn {
@@ -1421,6 +1445,12 @@
 
       </div>
       <div class="scroll-area" id="detail-content"></div>
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
     </div>
 
     <!-- ── ADD / EDIT SCREEN ── -->
@@ -1612,7 +1642,7 @@
           <div class="account-row"><span class="account-row-label">Role</span><span class="account-row-val" id="acct-role"></span></div>
           <div class="account-row" style="border:none"><span class="account-row-label">Status</span><span class="account-row-val" style="color:var(--green)">● Active</span></div>
         </div>
-        <button class="btn btn-blue" style="margin-top:8px" onclick="openChangePassword()">🔒 Change password</button>
+        <button class="btn btn-blue" style="margin-top:8px" onclick="openChangePassword()">Change password</button>
         <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()">⏻ Sign out</button>
       </div>
       <div class="bottom-nav">
@@ -1767,7 +1797,7 @@
 
     function goBack() {
       const current = document.querySelector('.screen.active');
-      const target = (prevScreen === 's-detail' || prevScreen === current.id) ? 's-search' : prevScreen;
+      const target = (prevScreen === current.id) ? 's-search' : prevScreen;
       const next = document.getElementById(target);
       if (current && current !== next) {
         current.classList.remove('active');
@@ -2000,6 +2030,7 @@
     function editEntry(model) {
       const e = db.find(x => x.model === model);
       if (!e) return;
+      prevScreen = document.querySelector('.screen.active').id;
       editingModel = model;
       document.getElementById('add-title').textContent = 'Edit entry';
       document.getElementById('f-model').value = e.model;
