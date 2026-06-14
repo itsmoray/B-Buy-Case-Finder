@@ -52,6 +52,12 @@
       overflow: hidden;
     }
 
+    /* Center the app card horizontally on screens wider than the app itself */
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
     /* APP SHELL */
     #app {
       display: flex;
@@ -79,20 +85,6 @@
     @media (min-width: 768px) {
       #app {
         max-width: 680px;
-      }
-    }
-
-    /* LAPTOP / DESKTOP */
-    @media (min-width: 1024px) {
-      #app {
-        max-width: 760px;
-      }
-    }
-
-    /* LARGE DESKTOP */
-    @media (min-width: 1440px) {
-      #app {
-        max-width: 860px;
       }
     }
 
@@ -1397,6 +1389,73 @@
     }
     .account-row-label { font-size: 14px; color: var(--text2); }
     .account-row-val { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    /* ============================================================
+       DASHBOARD MODE (laptop / desktop screens)
+       Widens the app frame and turns the search results / inventory
+       lists into a multi-column grid so larger screens feel more
+       like a dashboard rather than a stretched phone screen.
+       Phone and tablet layouts above are completely untouched.
+       ============================================================ */
+    @media (min-width: 1024px) {
+      #app {
+        max-width: 1180px;
+      }
+
+      /* Search results as a responsive card grid */
+      #search-results {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        align-items: start;
+        gap: 12px;
+      }
+
+      #search-results .result-card {
+        margin-bottom: 0;
+      }
+
+      #search-results .empty {
+        grid-column: 1 / -1;
+      }
+
+      /* Inventory items as a card grid instead of a stacked list */
+      .inv-card {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        overflow: visible;
+      }
+
+      .inv-item {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .inv-item:last-child {
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    /* LARGE DESKTOP — extra column where there's room for it */
+    @media (min-width: 1440px) {
+      #app {
+        max-width: 1400px;
+      }
+
+      #search-results {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .inv-card {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1565ff">
@@ -1892,7 +1951,7 @@
     }
 
     // ── NAV ───────────────────────────────────────────────────────────
-    const tabOrder = ['s-search', 's-add', 's-inventory', 's-users', 's-account'];
+    const tabOrder = ['s-search', 's-add', 's-inventory', 's-users'];
 
     let navLock = false;
 
@@ -1974,7 +2033,9 @@
       const nextIndex = tabOrder.indexOf(id);
       const movingForward = nextIndex > currentIndex;
 
-      prevScreen = current.id;
+      // Don't record s-account as prevScreen when navigating via the tab bar —
+      // it's a back-stack screen, not a tab, so the back button should not loop into it.
+      prevScreen = (current.id === 's-account') ? 's-search' : current.id;
 
       // Clean slate for both screens
       ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'].forEach(c => {
@@ -2698,6 +2759,14 @@
 
       setupRole();
 
+      // Clean slate — remove active/animation classes from every screen before
+      // setting the start screen, so no screen is accidentally left "active"
+      // from a previous bfcache/session state.
+      navLock = false;
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
+      });
+
       document
         .getElementById('s-search')
         .classList.add('active');
@@ -3146,6 +3215,11 @@
       // re-show the splash to mask any stray keyboard/redraw flicker
       window.addEventListener('pageshow', (e) => {
         if (e.persisted) {
+          // Reset navLock and stale animation classes so nav works cleanly after restore
+          navLock = false;
+          document.querySelectorAll('.screen').forEach(s => {
+            s.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
+          });
           showSplash();
           scheduleHide(1400);
         }
@@ -3153,6 +3227,12 @@
 
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
+          // Always reset navLock and clear any stale animation classes when
+          // the app comes back into view — prevents the "stuck nav after reopen" bug.
+          navLock = false;
+          document.querySelectorAll('.screen').forEach(s => {
+            s.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
+          });
           if (!splashVisible) {
             showSplash();
             scheduleHide(1400);
