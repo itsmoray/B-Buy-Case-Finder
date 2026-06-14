@@ -1870,6 +1870,7 @@
     const tabOrder = ['s-search', 's-add', 's-inventory', 's-users', 's-account'];
 
     let navLock = false;
+    let navTimer = null;   // tracks the pending cleanup so we can cancel it
 
     function showTab(id) {
 
@@ -1928,13 +1929,17 @@
         return;
       }
 
+      // Cancel any stale cleanup timer before we touch the DOM — this is what
+      // prevents the white-screen: the old setTimeout can no longer fire and
+      // accidentally strip .active off whatever screen we just switched to.
+      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+
+      // If a previous animation was still mid-flight, snap everything to a
+      // clean state before starting the new transition.
       if (navLock) {
-        // Cancel any stale animations on all screens before switching
-        // Re-apply 'active' only to the intended destination so the screen doesn't get stuck
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
-        next.classList.add('active');
         navLock = false;
       }
 
@@ -1956,10 +1961,12 @@
 
       navLock = true;
       const animCurrent = current;
-      setTimeout(() => {
+      const animNext = next;
+      navTimer = setTimeout(() => {
         animCurrent.classList.remove('active','slide-out-left','slide-out-right');
-        next.classList.remove('slide-in-left','slide-in-right');
+        animNext.classList.remove('slide-in-left','slide-in-right');
         navLock = false;
+        navTimer = null;
       }, 300);
 
       document.querySelectorAll('.nav-btn').forEach((b) => {
@@ -1975,11 +1982,13 @@
 
       if (!current || !next || current === next) return;
 
+      // Cancel any pending cleanup from a previous nav so it can't ghost-remove .active
+      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+
       if (navLock) {
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
-        next.classList.add('active');
         navLock = false;
       }
 
@@ -1994,10 +2003,12 @@
 
       navLock = true;
       const animCurrent = current;
-      setTimeout(() => {
+      const animNext = next;
+      navTimer = setTimeout(() => {
         animCurrent.classList.remove('active','slide-out-right');
-        next.classList.remove('slide-in-back');
+        animNext.classList.remove('slide-in-back');
         navLock = false;
+        navTimer = null;
       }, 300);
 
       document.querySelectorAll('.nav-btn').forEach((b) => {
