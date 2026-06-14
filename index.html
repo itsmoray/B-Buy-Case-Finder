@@ -63,11 +63,36 @@
       background: var(--bg);
       position: relative;
       overflow: hidden;
+      /* Makes #app the containing block for any position:fixed children
+         (overlays, dialogs, toast) so they stay confined to the app card
+         on tablet/laptop screens instead of covering the whole browser window. */
+      transform: translateZ(0);
     }
 
     @media (min-width: 640px) {
       #app {
         max-width: 560px;
+      }
+    }
+
+    /* TABLET (iPad portrait/landscape, larger Android tablets) */
+    @media (min-width: 768px) {
+      #app {
+        max-width: 680px;
+      }
+    }
+
+    /* LAPTOP / DESKTOP */
+    @media (min-width: 1024px) {
+      #app {
+        max-width: 760px;
+      }
+    }
+
+    /* LARGE DESKTOP */
+    @media (min-width: 1440px) {
+      #app {
+        max-width: 860px;
       }
     }
 
@@ -1870,7 +1895,6 @@
     const tabOrder = ['s-search', 's-add', 's-inventory', 's-users', 's-account'];
 
     let navLock = false;
-    let navTimer = null;   // tracks the pending cleanup so we can cancel it
 
     function showTab(id) {
 
@@ -1929,18 +1953,21 @@
         return;
       }
 
-      // Cancel any stale cleanup timer before we touch the DOM — this is what
-      // prevents the white-screen: the old setTimeout can no longer fire and
-      // accidentally strip .active off whatever screen we just switched to.
-      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-
-      // If a previous animation was still mid-flight, snap everything to a
-      // clean state before starting the new transition.
       if (navLock) {
+        // Cancel any stale animations on all screens before switching
+        // Re-apply 'active' only to the intended destination so the screen doesn't get stuck
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
+        next.classList.add('active');
         navLock = false;
+        // Update nav highlight and return — don't start a second animation
+        document.querySelectorAll('.nav-btn').forEach((b) => {
+          const onclick = b.getAttribute('onclick') || '';
+          b.classList.toggle('active', onclick.includes("'" + id + "'") || onclick.includes('"' + id + '"'));
+        });
+        prevScreen = id;
+        return;
       }
 
       const currentIndex = tabOrder.indexOf(current.id);
@@ -1961,12 +1988,10 @@
 
       navLock = true;
       const animCurrent = current;
-      const animNext = next;
-      navTimer = setTimeout(() => {
+      setTimeout(() => {
         animCurrent.classList.remove('active','slide-out-left','slide-out-right');
-        animNext.classList.remove('slide-in-left','slide-in-right');
+        next.classList.remove('slide-in-left','slide-in-right');
         navLock = false;
-        navTimer = null;
       }, 300);
 
       document.querySelectorAll('.nav-btn').forEach((b) => {
@@ -1982,14 +2007,18 @@
 
       if (!current || !next || current === next) return;
 
-      // Cancel any pending cleanup from a previous nav so it can't ghost-remove .active
-      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-
       if (navLock) {
         document.querySelectorAll('.screen').forEach(s => {
           s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
         });
+        next.classList.add('active');
         navLock = false;
+        document.querySelectorAll('.nav-btn').forEach((b) => {
+          const onclick = b.getAttribute('onclick') || '';
+          b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
+        });
+        prevScreen = 's-search';
+        return;
       }
 
       ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'].forEach(c => {
@@ -2003,12 +2032,10 @@
 
       navLock = true;
       const animCurrent = current;
-      const animNext = next;
-      navTimer = setTimeout(() => {
+      setTimeout(() => {
         animCurrent.classList.remove('active','slide-out-right');
-        animNext.classList.remove('slide-in-back');
+        next.classList.remove('slide-in-back');
         navLock = false;
-        navTimer = null;
       }, 300);
 
       document.querySelectorAll('.nav-btn').forEach((b) => {
