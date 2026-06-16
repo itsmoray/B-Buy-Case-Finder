@@ -1996,7 +1996,7 @@
           <div id="extra-models-list"></div>
           <button class="btn-add-model" onclick="addExtraModelRow()">＋ Add another model</button>
         </div>
-        <button class="btn btn-blue" onclick="saveEntry()">&nbsp;Save entry</button>
+        <button class="btn btn-blue" style="margin-top:20px" onclick="saveEntry()">&nbsp;Save entry</button>
         <div id="edit-delete-btn" style="display:none;margin-top:10px">
           <button class="btn btn-outline-red" onclick="promptDelete(editingModel)">&nbsp;Delete this entry</button>
         </div>
@@ -2164,7 +2164,6 @@
     let prevScreen = 's-search';
     let originScreen = 's-search'; // the tab the user was on before entering detail/edit flow
     let editingModel = null;
-    let editingModelB = null;  // tracks the sibling model in a shared slot during edit
     let pendingDelete = null;
     let recentAdded = [];
 
@@ -2635,7 +2634,7 @@
     // ── ADD / EDIT ────────────────────────────────────────────────────
     function clearForm() {
       editingModel = null;
-      editingModelB = null;
+      
       document.getElementById('f-model').value = '';
       document.getElementById('f-shelf').value = '';
       document.getElementById('f-row').value = '';
@@ -2750,7 +2749,7 @@
         originScreen = prevScreen;
       }
       editingModel = model;
-      editingModelB = null;
+      
 
       document.getElementById('add-title').textContent = 'Edit entry';
       document.getElementById('add-logo').textContent = '✏️';
@@ -2772,7 +2771,7 @@
 
       if (siblings.length) {
         // Shared slot — pre-populate all sibling rows, lock toggle visible but hidden
-        editingModelB = siblings[0].model; // kept for compat; full list used in saveEntry
+        
         toggle.checked = true;
         secB.classList.add('visible');
         shareRow.style.display = 'none';
@@ -2801,7 +2800,7 @@
         document.querySelector('#model-b-section .btn-add-model').style.display = 'none';
       } else {
         // Single model — reset toggle
-        editingModelB = null;
+        
         toggle.checked = false;
         secB.classList.remove('visible');
         shareRow.style.display = '';
@@ -2852,11 +2851,18 @@
       const allModels = [{ model, stock }, ...extras];
 
       // ── NAME CONFLICT CHECK ───────────────────────────────────────────
-      // Skip self (editingModel / editingModelB siblings) when editing
-      const editingSet = new Set(
-        [editingModel, ...(editingModelB ? [editingModelB] : [])]
-          .filter(Boolean).map(m => m.trim().toLowerCase())
-      );
+      // Build the full set of names currently occupying this slot (all siblings
+      // + the primary being edited) so they are excluded from the conflict check.
+      const editingSet = new Set();
+      if (editingModel) {
+        editingSet.add(editingModel.trim().toLowerCase());
+        // Also exclude all siblings in this slot
+        const primaryEntry = db.find(x => x.model === editingModel);
+        if (primaryEntry) {
+          db.filter(x => x.model !== editingModel && locationKey(x) === locationKey(primaryEntry))
+            .forEach(x => editingSet.add(x.model.trim().toLowerCase()));
+        }
+      }
       const newNames = allModels.map(m => m.model.trim().toLowerCase());
 
       // Check duplicates within the batch itself
@@ -2910,7 +2916,7 @@
         return res.json();
       };
 
-      // In edit mode, the existing siblings come from db (editingModelB covers one;
+      // In edit mode, grab all siblings from db that are not the primary model
       // for 3+ slots, we grab all siblings from db that are not the primary)
       let siblingOriginals = [];
       if (editingModel) {
