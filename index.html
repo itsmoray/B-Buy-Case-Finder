@@ -2088,7 +2088,7 @@
             <div class="field">
               <label>Row</label>
               <div class="select-wrap">
-                <select id="f-row">
+                <select id="f-row" onchange="onRowChange(this.value)">
                   <option value="">Row…</option>
                   <option>Row 1</option>
                   <option>Row 2</option>
@@ -2979,7 +2979,71 @@
       hint.classList.add('visible');
     }
 
-    function onShareToggle(checked) {
+    // Called when the Row dropdown changes — re-marks Col options to only
+    // show columns that are used on the currently selected shelf + row combo.
+    function onRowChange(rowValue) {
+      const shelfValue = document.getElementById('f-shelf').value;
+      const colSel     = document.getElementById('f-col');
+      const hint       = document.getElementById('used-slots-hint');
+
+      // Always reset col markers first
+      Array.from(colSel.options).forEach(opt => {
+        opt.classList.remove('opt-used', 'opt-recent');
+        opt.textContent = opt.textContent
+          .replace(/\s+●\s+(recently used|used)$/i, '').trim();
+      });
+
+      if (!shelfValue || !rowValue || !db || !db.length) {
+        // No row selected — fall back to full-shelf col marking
+        onShelfChange(shelfValue);
+        return;
+      }
+
+      // Columns used on THIS shelf + THIS row
+      const onShelfRow = db.filter(e => e.shelf === shelfValue && e.row === rowValue);
+      const usedCols   = new Set(onShelfRow.map(e => e.col));
+
+      // Which of those are "recently used" this session
+      const recentCols = new Set();
+      sessionRecentSlots.forEach(key => {
+        const [s, r, c] = key.split('||');
+        if (s === shelfValue && r === rowValue) recentCols.add(c);
+      });
+
+      // Mark Col options
+      Array.from(colSel.options).forEach(opt => {
+        if (!opt.value) return;
+        if (usedCols.has(opt.value)) {
+          if (recentCols.has(opt.value)) {
+            opt.classList.add('opt-recent');
+            opt.textContent = opt.value + ' ● Recently Used';
+          } else {
+            opt.classList.add('opt-used');
+            opt.textContent = opt.value + ' ● Used';
+          }
+        }
+      });
+
+      // Update hint banner to reflect the selected row
+      const sortNums = (a, b, prefix) =>
+        parseInt(a.replace(prefix, '')) - parseInt(b.replace(prefix, ''));
+
+      if (!usedCols.size) {
+        // Row exists on shelf but this specific row has no entries — show shelf-level hint
+        onShelfChange(shelfValue);
+        return;
+      }
+
+      const usedColList = [...usedCols].sort((a,b) => sortNums(a,b,'Col ')).join(', ');
+      const recentNote  = recentCols.size
+        ? ` <span style="color:var(--blue-dark)">· ${recentCols.size} added this session</span>`
+        : '';
+
+      hint.innerHTML =
+        `⚠️ <strong>${usedCols.size} col${usedCols.size !== 1 ? 's' : ''} already used on ${rowValue} of this shelf.</strong>${recentNote}<br>` +
+        `Cols in use: <strong>${usedColList}</strong>`;
+      hint.classList.add('visible');
+    }
       const secB = document.getElementById('model-b-section');
       const list = document.getElementById('extra-models-list');
       if (checked) {
@@ -3077,6 +3141,7 @@
       document.getElementById('f-shelf').value = e.shelf;
       onShelfChange(e.shelf);   // highlight used rows/cols for this shelf
       document.getElementById('f-row').value = e.row;
+      onRowChange(e.row);       // refine col highlights for this specific row
       document.getElementById('f-col').value = e.col;
       document.getElementById('f-stock').value = e.stock;
 
