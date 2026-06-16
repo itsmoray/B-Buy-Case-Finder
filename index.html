@@ -1909,6 +1909,30 @@
       </div>
     </div>
 
+    <!-- CLEAR FIELDS CONFIRMATION -->
+    <div class="overlay" id="clear-fields-overlay">
+      <div class="dialog">
+        <h3>🗑 Clear all fields?</h3>
+        <p>This will erase everything you've typed so far. You'll start fresh with a blank form.</p>
+        <div class="dialog-btns">
+          <button class="btn btn-outline-red btn-sm" style="flex:1" onclick="confirmClearFields()">Yes, clear it</button>
+          <button class="btn btn-blue btn-sm" style="flex:1" onclick="document.getElementById('clear-fields-overlay').classList.remove('show')">Keep my draft</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHARE TOGGLE OFF CONFIRMATION -->
+    <div class="overlay" id="share-off-overlay">
+      <div class="dialog">
+        <h3>⚠️ Turn off shared slot?</h3>
+        <p id="share-off-msg">This slot has other models in it. Turning off the toggle will <strong>remove all sibling models</strong> from this slot when you save. This cannot be undone.</p>
+        <div class="dialog-btns">
+          <button class="btn btn-outline-red btn-sm" style="flex:1" onclick="confirmShareOff()">Yes, turn it off</button>
+          <button class="btn btn-blue btn-sm" style="flex:1" onclick="cancelShareOff()">Keep it on</button>
+        </div>
+      </div>
+    </div>
+
     <!-- EDIT USER DIALOG -->
     <div class="overlay" id="edit-user-overlay">
       <div class="dialog" style="position:relative">
@@ -1996,6 +2020,10 @@
             <input type="checkbox" id="low-stock">
             ⚡ Low stock
           </div>
+          <div class="filter-check-chip" id="chip-out-stock" onclick="toggleOutStockChip('out-stock','chip-out-stock',document.getElementById('search-input').value);updateSearchClearBtn()">
+            <input type="checkbox" id="out-stock">
+            🚫 Out of stock
+          </div>
           <button class="filter-clear-btn" id="search-clear-filters-btn" onclick="clearAllSearchFilters()">✕ Clear all</button>
         </div>
 
@@ -2058,17 +2086,18 @@
           <div class="topbar-title" id="add-title">Add new model</div>
           <div class="topbar-sub">Fill in the details below</div>
         </div>
+        <button class="topbar-action-btn" id="clear-fields-btn" onclick="promptClearFields()" style="display:none;background:rgba(239,68,68,.18);color:#fca5a5;font-size:12px;padding:5px 10px">🗑 Clear</button>
       </div>
       <div class="scroll-area">
         <div class="form-card">
           <div class="field">
             <label>Phone model name</label>
-            <input type="text" id="f-model" placeholder="e.g. iPhone 15 Pro Max" autocorrect="off" />
+            <input type="text" id="f-model" placeholder="e.g. iPhone 15 Pro Max" autocorrect="off" oninput="updateClearFieldsBtn()" />
           </div>
           <div class="field">
             <label>Shelf</label>
             <div class="select-wrap">
-              <select id="f-shelf" onchange="document.getElementById('f-row').value='';document.getElementById('f-col').value='';onShelfChange(this.value)">
+              <select id="f-shelf" onchange="updateClearFieldsBtn();onShelfChange(this.value)">
                 <option value="">Select shelf…</option>
                 <optgroup label="Ground Floor (Downstairs)">
                   <option value="Shelf 1|Ground Floor">Shelf 1 — Ground Floor</option>
@@ -2088,7 +2117,7 @@
             <div class="field">
               <label>Row</label>
               <div class="select-wrap">
-                <select id="f-row" onchange="onRowChange(this.value)">
+                <select id="f-row" onchange="updateClearFieldsBtn();onRowChange(this.value)">
                   <option value="">Row…</option>
                   <option value="Row 1">Row 1</option>
                   <option value="Row 2">Row 2</option>
@@ -2121,7 +2150,7 @@
             <div class="field">
               <label>Column</label>
               <div class="select-wrap">
-                <select id="f-col">
+                <select id="f-col" onchange="updateClearFieldsBtn()">
                   <option value="">Col…</option>
                   <option value="Col 1">Col 1</option>
                   <option value="Col 2">Col 2</option>
@@ -2157,19 +2186,19 @@
             <div class="used-slots-hint" id="used-slots-hint"></div>
           </div>
 
-          <div class="field" style="margin-bottom:0;margin-top:14px">
+          <div class="field" style="margin-bottom:0">
             <label>Stock quantity</label>
-            <input type="number" id="f-stock" placeholder="e.g. 12" min="0" inputmode="numeric" />
+            <input type="number" id="f-stock" placeholder="e.g. 12" min="0" inputmode="numeric" oninput="updateClearFieldsBtn()" />
           </div>
         </div>
 
         <!-- SHARED SLOT TOGGLE -->
         <label class="share-toggle-row" id="share-slot-toggle" for="f-share-slot">
-          <input type="checkbox" id="f-share-slot" onchange="onShareToggle(this.checked);this.closest('.share-toggle-row').classList.toggle('toggled',this.checked)" />
+          <input type="checkbox" id="f-share-slot" onchange="onShareToggleIntent(this)" />
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
             <div class="share-toggle-label">📦 Share this slot with other models</div>
-            <div class="share-toggle-sub">Add multiple models to the same shelf · row · column. This cannot be changed after saving.</div>
+            <div class="share-toggle-sub" id="share-toggle-sub-text">Add multiple models to the same shelf · row · column. This cannot be changed after saving.</div>
           </div>
         </label>
 
@@ -2225,6 +2254,10 @@
           <div class="filter-check-chip" id="chip-inv-low-stock" onclick="toggleLowStockChip('inv-low-stock','chip-inv-low-stock',null);updateInvClearBtn()">
             <input type="checkbox" id="inv-low-stock">
             ⚡ Low stock
+          </div>
+          <div class="filter-check-chip" id="chip-inv-out-stock" onclick="toggleOutStockChip('inv-out-stock','chip-inv-out-stock',null);updateInvClearBtn()">
+            <input type="checkbox" id="inv-out-stock">
+            🚫 Out of stock
           </div>
           <button class="filter-clear-btn" id="inv-clear-filters-btn" onclick="clearAllInvFilters()">✕ Clear all</button>
         </div>
@@ -2398,6 +2431,12 @@
 
     function showTab(id) {
 
+      // Clear "recently used" slot markers when leaving the Add screen
+      const _currentScreenId = document.querySelector('.screen.active')?.id;
+      if (_currentScreenId === 's-add' && id !== 's-add') {
+        clearRecentSlots();
+      }
+
       if (id === "s-users") loadUsers();
 
       if (id === "s-account") {
@@ -2412,19 +2451,13 @@
 
       // If we're ALREADY on s-add in edit mode and user taps Add nav again, reset to fresh add
       const currentScreenId = document.querySelector('.screen.active')?.id;
-
-      // When navigating away from s-add, clear the session recent-slot memory
-      // so that on re-entry those slots show as plain "Used" (amber) not "Recently Used" (blue).
-      if (currentScreenId === 's-add' && id !== 's-add') {
-        clearRecentSlots();
-      }
       if (id === 's-add' && editingModel && currentScreenId === 's-add') {
         clearForm();
         recentAdded = [];
         renderRecentAdded();
         const addEl = document.getElementById('s-add');
         addEl.classList.remove('slide-in');
-        void addEl.offsetWidth; // force reflow to restart animation
+        void addEl.offsetWidth;
         addEl.classList.add('slide-in');
         setTimeout(() => addEl.classList.remove('slide-in'), 300);
         document.querySelectorAll('.nav-btn').forEach((b) => {
@@ -2434,8 +2467,12 @@
         return;
       }
 
-      // Only clear form when navigating TO s-add fresh (not already in edit mode from editEntry)
-      if (id === 's-add' && !editingModel) {
+      // Do NOT auto-clear the form when returning to s-add in Add mode —
+      // the user may have a draft in progress (e.g. they left to check Search).
+      // The Clear fields button lets them wipe it manually if needed.
+      // Only clear when switching FROM edit mode to a fresh Add via the nav.
+      if (id === 's-add' && editingModel) {
+        // coming from editEntry to a fresh add — clear edit state
         clearForm();
         recentAdded = [];
         renderRecentAdded();
@@ -2511,9 +2548,6 @@
       const current = document.querySelector('.screen.active');
       const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
       const next = document.getElementById(target);
-
-      // If leaving the Add screen via back, clear session recent-slot memory
-      if (current && current.id === 's-add') clearRecentSlots();
 
       if (!current || !next || current === next) return;
 
@@ -2607,6 +2641,7 @@
       const sortBy = document.getElementById('sort-by')?.value || 'az';
       const floor = document.getElementById('floor-filter')?.value || '';
       const lowStock = document.getElementById('low-stock')?.checked;
+      const outStock = document.getElementById('out-stock')?.checked;
 
       let results = [...db];
 
@@ -2620,7 +2655,10 @@
         results = results.filter(e => e.shelf.includes(floor) && e.shelf.split('|')[0] !== 'Flip Cover');
       }
 
-      if (lowStock) {
+      // Out of stock takes priority; low stock shows ≤5 but excludes 0 when both are active
+      if (outStock) {
+        results = results.filter(e => parseInt(e.stock) === 0);
+      } else if (lowStock) {
         results = results.filter(e => parseInt(e.stock) <= 5);
       }
 
@@ -2637,7 +2675,15 @@
         return;
       }
 
-      el.innerHTML = groupByLocation(results).map(group => {
+      // Group by location AFTER slicing so we don't cut a shared slot in half.
+      // Then re-expand to individual models, re-group, and ensure every sibling
+      // of any model that made it through the limit also appears.
+      const slicedKeys = new Set(results.map(e => locationKey(e)));
+      // Pull in any db entries that share a location key with sliced results
+      // (siblings that were beyond the limit boundary)
+      const fullResults = db.filter(e => slicedKeys.has(locationKey(e)));
+
+      el.innerHTML = groupByLocation(fullResults).map(group => {
         if (group.length === 1) return searchResultCard(group[0]);
         return searchResultGroupCard(group);
       }).join('');
@@ -2835,13 +2881,10 @@
       // Reset used-slots hint
       const hint = document.getElementById('used-slots-hint');
       if (hint) { hint.classList.remove('visible'); hint.innerHTML = ''; }
-      // Also reset any opt-used markers on row/col selects
+      // Also reset any opt-used / opt-recent markers on row/col selects
       ['f-row','f-col'].forEach(id => {
         const sel = document.getElementById(id);
-        if (sel) Array.from(sel.options).forEach(opt => {
-          opt.classList.remove('opt-used');
-          opt.textContent = opt.textContent.replace(/\s+●\s+used$/i, '').trim();
-        });
+        if (sel) resetSelectMarkers(sel);
       });
 
       // Reset shared-slot toggle and dynamic extra model rows
@@ -2854,12 +2897,52 @@
       if (list) list.innerHTML = '';
       extraModelCount = 0;
       const shareRow = document.getElementById('share-slot-toggle');
-      if (shareRow) shareRow.style.display = '';
+      if (shareRow) {
+        shareRow.style.display = '';
+        shareRow.style.pointerEvents = '';
+        shareRow.style.opacity = '';
+      }
+
+      // Reset share toggle subtitle to default
+      const subText = document.getElementById('share-toggle-sub-text');
+      if (subText) subText.textContent = 'Add multiple models to the same shelf · row · column. This cannot be changed after saving.';
 
       document.getElementById('add-title').textContent = 'Add new model';
       document.getElementById('add-logo').textContent = '➕';
       document.getElementById('add-back-btn').style.display = 'none';
       document.getElementById('edit-delete-btn').style.display = 'none';
+      // Clear button always hidden on a blank form
+      const clearBtn = document.getElementById('clear-fields-btn');
+      if (clearBtn) clearBtn.style.display = 'none';
+    }
+
+    // ── CLEAR FIELDS BUTTON (Add mode only) ──────────────────────────
+    function hasFormContent() {
+      if (editingModel) return false; // never show in edit mode
+      const model = document.getElementById('f-model')?.value.trim();
+      const shelf = document.getElementById('f-shelf')?.value;
+      const row   = document.getElementById('f-row')?.value;
+      const col   = document.getElementById('f-col')?.value;
+      const stock = document.getElementById('f-stock')?.value.trim();
+      const hasExtras = document.querySelectorAll('.extra-model-card').length > 0;
+      return !!(model || shelf || row || col || stock || hasExtras);
+    }
+
+    function updateClearFieldsBtn() {
+      const btn = document.getElementById('clear-fields-btn');
+      if (btn) btn.style.display = hasFormContent() ? '' : 'none';
+    }
+
+    function promptClearFields() {
+      document.getElementById('clear-fields-overlay').classList.add('show');
+    }
+
+    function confirmClearFields() {
+      document.getElementById('clear-fields-overlay').classList.remove('show');
+      clearForm();
+      recentAdded = [];
+      renderRecentAdded();
+      updateClearFieldsBtn();
     }
 
     let extraModelCount = 0; // tracks how many extra model rows exist
@@ -3011,19 +3094,67 @@
       hint.classList.add('visible');
     }
 
+
+
+    function onShareToggleIntent(checkbox) {
+      const turningOff = !checkbox.checked; // checkbox already flipped by browser
+
+      // Only warn when turning OFF in edit mode and there are real DB siblings
+      if (turningOff && editingModel) {
+        const primaryEntry = db.find(x => x.model === editingModel);
+        const hasSiblings = primaryEntry
+          ? db.some(x => x.model !== editingModel && locationKey(x) === locationKey(primaryEntry))
+          : false;
+
+        if (hasSiblings) {
+          // Revert the checkbox — user must confirm before we actually turn it off
+          checkbox.checked = true;
+          document.getElementById('share-off-overlay').classList.add('show');
+          return;
+        }
+      }
+
+      // No warning needed — apply immediately
+      onShareToggle(checkbox.checked);
+      checkbox.closest('.share-toggle-row').classList.toggle('toggled', checkbox.checked);
+    }
+
+    function confirmShareOff() {
+      document.getElementById('share-off-overlay').classList.remove('show');
+      const cb = document.getElementById('f-share-slot');
+      cb.checked = false;
+      cb.closest('.share-toggle-row').classList.remove('toggled');
+      onShareToggle(false);
+    }
+
+    function cancelShareOff() {
+      document.getElementById('share-off-overlay').classList.remove('show');
+      // Checkbox is already restored to true — nothing else to do
+    }
+
     function onShareToggle(checked) {
       const secB = document.getElementById('model-b-section');
       const list = document.getElementById('extra-models-list');
+      const subText = document.getElementById('share-toggle-sub-text');
       if (checked) {
         secB.classList.add('visible');
-        // Always start with one extra row
-        list.innerHTML = '';
-        extraModelCount = 0;
-        addExtraModelRow();
+        // Only seed a blank row if no rows exist yet (don't wipe pre-populated edit rows)
+        if (!list.children.length) {
+          extraModelCount = 0;
+          addExtraModelRow();
+        }
+        if (subText && editingModel) {
+          subText.textContent = 'This slot already contains multiple models. You can add more or rename existing ones — duplicates are blocked.';
+        }
       } else {
         secB.classList.remove('visible');
         list.innerHTML = '';
         extraModelCount = 0;
+        if (subText) {
+          subText.textContent = editingModel
+            ? 'Add multiple models to the same shelf · row · column. Duplicates are blocked.'
+            : 'Add multiple models to the same shelf · row · column. This cannot be changed after saving.';
+        }
       }
     }
 
@@ -3048,6 +3179,7 @@
         </div>`;
       document.getElementById('extra-models-list').appendChild(div);
       document.getElementById('f-model-extra-' + n).focus();
+      updateClearFieldsBtn();
     }
 
     function removeExtraModelRow(n) {
@@ -3060,9 +3192,11 @@
         document.getElementById('model-b-section').classList.remove('visible');
         extraModelCount = 0;
       }
+      updateClearFieldsBtn();
     }
 
-    // Collect all filled extra model rows from the form
+    // Collect all extra model rows from the form (including blank ones so
+    // validation can catch them). Each item has { model, stock, _rowEl }.
     function getExtraModels() {
       const rows = document.querySelectorAll('.extra-model-card');
       const extras = [];
@@ -3070,7 +3204,7 @@
         const id = row.id.replace('extra-row-', '');
         const model = (document.getElementById('f-model-extra-' + id)?.value || '').trim();
         const stock = Number(document.getElementById('f-stock-extra-' + id)?.value || 0);
-        if (model) extras.push({ model, stock });
+        extras.push({ model, stock, _rowEl: row });
       });
       return extras;
     }
@@ -3123,13 +3257,21 @@
       list.innerHTML = '';
       extraModelCount = 0;
 
+      // Always make the share toggle fully interactive in edit mode
+      shareRow.style.pointerEvents = '';
+      shareRow.style.opacity = '';
+      shareRow.style.display = '';
+
       if (siblings.length) {
-        // Shared slot — pre-populate all sibling rows, lock toggle visible but hidden
-        
+        // Shared slot — pre-populate all sibling rows AND allow adding more
         toggle.checked = true;
         document.getElementById('share-slot-toggle').classList.add('toggled');
         secB.classList.add('visible');
-        shareRow.style.display = 'none';
+
+        // Update subtitle to reflect edit context
+        const subText = document.getElementById('share-toggle-sub-text');
+        if (subText) subText.textContent = 'This slot already contains multiple models. You can add more or rename existing ones — duplicates are blocked.';
+
         siblings.forEach(sib => {
           extraModelCount++;
           const n = extraModelCount;
@@ -3138,6 +3280,8 @@
           const div = document.createElement('div');
           div.className = 'extra-model-card';
           div.id = 'extra-row-' + n;
+          // Mark as existing sibling so saveEntry knows its original name
+          div.dataset.originalModel = sib.model;
           div.innerHTML = `
             <div class="extra-model-number">${label}</div>
             <button class="btn-remove-model" onclick="removeExtraModelRow(${n})" title="Remove">✕</button>
@@ -3151,21 +3295,27 @@
             </div>`;
           list.appendChild(div);
         });
-        // Hide "Add another model" button — slot is locked, no new models
-        document.querySelector('#model-b-section .btn-add-model').style.display = 'none';
+        // Show "Add another model" button — allow adding new models to this slot
+        document.querySelector('#model-b-section .btn-add-model').style.display = '';
       } else {
-        // Single model — reset toggle
-        
+        // Single model — show share toggle so user can choose to share this slot
         toggle.checked = false;
         document.getElementById('share-slot-toggle').classList.remove('toggled');
         secB.classList.remove('visible');
-        shareRow.style.display = '';
+
+        // Reset subtitle to default add-mode text
+        const subText = document.getElementById('share-toggle-sub-text');
+        if (subText) subText.textContent = 'Add multiple models to the same shelf · row · column. Duplicates are blocked.';
+
         document.querySelector('#model-b-section .btn-add-model').style.display = '';
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
       document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
       document.getElementById('recent-added-wrap').style.display = 'none';
+      // Hide the clear button — it's only for Add mode
+      const clearBtn = document.getElementById('clear-fields-btn');
+      if (clearBtn) clearBtn.style.display = 'none';
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const addEl = document.getElementById('s-add');
       addEl.classList.add('active');
@@ -3183,21 +3333,29 @@
       const col        = document.getElementById('f-col').value;
       const stock      = Number(document.getElementById('f-stock').value);
       const isShared   = document.getElementById('f-share-slot').checked;
-      const extras     = isShared ? getExtraModels() : [];
+      const allExtras  = isShared ? getExtraModels() : [];
 
       if (!model || !shelfValue || !row || !col) {
         toast('Please fill all fields');
         return;
       }
 
-      // Validate extra models — all must have names
-      if (isShared && extras.length === 0) {
+      // Bug 4 fix: catch blank rows — every visible extra-model card must have a name
+      for (const ex of allExtras) {
+        if (!ex.model) { toast('Fill in all extra model names'); return; }
+      }
+
+      // Bug 2 fix: "at least one extra" check only applies in Add mode.
+      // In Edit mode the primary model alone is a valid save even if toggle is on
+      // (e.g. user added the toggle but hasn't typed a sibling yet — that's fine,
+      // we just save the primary).
+      if (!editingModel && isShared && allExtras.length === 0) {
         toast('Add at least one extra model or uncheck the toggle');
         return;
       }
-      for (const ex of extras) {
-        if (!ex.model) { toast('Fill in all extra model names'); return; }
-      }
+
+      // Extras that will actually be saved (all filled — blanks already caught above)
+      const extras = allExtras;
 
       const parts = shelfValue.split('|');
       const shelf = parts[0];
@@ -3207,12 +3365,9 @@
       const allModels = [{ model, stock }, ...extras];
 
       // ── NAME CONFLICT CHECK ───────────────────────────────────────────
-      // Build the full set of names currently occupying this slot (all siblings
-      // + the primary being edited) so they are excluded from the conflict check.
       const editingSet = new Set();
       if (editingModel) {
         editingSet.add(editingModel.trim().toLowerCase());
-        // Also exclude all siblings in this slot
         const primaryEntry = db.find(x => x.model === editingModel);
         if (primaryEntry) {
           db.filter(x => x.model !== editingModel && locationKey(x) === locationKey(primaryEntry))
@@ -3221,24 +3376,21 @@
       }
       const newNames = allModels.map(m => m.model.trim().toLowerCase());
 
-      // Check duplicates within the batch itself
+      // 1. Block duplicates WITHIN this batch
       if (new Set(newNames).size !== newNames.length) {
         toast('All model names in this slot must be different');
         return;
       }
 
+      // 2. Block any name that already exists in the DB under a DIFFERENT slot
       for (const { model: mName } of allModels) {
-        const conflict = db.find(e => {
-          if (editingSet.has(e.model.trim().toLowerCase())) return false;
-          return e.model.trim().toLowerCase() === mName.trim().toLowerCase();
-        });
+        const nameLower = mName.trim().toLowerCase();
+        if (editingSet.has(nameLower)) continue;
+        const conflict = db.find(e => e.model.trim().toLowerCase() === nameLower);
         if (conflict) { toast(`"${mName}" already exists in inventory`); return; }
       }
 
       // ── SLOT LOCK CHECK ───────────────────────────────────────────────
-      // Once a slot has any models in it, it is permanently locked.
-      // New entries cannot be added to it at all — not even with the toggle.
-      // (Editing existing occupants is fine; this block only fires on ADD.)
       if (!editingModel) {
         const occupants = db.filter(e =>
           e.shelf.trim().toLowerCase() === shelfValue.trim().toLowerCase() &&
@@ -3257,32 +3409,21 @@
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
       const saveOne = async (mName, mStock, origName) => {
-        const payload = editingModel
-          ? {
-              action: 'updateInventory',
+        const payload = origName
+          ? { action: 'updateInventory',
               originalModel: origName,
               originalShelf: shelf, originalRow: row, originalCol: col,
-              model: mName, shelf, row, col, stock: mStock, floor
-            }
-          : {
-              action: 'addInventory',
-              model: mName, shelf, row, col, stock: mStock, floor
-            };
+              model: mName, shelf, row, col, stock: mStock, floor }
+          : { action: 'addInventory',
+              model: mName, shelf, row, col, stock: mStock, floor };
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         return res.json();
       };
 
-      // In edit mode, grab all siblings from db that are not the primary model
-      // for 3+ slots, we grab all siblings from db that are not the primary)
-      let siblingOriginals = [];
-      if (editingModel) {
-        siblingOriginals = db
-          .filter(e => e.model !== editingModel && locationKey(e) === locationKey(db.find(x => x.model === editingModel)))
-          .map(e => e.model);
-      }
+      const primaryOrigName = editingModel || null;
 
       // Save primary model
-      const r1 = await saveOne(model, stock, editingModel);
+      const r1 = await saveOne(model, stock, primaryOrigName);
       if (!r1.success) {
         toast('Save failed');
         isSaving = false;
@@ -3290,15 +3431,40 @@
         return;
       }
 
-      // Save extra models
+      // Save / update extra models
       for (let i = 0; i < extras.length; i++) {
-        const origName = siblingOriginals[i] || null;
-        const action   = origName ? 'updateInventory' : 'addInventory';
-        const payload  = origName
-          ? { action, originalModel: origName, originalShelf: shelf, originalRow: row, originalCol: col,
+        const origNameForExtra = extras[i]._rowEl?.dataset?.originalModel || null;
+        const payload = origNameForExtra
+          ? { action: 'updateInventory', originalModel: origNameForExtra,
+              originalShelf: shelf, originalRow: row, originalCol: col,
               model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor }
-          : { action, model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
+          : { action: 'addInventory',
+              model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      }
+
+      // Bug 3 fix: in Edit mode, if the user removed siblings (toggle turned OFF,
+      // or individual rows removed), delete any DB sibling that is no longer
+      // represented in the extras list.
+      if (editingModel) {
+        const primaryEntry = db.find(x => x.model === editingModel);
+        if (primaryEntry) {
+          const existingSiblings = db.filter(x =>
+            x.model !== editingModel && locationKey(x) === locationKey(primaryEntry)
+          );
+          const keptOrigNames = new Set(
+            extras.map(ex => ex._rowEl?.dataset?.originalModel).filter(Boolean)
+          );
+          for (const sib of existingSiblings) {
+            if (!keptOrigNames.has(sib.model)) {
+              // This sibling was removed from the form — delete it from the DB
+              await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'deleteInventory', model: sib.model })
+              });
+            }
+          }
+        }
       }
 
       toast(editingModel ? 'Inventory updated' : 'Inventory added');
@@ -3312,12 +3478,9 @@
         showTab(originScreen || 's-search');
         originScreen = 's-search';
       } else {
-        // Register this slot as recently used for the current Add-screen session
         registerRecentSlot(shelfValue, row, col);
         allModels.forEach(m => recentAdded.unshift(m.model));
         renderRecentAdded();
-        // Re-run shelf change so the newly saved row/col show as "Recently Used"
-        onShelfChange(shelfValue);
         document.getElementById('f-model').focus();
       }
     }
@@ -3418,6 +3581,7 @@
       const sortBy = document.getElementById('inv-sort-by')?.value || 'az';
       const floorFilter = document.getElementById('inv-floor-filter')?.value || '';
       const onlyLowStock = document.getElementById('inv-low-stock')?.checked || false;
+      const onlyOutStock = document.getElementById('inv-out-stock')?.checked || false;
 
       // Stats always from full db
       const total = db.length;
@@ -3432,7 +3596,12 @@
       } else if (floorFilter) {
         filtered = filtered.filter(e => e.shelf.includes(floorFilter) && e.shelf.split('|')[0] !== 'Flip Cover');
       }
-      if (onlyLowStock) filtered = filtered.filter(e => parseInt(e.stock) <= 5);
+      // Out of stock takes priority; low stock shows ≤5 but excludes 0 when both are active
+      if (onlyOutStock) {
+        filtered = filtered.filter(e => parseInt(e.stock) === 0);
+      } else if (onlyLowStock) {
+        filtered = filtered.filter(e => parseInt(e.stock) <= 5);
+      }
 
       // Sort
       if (sortBy === 'az') filtered.sort((a, b) => a.model.localeCompare(b.model));
@@ -3440,7 +3609,7 @@
       else if (sortBy === 'stock-desc') filtered.sort((a, b) => (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0));
       else if (sortBy === 'stock-asc') filtered.sort((a, b) => (parseInt(a.stock) || 0) - (parseInt(b.stock) || 0));
 
-      const isFiltered = q || floorFilter || onlyLowStock || sortBy !== 'az';
+      const isFiltered = q || floorFilter || onlyLowStock || onlyOutStock || sortBy !== 'az';
       if (sub) sub.textContent = isFiltered ? `${filtered.length} of ${total} models` : `${total} models tracked`;
 
       const makeItem = e => {
@@ -3487,7 +3656,7 @@
         </div>`;
       };
 
-      if (!q && (sortBy === 'az' || sortBy === 'za') && !onlyLowStock) {
+      if (!q && (sortBy === 'az' || sortBy === 'za') && !onlyLowStock && !onlyOutStock) {
         // Classic grouped view
         const ground    = filtered.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
         const upper     = filtered.filter(e => e.shelf.includes('1st Floor')    && e.shelf.split('|')[0] !== 'Flip Cover');
@@ -4101,13 +4270,27 @@
       }
     }
 
+    function toggleOutStockChip(checkId, chipId, searchQuery) {
+      const cb = document.getElementById(checkId);
+      const chip = document.getElementById(chipId);
+      if (!cb || !chip) return;
+      cb.checked = !cb.checked;
+      chip.classList.toggle('checked', cb.checked);
+      if (searchQuery !== null) {
+        doSearch(searchQuery);
+      } else {
+        renderInventory();
+      }
+    }
+
     // ── CLEAR ALL FILTERS ─────────────────────────────────────────────
     function updateSearchClearBtn() {
       const anyActive =
         document.getElementById('result-limit')?.value !== '10' ||
         document.getElementById('sort-by')?.value !== 'az' ||
         document.getElementById('floor-filter')?.value !== '' ||
-        document.getElementById('low-stock')?.checked;
+        document.getElementById('low-stock')?.checked ||
+        document.getElementById('out-stock')?.checked;
       document.getElementById('search-clear-filters-btn')?.classList.toggle('visible', !!anyActive);
     }
 
@@ -4117,15 +4300,18 @@
       const sort = document.getElementById('sort-by');
       const floor = document.getElementById('floor-filter');
       const lowStock = document.getElementById('low-stock');
+      const outStock = document.getElementById('out-stock');
       if (limit) limit.value = '10';
       if (sort) sort.value = 'az';
       if (floor) floor.value = '';
       if (lowStock) lowStock.checked = false;
+      if (outStock) outStock.checked = false;
       // Reset chip styles
       updateChipState('chip-limit', 'result-limit', '10');
       updateChipState('chip-sort', 'sort-by', 'az');
       updateChipState('chip-floor', 'floor-filter', '');
       document.getElementById('chip-low-stock')?.classList.remove('checked');
+      document.getElementById('chip-out-stock')?.classList.remove('checked');
       updateSearchClearBtn();
       doSearch(q);
     }
@@ -4134,7 +4320,8 @@
       const anyActive =
         document.getElementById('inv-sort-by')?.value !== 'az' ||
         document.getElementById('inv-floor-filter')?.value !== '' ||
-        document.getElementById('inv-low-stock')?.checked;
+        document.getElementById('inv-low-stock')?.checked ||
+        document.getElementById('inv-out-stock')?.checked;
       document.getElementById('inv-clear-filters-btn')?.classList.toggle('visible', !!anyActive);
     }
 
@@ -4142,12 +4329,15 @@
       const sort = document.getElementById('inv-sort-by');
       const floor = document.getElementById('inv-floor-filter');
       const lowStock = document.getElementById('inv-low-stock');
+      const outStock = document.getElementById('inv-out-stock');
       if (sort) sort.value = 'az';
       if (floor) floor.value = '';
       if (lowStock) lowStock.checked = false;
+      if (outStock) outStock.checked = false;
       updateChipState('chip-inv-sort', 'inv-sort-by', 'az');
       updateChipState('chip-inv-floor', 'inv-floor-filter', '');
       document.getElementById('chip-inv-low-stock')?.classList.remove('checked');
+      document.getElementById('chip-inv-out-stock')?.classList.remove('checked');
       updateInvClearBtn();
       renderInventory();
     }
