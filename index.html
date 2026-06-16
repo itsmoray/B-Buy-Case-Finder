@@ -334,7 +334,7 @@
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 14px 14px 20px;
+      padding: 16px 14px 24px;
       min-height: 0;
     }
 
@@ -347,7 +347,7 @@
       margin: 0 14px max(14px, env(safe-area-inset-bottom));
       padding: 6px;
       border-radius: 28px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .12), 0 2px 6px rgba(0, 0, 0, .06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .14), 0 2px 8px rgba(0, 0, 0, .08);
     }
 
     .nav-btn {
@@ -386,6 +386,16 @@
     .nav-btn.active .nav-icon {
       background: var(--blue-light);
       box-shadow: 0 3px 8px rgba(26, 86, 219, .22);
+    }
+
+    .nav-btn.active::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--blue);
+      margin-top: 2px;
     }
 
     /* STICKY SEARCH HEADER */
@@ -646,10 +656,10 @@
     .form-card {
       background: var(--surface);
       border-radius: var(--radius);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border2);
       padding: 16px;
       margin-bottom: 14px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 2px 10px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
     }
 
     .field {
@@ -662,17 +672,19 @@
 
     .field label {
       display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text2);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text3);
       margin-bottom: 6px;
-      letter-spacing: .01em;
+      letter-spacing: .06em;
+      text-transform: uppercase;
     }
 
     .field input,
     .field select {
       width: 100%;
-      padding: 11px 14px;
+      padding: 14px 14px;
+      min-height: 48px;
       border-radius: var(--radius-sm);
       border: 1.5px solid var(--border2);
       background: var(--surface);
@@ -759,16 +771,19 @@
 
     /* INVENTORY */
     .floor-heading {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .09em;
       text-transform: uppercase;
-      color: var(--blue);
-      margin: 18px 0 8px;
+      color: #475569;
+      margin: 20px 0 8px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding-left: 2px;
+      gap: 8px;
+      padding: 7px 12px 7px 14px;
+      background: #f1f5f9;
+      border-left: 3px solid #94a3b8;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     }
 
     .floor-heading:first-child {
@@ -778,16 +793,17 @@
     .inv-card {
       background: var(--surface);
       border-radius: var(--radius);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border2);
       overflow: hidden;
       margin-bottom: 10px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 3px 12px rgba(0,0,0,.09), 0 1px 4px rgba(0,0,0,.06);
     }
 
     .inv-item {
       display: flex;
       align-items: center;
-      padding: 12px 14px;
+      padding: 14px 14px;
+      min-height: 56px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background .1s;
@@ -815,7 +831,7 @@
     }
 
     .inv-name {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text);
       white-space: nowrap;
@@ -825,7 +841,7 @@
 
     .inv-loc {
       font-size: 12px;
-      color: var(--text2);
+      color: var(--text3);
       margin-top: 2px;
     }
 
@@ -840,23 +856,42 @@
     .stat-card {
       background: var(--surface);
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      padding: 12px;
+      border: 1.5px solid var(--border);
+      padding: 14px 12px;
       text-align: center;
-      box-shadow: var(--shadow);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+    }
+
+    .stat-card.stat-low {
+      background: var(--surface);
+      border-color: var(--border);
+      border-top: 3px solid #f59e0b;
+    }
+
+    .stat-card.stat-out {
+      background: var(--surface);
+      border-color: var(--border);
+      border-top: 3px solid #ef4444;
     }
 
     .stat-val {
-      font-size: 22px;
-      font-weight: 700;
+      font-size: 32px;
+      font-weight: 800;
       color: var(--text);
       line-height: 1;
+      letter-spacing: -1px;
     }
 
+    .stat-card.stat-low .stat-val { color: var(--amber); }
+    .stat-card.stat-out .stat-val { color: var(--red); }
+
     .stat-lbl {
-      font-size: 11px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
       color: var(--text2);
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     /* EMPTY STATE */
@@ -866,9 +901,9 @@
     }
 
     .empty-icon {
-      font-size: 52px;
-      margin-bottom: 12px;
-      opacity: .25;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
     }
 
     .empty h3 {
@@ -971,8 +1006,8 @@
     }
 
     .stepper-btn {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: none;
       font-size: 18px;
@@ -1024,11 +1059,44 @@
     }
 
     .share-toggle-row input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--blue-dark);
+      display: none;
+    }
+
+    .share-toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
       flex-shrink: 0;
-      cursor: pointer;
+    }
+
+    .share-toggle-switch .track {
+      position: absolute;
+      inset: 0;
+      border-radius: 13px;
+      background: var(--border2);
+      transition: background .2s;
+    }
+
+    .share-toggle-switch .thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      transition: transform .2s;
+    }
+
+    #f-share-slot:checked ~ * .track,
+    .share-toggle-row.toggled .track {
+      background: var(--blue);
+    }
+
+    #f-share-slot:checked ~ * .thumb,
+    .share-toggle-row.toggled .thumb {
+      transform: translateX(18px);
     }
 
     .share-toggle-label {
@@ -1158,25 +1226,36 @@
       margin-bottom: 3px;
     }
 
-    /* Inventory list: wrap items that share a slot in a highlighted group */
     .inv-loc-group {
       margin: 8px 10px;
       border-radius: var(--radius-sm);
       background: var(--blue-light);
       border: 1px solid var(--blue-mid);
-      overflow: hidden;
+      overflow: visible;
+      padding: 0 6px 6px;
     }
 
     .inv-loc-group-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .04em;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .07em;
+      text-transform: uppercase;
       color: var(--blue-dark);
-      padding: 8px 12px 4px;
+      padding: 7px 6px 6px;
+      border-bottom: none;
+      margin-bottom: 0;
     }
 
     .inv-loc-group .inv-item {
       background: var(--surface);
+      border-radius: var(--radius-sm);
+      margin-top: 5px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .inv-loc-group .inv-item:last-child {
+      border-bottom: 1px solid var(--border);
     }
 
     /* Detail screen: sibling models stored in the same slot */
@@ -1240,6 +1319,20 @@
     .filter-chip {
       position: relative;
       flex-shrink: 0;
+    }
+
+    .filter-chip .chip-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .filter-chip.has-icon select {
+      padding-left: 26px;
     }
 
     .filter-chip select {
@@ -1670,15 +1763,30 @@
         overflow: visible;
       }
 
+      /* Shared slot groups span both columns so they're not squeezed */
+      .inv-loc-group {
+        grid-column: 1 / -1;
+        margin: 0;
+      }
+
       .inv-item {
-        border: 1px solid var(--border);
+        border: 1.5px solid var(--border2);
         border-radius: var(--radius);
         background: var(--surface);
-        box-shadow: var(--shadow);
+        box-shadow: 0 3px 10px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
       }
 
       .inv-item:last-child {
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1.5px solid var(--border2);
+      }
+
+      /* Stat cards get more breathing room on desktop */
+      .stat-card {
+        padding: 18px 16px;
+      }
+
+      .stat-val {
+        font-size: 36px;
       }
     }
 
@@ -1833,7 +1941,7 @@
       </div>
       <div class="search-sticky-header">
         <div class="filter-row">
-          <div class="filter-chip" id="chip-limit">
+          <div class="filter-chip has-icon" id="chip-limit"><span class="chip-icon">📊</span>
             <select id="result-limit" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-limit','result-limit','10');updateSearchClearBtn()">
               <option value="10">Show 10</option>
               <option value="20">Show 20</option>
@@ -1841,13 +1949,13 @@
               <option value="50">Show 50</option>
             </select>
           </div>
-          <div class="filter-chip" id="chip-sort">
+          <div class="filter-chip has-icon" id="chip-sort"><span class="chip-icon">↕</span>
             <select id="sort-by" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-sort','sort-by','az');updateSearchClearBtn()">
               <option value="az">A–Z</option>
               <option value="stock">Stock ↓</option>
             </select>
           </div>
-          <div class="filter-chip" id="chip-floor">
+          <div class="filter-chip has-icon" id="chip-floor"><span class="chip-icon">🏢</span>
             <select id="floor-filter" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-floor','floor-filter','');updateSearchClearBtn()">
               <option value="">All Floors</option>
               <option value="Ground Floor">Ground Floor</option>
@@ -1872,7 +1980,14 @@
       <div class="scroll-area">
         <div id="search-results">
           <div class="empty">
-            <div class="empty-icon">🔍</div>
+            <div class="empty-icon">
+              <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="20" stroke="var(--border2)" stroke-width="3" fill="var(--blue-light)"/>
+                <circle cx="32" cy="32" r="12" stroke="var(--blue)" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+                <line x1="47" y1="47" x2="60" y2="60" stroke="var(--border2)" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="4" fill="var(--blue)" opacity=".35"/>
+              </svg>
+            </div>
             <h3>Search any phone model</h3>
             <p>Type a model name above to find its case, shelf location, and stock.</p>
           </div>
@@ -1984,7 +2099,8 @@
 
         <!-- SHARED SLOT TOGGLE -->
         <label class="share-toggle-row" id="share-slot-toggle" for="f-share-slot">
-          <input type="checkbox" id="f-share-slot" onchange="onShareToggle(this.checked)" />
+          <input type="checkbox" id="f-share-slot" onchange="onShareToggle(this.checked);this.closest('.share-toggle-row').classList.toggle('toggled',this.checked)" />
+          <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
             <div class="share-toggle-label">📦 Share this slot with other models</div>
             <div class="share-toggle-sub">Add multiple models to the same shelf · row · column. This cannot be changed after saving.</div>
@@ -2024,7 +2140,7 @@
       </div>
       <div class="search-sticky-header">
         <div class="filter-row">
-          <div class="filter-chip" id="chip-inv-sort">
+          <div class="filter-chip has-icon" id="chip-inv-sort"><span class="chip-icon">↕</span>
             <select id="inv-sort-by" onchange="renderInventory();updateChipState('chip-inv-sort','inv-sort-by','az');updateInvClearBtn()">
               <option value="az">A–Z</option>
               <option value="za">Z–A</option>
@@ -2032,7 +2148,7 @@
               <option value="stock-asc">Stock ↑</option>
             </select>
           </div>
-          <div class="filter-chip" id="chip-inv-floor">
+          <div class="filter-chip has-icon" id="chip-inv-floor"><span class="chip-icon">🏢</span>
             <select id="inv-floor-filter" onchange="renderInventory();updateChipState('chip-inv-floor','inv-floor-filter','');updateInvClearBtn()">
               <option value="">All Floors</option>
               <option value="Ground Floor">Ground Floor</option>
@@ -2644,6 +2760,7 @@
       // Reset shared-slot toggle and dynamic extra model rows
       const toggle = document.getElementById('f-share-slot');
       if (toggle) toggle.checked = false;
+        document.getElementById('share-slot-toggle').classList.remove('toggled');
       const secB = document.getElementById('model-b-section');
       if (secB) secB.classList.remove('visible');
       const list = document.getElementById('extra-models-list');
@@ -2705,6 +2822,7 @@
       // If no rows left, uncheck and hide the section
       if (!document.getElementById('extra-models-list').children.length) {
         document.getElementById('f-share-slot').checked = false;
+        document.getElementById('share-slot-toggle').classList.remove('toggled');
         document.getElementById('model-b-section').classList.remove('visible');
         extraModelCount = 0;
       }
@@ -2773,6 +2891,7 @@
         // Shared slot — pre-populate all sibling rows, lock toggle visible but hidden
         
         toggle.checked = true;
+        document.getElementById('share-slot-toggle').classList.add('toggled');
         secB.classList.add('visible');
         shareRow.style.display = 'none';
         siblings.forEach(sib => {
@@ -2802,6 +2921,7 @@
         // Single model — reset toggle
         
         toggle.checked = false;
+        document.getElementById('share-slot-toggle').classList.remove('toggled');
         secB.classList.remove('visible');
         shareRow.style.display = '';
         document.querySelector('#model-b-section .btn-add-model').style.display = '';
@@ -3098,7 +3218,7 @@
             <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
             <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
           </div>
-          <span style="color:var(--text3);font-size:18px;cursor:pointer" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
+          <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
         </div>
       </div>`;
       };
@@ -3106,8 +3226,8 @@
       let html = `
     <div class="stats-bar">
       <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Total</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--amber)">${lowStockCount}</div><div class="stat-lbl">Low stock</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--red)">${outStockCount}</div><div class="stat-lbl">Out of stock</div></div>
+      <div class="stat-card${lowStockCount > 0 ? ' stat-low' : ''}"><div class="stat-val" style="color:var(--amber)">${lowStockCount}</div><div class="stat-lbl">Low stock</div></div>
+      <div class="stat-card${outStockCount > 0 ? ' stat-out' : ''}"><div class="stat-val" style="color:var(--red)">${outStockCount}</div><div class="stat-lbl">Out of stock</div></div>
     </div>`;
 
       if (!filtered.length) {
