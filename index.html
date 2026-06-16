@@ -2721,6 +2721,39 @@
       t._tid = setTimeout(() => t.classList.remove('show'), 2400);
     }
 
+    // ── FUZZY MATCH HELPER ────────────────────────────────────────────
+    // Returns a relevance score (lower = better match) or Infinity if no match.
+    // Handles cases like "Note6" matching "Note 6" by collapsing spaces.
+    function fuzzyMatch(model, query) {
+      const m = model.toLowerCase();
+      const q = query.trim().toLowerCase();
+      if (!q) return 0;
+
+      // 0: exact match
+      if (m === q) return 0;
+
+      // 1: starts with query (exact chars)
+      if (m.startsWith(q)) return 1;
+
+      // 2: contains query (exact chars) — original behaviour
+      if (m.includes(q)) return 2;
+
+      // 3: space-collapsed match — strip all spaces from both and check contains
+      // e.g. "note6" matches "note 6 pro" when both are collapsed to "note6pro"
+      const mNoSpace = m.replace(/\s+/g, '');
+      const qNoSpace = q.replace(/\s+/g, '');
+      if (mNoSpace.includes(qNoSpace)) return 3;
+      if (mNoSpace.startsWith(qNoSpace)) return 3;
+
+      // 4: every word/token in the query appears somewhere in the model name
+      // e.g. ["note", "6", "pro"] all exist in "Redmi Note 6 Pro"
+      const qTokens = q.split(/\s+/).filter(Boolean);
+      if (qTokens.length > 1 && qTokens.every(tok => m.includes(tok))) return 4;
+
+      // No match
+      return Infinity;
+    }
+
     // ── SEARCH ────────────────────────────────────────────────────────
 
     function onSearchInput(val) {
@@ -2748,7 +2781,7 @@
       let results = [...db];
 
       if (q.trim()) {
-        results = results.filter(e => e.model.toLowerCase().includes(q.toLowerCase()));
+        results = results.filter(e => fuzzyMatch(e.model, q) < Infinity);
       }
 
       if (floor === 'Flip Cover') {
@@ -2765,12 +2798,8 @@
       }
 
       if (q.trim()) {
-        const qLow = q.trim().toLowerCase();
         function relevance(model) {
-          const m = model.toLowerCase();
-          if (m === qLow) return 0;           // exact match
-          if (m.startsWith(qLow)) return 1;   // starts with
-          return 2;                            // contains
+          return fuzzyMatch(model, q.trim());
         }
         if (sortBy === 'az') {
           results.sort((a, b) => {
@@ -2809,12 +2838,8 @@
       // When a search query is active, sort groups by the best relevance score
       // of any model inside the group, then reorder models within each group too.
       if (q.trim()) {
-        const qLow = q.trim().toLowerCase();
         function groupRelevance(model) {
-          const m = model.toLowerCase();
-          if (m === qLow) return 0;
-          if (m.startsWith(qLow)) return 1;
-          return 2;
+          return fuzzyMatch(model, q.trim());
         }
         // Sort models within each group so the best match rises to the top
         groups.forEach(group => {
@@ -3850,7 +3875,7 @@
 
       // Apply filters
       let filtered = [...db];
-      if (q) filtered = filtered.filter(e => e.model.toLowerCase().includes(q));
+      if (q) filtered = filtered.filter(e => fuzzyMatch(e.model, q) < Infinity);
       if (floorFilter === 'Flip Cover') {
         filtered = filtered.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
       } else if (floorFilter) {
