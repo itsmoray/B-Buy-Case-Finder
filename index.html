@@ -1819,6 +1819,102 @@
       }
     }
 
+    /* MODEL AUTOCOMPLETE DROPDOWN */
+    .model-autocomplete-wrap {
+      position: relative;
+    }
+
+    .model-suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1.5px solid var(--blue);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 8px 24px rgba(0,0,0,.14);
+      z-index: 300;
+      max-height: 220px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .model-suggestions.open {
+      display: block;
+    }
+
+    .model-suggest-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+    }
+
+    .model-suggest-item:last-child {
+      border-bottom: none;
+    }
+
+    .model-suggest-item:active,
+    .model-suggest-item.highlighted {
+      background: var(--blue-light);
+    }
+
+    .model-suggest-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .model-suggest-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .model-suggest-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .model-suggest-name mark {
+      background: transparent;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .model-suggest-loc {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .model-suggest-header {
+      padding: 6px 14px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text3);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
     /* LARGE DESKTOP — extra column where there's room for it */
     @media (min-width: 1440px) {
       #app {
@@ -2092,7 +2188,13 @@
         <div class="form-card">
           <div class="field">
             <label>Phone model name</label>
-            <input type="text" id="f-model" placeholder="e.g. iPhone 15 Pro Max" autocorrect="off" oninput="updateClearFieldsBtn()" />
+            <div class="model-autocomplete-wrap">
+              <input type="text" id="f-model" placeholder="e.g. iPhone 15 Pro Max" autocorrect="off" autocomplete="off" spellcheck="false"
+                oninput="updateClearFieldsBtn();onModelInput(this.value,'model-suggestions')"
+                onkeydown="onModelKeydown(event,'model-suggestions',this)"
+                onblur="scheduleCloseSuggestions('model-suggestions')" />
+              <div class="model-suggestions" id="model-suggestions"></div>
+            </div>
           </div>
           <div class="field">
             <label>Shelf</label>
@@ -2662,7 +2764,26 @@
         results = results.filter(e => parseInt(e.stock) <= 5);
       }
 
-      if (sortBy === 'az') {
+      if (q.trim()) {
+        const qLow = q.trim().toLowerCase();
+        function relevance(model) {
+          const m = model.toLowerCase();
+          if (m === qLow) return 0;           // exact match
+          if (m.startsWith(qLow)) return 1;   // starts with
+          return 2;                            // contains
+        }
+        if (sortBy === 'az') {
+          results.sort((a, b) => {
+            const r = relevance(a.model) - relevance(b.model);
+            return r !== 0 ? r : a.model.localeCompare(b.model);
+          });
+        } else {
+          results.sort((a, b) => {
+            const r = relevance(a.model) - relevance(b.model);
+            return r !== 0 ? r : (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0);
+          });
+        }
+      } else if (sortBy === 'az') {
         results.sort((a, b) => a.model.localeCompare(b.model));
       } else {
         results.sort((a, b) => (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0));
@@ -2683,7 +2804,27 @@
       // (siblings that were beyond the limit boundary)
       const fullResults = db.filter(e => slicedKeys.has(locationKey(e)));
 
-      el.innerHTML = groupByLocation(fullResults).map(group => {
+      const groups = groupByLocation(fullResults);
+
+      // When a search query is active, sort groups by the best relevance score
+      // of any model inside the group, then reorder models within each group too.
+      if (q.trim()) {
+        const qLow = q.trim().toLowerCase();
+        function groupRelevance(model) {
+          const m = model.toLowerCase();
+          if (m === qLow) return 0;
+          if (m.startsWith(qLow)) return 1;
+          return 2;
+        }
+        // Sort models within each group so the best match rises to the top
+        groups.forEach(group => {
+          group.sort((a, b) => groupRelevance(a.model) - groupRelevance(b.model));
+        });
+        // Sort the groups themselves by their best-matching model
+        groups.sort((a, b) => groupRelevance(a[0].model) - groupRelevance(b[0].model));
+      }
+
+      el.innerHTML = groups.map(group => {
         if (group.length === 1) return searchResultCard(group[0]);
         return searchResultGroupCard(group);
       }).join('');
@@ -2871,7 +3012,7 @@
     // ── ADD / EDIT ────────────────────────────────────────────────────
     function clearForm() {
       editingModel = null;
-      
+      document.querySelectorAll('.model-suggestions').forEach(el => el.classList.remove('open'));
       document.getElementById('f-model').value = '';
       document.getElementById('f-shelf').value = '';
       document.getElementById('f-row').value = '';
@@ -2926,6 +3067,113 @@
       const stock = document.getElementById('f-stock')?.value.trim();
       const hasExtras = document.querySelectorAll('.extra-model-card').length > 0;
       return !!(model || shelf || row || col || stock || hasExtras);
+    }
+
+    // ── MODEL NAME AUTOCOMPLETE ───────────────────────────────────────
+    let suggestHighlight = {};
+    let suggestCloseTimers = {};
+
+    function onModelInput(val, boxId) {
+      const id = boxId || 'model-suggestions';
+      const q = val.trim().toLowerCase();
+      if (q.length < 2) { closeSuggestions(id); return; }
+
+      // Deduplicate: one entry per model name (pick the first match)
+      const seen = new Map();
+      db.forEach(item => {
+        const key = item.model.toLowerCase();
+        if (key.includes(q) && !seen.has(key)) {
+          seen.set(key, item);
+        }
+      });
+
+      if (seen.size === 0) { closeSuggestions(id); return; }
+
+      const items = [...seen.values()].slice(0, 8);
+      const box = document.getElementById(id);
+      if (!box) return;
+      suggestHighlight[id] = -1;
+
+      box.innerHTML =
+        '<div class="model-suggest-header">Existing entries matching "' + escHtml(val.trim()) + '"</div>' +
+        items.map((item, i) => {
+          const shelfParts = item.shelf.split('|');
+          const shelfName = shelfParts[0] || '';
+          const floorName = shelfParts[1] || '';
+          const loc = [shelfName, item.row, item.col, floorName].filter(Boolean).join(' · ');
+          const highlighted = item.model.replace(
+            new RegExp('(' + escRegex(val.trim()) + ')', 'gi'),
+            '<mark>$1</mark>'
+          );
+          const safeModel = escHtml(item.model).replace(/'/g,"&#39;");
+          return `<div class="model-suggest-item" data-idx="${i}" data-model="${escHtml(item.model)}"
+            onmousedown="pickSuggestion('${safeModel}','${id}')"
+            ontouchstart="pickSuggestion('${safeModel}','${id}')"
+          >
+            <div class="model-suggest-icon">📱</div>
+            <div class="model-suggest-info">
+              <div class="model-suggest-name">${highlighted}</div>
+              <div class="model-suggest-loc">📍 ${escHtml(loc)}</div>
+            </div>
+          </div>`;
+        }).join('');
+
+      box.classList.add('open');
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function escRegex(s) {
+      return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function pickSuggestion(modelName, boxId) {
+      const id = boxId || 'model-suggestions';
+      // Find the input associated with this box
+      const box = document.getElementById(id);
+      if (box) {
+        const input = box.previousElementSibling;
+        if (input && input.tagName === 'INPUT') input.value = modelName;
+      }
+      closeSuggestions(id);
+      updateClearFieldsBtn();
+    }
+
+    function closeSuggestions(boxId) {
+      const id = boxId || 'model-suggestions';
+      const box = document.getElementById(id);
+      if (box) box.classList.remove('open');
+      suggestHighlight[id] = -1;
+    }
+
+    function scheduleCloseSuggestions(boxId) {
+      const id = boxId || 'model-suggestions';
+      suggestCloseTimers[id] = setTimeout(() => closeSuggestions(id), 200);
+    }
+
+    function onModelKeydown(e, boxId, inputEl) {
+      const id = boxId || 'model-suggestions';
+      const box = document.getElementById(id);
+      if (!box || !box.classList.contains('open')) return;
+      const items = box.querySelectorAll('.model-suggest-item');
+      if (!suggestHighlight[id]) suggestHighlight[id] = -1;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        suggestHighlight[id] = Math.min(suggestHighlight[id] + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('highlighted', i === suggestHighlight[id]));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        suggestHighlight[id] = Math.max(suggestHighlight[id] - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('highlighted', i === suggestHighlight[id]));
+      } else if (e.key === 'Enter' && suggestHighlight[id] >= 0) {
+        e.preventDefault();
+        const model = items[suggestHighlight[id]].dataset.model;
+        if (model) pickSuggestion(model, id);
+      } else if (e.key === 'Escape') {
+        closeSuggestions(id);
+      }
     }
 
     function updateClearFieldsBtn() {
@@ -3171,7 +3419,13 @@
         <button class="btn-remove-model" onclick="removeExtraModelRow(${n})" title="Remove">✕</button>
         <div class="field">
           <label>Phone model name</label>
-          <input type="text" id="f-model-extra-${n}" placeholder="e.g. iPhone 15 Plus" autocorrect="off" />
+          <div class="model-autocomplete-wrap">
+            <input type="text" id="f-model-extra-${n}" placeholder="e.g. iPhone 15 Plus" autocorrect="off" autocomplete="off" spellcheck="false"
+              oninput="onModelInput(this.value,'extra-suggest-${n}')"
+              onkeydown="onModelKeydown(event,'extra-suggest-${n}',this)"
+              onblur="scheduleCloseSuggestions('extra-suggest-${n}')" />
+            <div class="model-suggestions" id="extra-suggest-${n}"></div>
+          </div>
         </div>
         <div class="field" style="margin-bottom:0">
           <label>Stock quantity</label>
@@ -3287,7 +3541,13 @@
             <button class="btn-remove-model" onclick="removeExtraModelRow(${n})" title="Remove">✕</button>
             <div class="field">
               <label>Phone model name</label>
-              <input type="text" id="f-model-extra-${n}" value="${sib.model}" autocorrect="off" />
+              <div class="model-autocomplete-wrap">
+                <input type="text" id="f-model-extra-${n}" value="${sib.model}" autocorrect="off" autocomplete="off" spellcheck="false"
+                  oninput="onModelInput(this.value,'extra-suggest-${n}')"
+                  onkeydown="onModelKeydown(event,'extra-suggest-${n}',this)"
+                  onblur="scheduleCloseSuggestions('extra-suggest-${n}')" />
+                <div class="model-suggestions" id="extra-suggest-${n}"></div>
+              </div>
             </div>
             <div class="field" style="margin-bottom:0">
               <label>Stock quantity</label>
