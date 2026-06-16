@@ -2068,7 +2068,7 @@
           <div class="field">
             <label>Shelf</label>
             <div class="select-wrap">
-              <select id="f-shelf" onchange="onShelfChange(this.value)">
+              <select id="f-shelf" onchange="document.getElementById('f-row').value='';document.getElementById('f-col').value='';onShelfChange(this.value)">
                 <option value="">Select shelf…</option>
                 <optgroup label="Ground Floor (Downstairs)">
                   <option value="Shelf 1|Ground Floor">Shelf 1 — Ground Floor</option>
@@ -2090,31 +2090,31 @@
               <div class="select-wrap">
                 <select id="f-row" onchange="onRowChange(this.value)">
                   <option value="">Row…</option>
-                  <option>Row 1</option>
-                  <option>Row 2</option>
-                  <option>Row 3</option>
-                  <option>Row 4</option>
-                  <option>Row 5</option>
-                  <option>Row 6</option>
-                  <option>Row 7</option>
-                  <option>Row 8</option>
-                  <option>Row 9</option>
-                  <option>Row 10</option>
-                  <option>Row 11</option>
-                  <option>Row 12</option>
-                  <option>Row 13</option>
-                  <option>Row 14</option>
-                  <option>Row 15</option>
-                  <option>Row 16</option>
-                  <option>Row 17</option>
-                  <option>Row 18</option>
-                  <option>Row 19</option>
-                  <option>Row 20</option>
-                  <option>Row 21</option>
-                  <option>Row 22</option>
-                  <option>Row 23</option>
-                  <option>Row 24</option>
-                  <option>Row 25</option>
+                  <option value="Row 1">Row 1</option>
+                  <option value="Row 2">Row 2</option>
+                  <option value="Row 3">Row 3</option>
+                  <option value="Row 4">Row 4</option>
+                  <option value="Row 5">Row 5</option>
+                  <option value="Row 6">Row 6</option>
+                  <option value="Row 7">Row 7</option>
+                  <option value="Row 8">Row 8</option>
+                  <option value="Row 9">Row 9</option>
+                  <option value="Row 10">Row 10</option>
+                  <option value="Row 11">Row 11</option>
+                  <option value="Row 12">Row 12</option>
+                  <option value="Row 13">Row 13</option>
+                  <option value="Row 14">Row 14</option>
+                  <option value="Row 15">Row 15</option>
+                  <option value="Row 16">Row 16</option>
+                  <option value="Row 17">Row 17</option>
+                  <option value="Row 18">Row 18</option>
+                  <option value="Row 19">Row 19</option>
+                  <option value="Row 20">Row 20</option>
+                  <option value="Row 21">Row 21</option>
+                  <option value="Row 22">Row 22</option>
+                  <option value="Row 23">Row 23</option>
+                  <option value="Row 24">Row 24</option>
+                  <option value="Row 25">Row 25</option>
                 </select>
               </div>
             </div>
@@ -2123,31 +2123,31 @@
               <div class="select-wrap">
                 <select id="f-col">
                   <option value="">Col…</option>
-                  <option>Col 1</option>
-                  <option>Col 2</option>
-                  <option>Col 3</option>
-                  <option>Col 4</option>
-                  <option>Col 5</option>
-                  <option>Col 6</option>
-                  <option>Col 7</option>
-                  <option>Col 8</option>
-                  <option>Col 9</option>
-                  <option>Col 10</option>
-                  <option>Col 11</option>
-                  <option>Col 12</option>
-                  <option>Col 13</option>
-                  <option>Col 14</option>
-                  <option>Col 15</option>
-                  <option>Col 16</option>
-                  <option>Col 17</option>
-                  <option>Col 18</option>
-                  <option>Col 19</option>
-                  <option>Col 20</option>
-                  <option>Col 21</option>
-                  <option>Col 22</option>
-                  <option>Col 23</option>
-                  <option>Col 24</option>
-                  <option>Col 25</option>
+                  <option value="Col 1">Col 1</option>
+                  <option value="Col 2">Col 2</option>
+                  <option value="Col 3">Col 3</option>
+                  <option value="Col 4">Col 4</option>
+                  <option value="Col 5">Col 5</option>
+                  <option value="Col 6">Col 6</option>
+                  <option value="Col 7">Col 7</option>
+                  <option value="Col 8">Col 8</option>
+                  <option value="Col 9">Col 9</option>
+                  <option value="Col 10">Col 10</option>
+                  <option value="Col 11">Col 11</option>
+                  <option value="Col 12">Col 12</option>
+                  <option value="Col 13">Col 13</option>
+                  <option value="Col 14">Col 14</option>
+                  <option value="Col 15">Col 15</option>
+                  <option value="Col 16">Col 16</option>
+                  <option value="Col 17">Col 17</option>
+                  <option value="Col 18">Col 18</option>
+                  <option value="Col 19">Col 19</option>
+                  <option value="Col 20">Col 20</option>
+                  <option value="Col 21">Col 21</option>
+                  <option value="Col 22">Col 22</option>
+                  <option value="Col 23">Col 23</option>
+                  <option value="Col 24">Col 24</option>
+                  <option value="Col 25">Col 25</option>
                 </select>
               </div>
             </div>
@@ -2884,55 +2884,49 @@
       sessionRecentSlots.clear();
     }
 
-    // Called whenever the shelf dropdown changes in the Add/Edit form.
-    // Scans `db` for all entries on the chosen shelf and marks every
-    // Row / Col option that is already used.  Options added during the
-    // current Add-screen session are marked "Recently Used" (blue);
-    // older ones are marked "Used" (amber).
+    // Shared sort helper
+    function sortNums(a, b, prefix) {
+      return parseInt(a.replace(prefix, '')) - parseInt(b.replace(prefix, ''));
+    }
+
+    // Resets all option labels and classes on a select element
+    function resetSelectMarkers(sel) {
+      Array.from(sel.options).forEach(opt => {
+        opt.classList.remove('opt-used', 'opt-recent');
+        opt.textContent = opt.textContent
+          .replace(/\s+●\s+(recently used|used)$/i, '').trim();
+      });
+    }
+
+    // Called whenever the Shelf dropdown changes.
+    // Marks ROW options as Used / Recently Used based on shelf data.
+    // Resets col markers and hint — col markers are set by onRowChange.
     function onShelfChange(shelfValue) {
       const rowSel = document.getElementById('f-row');
       const colSel = document.getElementById('f-col');
       const hint   = document.getElementById('used-slots-hint');
 
-      // Reset all options to plain state first
-      [rowSel, colSel].forEach(sel => {
-        Array.from(sel.options).forEach(opt => {
-          opt.classList.remove('opt-used', 'opt-recent');
-          opt.textContent = opt.textContent
-            .replace(/\s+●\s+(recently used|used)$/i, '').trim();
-        });
-      });
+      // Reset both row and col markers fully
+      resetSelectMarkers(rowSel);
+      resetSelectMarkers(colSel);
 
-      if (!shelfValue || !db || !db.length) {
-        hint.classList.remove('visible');
-        hint.innerHTML = '';
-        return;
-      }
+      hint.classList.remove('visible');
+      hint.innerHTML = '';
 
-      // Entries on this shelf from the database
+      if (!shelfValue || !db || !db.length) return;
+
       const onShelf = db.filter(e => e.shelf === shelfValue);
+      if (!onShelf.length) return;
 
-      if (!onShelf.length) {
-        hint.classList.remove('visible');
-        hint.innerHTML = '';
-        return;
-      }
-
-      // Build per-row/col sets, and note which ones are "recent" this session
+      // Rows used on this shelf
       const usedRows   = new Set(onShelf.map(e => e.row));
-      const usedCols   = new Set(onShelf.map(e => e.col));
       const recentRows = new Set();
-      const recentCols = new Set();
-
       sessionRecentSlots.forEach(key => {
-        const [s, r, c] = key.split('||');
-        if (s === shelfValue) {
-          recentRows.add(r);
-          recentCols.add(c);
-        }
+        const [s, r] = key.split('||');
+        if (s === shelfValue) recentRows.add(r);
       });
 
-      // Mark Row options
+      // Mark Row options only
       Array.from(rowSel.options).forEach(opt => {
         if (!opt.value) return;
         if (usedRows.has(opt.value)) {
@@ -2946,64 +2940,39 @@
         }
       });
 
-      // Mark Col options
-      Array.from(colSel.options).forEach(opt => {
-        if (!opt.value) return;
-        if (usedCols.has(opt.value)) {
-          if (recentCols.has(opt.value)) {
-            opt.classList.add('opt-recent');
-            opt.textContent = opt.value + ' ● Recently Used';
-          } else {
-            opt.classList.add('opt-used');
-            opt.textContent = opt.value + ' ● Used';
-          }
-        }
-      });
-
-      // Build hint banner — count UNIQUE row+col combos, not total db entries
-      const sortNums = (a, b, prefix) =>
-        parseInt(a.replace(prefix, '')) - parseInt(b.replace(prefix, ''));
-
+      // Show shelf-level hint (rows only — no col info until a row is picked)
       const uniqueSlots = new Set(onShelf.map(e => e.row + '|' + e.col)).size;
-
       const usedRowList = [...usedRows].sort((a,b) => sortNums(a,b,'Row ')).join(', ');
-      const usedColList = [...usedCols].sort((a,b) => sortNums(a,b,'Col ')).join(', ');
-
-      const recentCount = recentRows.size
-        ? ` <span style="color:var(--blue-dark)">· ${recentRows.size} added this session</span>`
-        : '';
-
       hint.innerHTML =
-        `⚠️ <strong>${uniqueSlots} slot${uniqueSlots !== 1 ? 's' : ''} already used on this shelf.</strong>${recentCount}<br>` +
-        `Rows in use: <strong>${usedRowList}</strong> &nbsp;·&nbsp; Cols in use: <strong>${usedColList}</strong>`;
+        `⚠️ <strong>${uniqueSlots} slot${uniqueSlots !== 1 ? 's' : ''} already used on this shelf.</strong><br>` +
+        `Rows with entries: <strong>${usedRowList}</strong> — select a row to see used columns.`;
       hint.classList.add('visible');
     }
 
-    // Called when the Row dropdown changes — re-marks Col options to only
-    // show columns that are used on the currently selected shelf + row combo.
+    // Called whenever the Row dropdown changes.
+    // Marks COL options as Used / Recently Used for the selected shelf + row.
+    // Updates the hint banner to show row-specific column info.
     function onRowChange(rowValue) {
       const shelfValue = document.getElementById('f-shelf').value;
       const colSel     = document.getElementById('f-col');
       const hint       = document.getElementById('used-slots-hint');
 
       // Always reset col markers first
-      Array.from(colSel.options).forEach(opt => {
-        opt.classList.remove('opt-used', 'opt-recent');
-        opt.textContent = opt.textContent
-          .replace(/\s+●\s+(recently used|used)$/i, '').trim();
-      });
+      resetSelectMarkers(colSel);
 
-      if (!shelfValue || !rowValue || !db || !db.length) {
-        // No row selected — fall back to full-shelf col marking
+      if (!shelfValue || !db || !db.length) return;
+
+      // Rebuild shelf-level hint if no row selected
+      if (!rowValue) {
         onShelfChange(shelfValue);
         return;
       }
 
-      // Columns used on THIS shelf + THIS row
+      // Cols used on THIS shelf + THIS row only
       const onShelfRow = db.filter(e => e.shelf === shelfValue && e.row === rowValue);
       const usedCols   = new Set(onShelfRow.map(e => e.col));
 
-      // Which of those are "recently used" this session
+      // Which cols are recently used this session for this shelf+row
       const recentCols = new Set();
       sessionRecentSlots.forEach(key => {
         const [s, r, c] = key.split('||');
@@ -3024,13 +2993,11 @@
         }
       });
 
-      // Update hint banner to reflect the selected row
-      const sortNums = (a, b, prefix) =>
-        parseInt(a.replace(prefix, '')) - parseInt(b.replace(prefix, ''));
-
+      // Update hint banner for this specific row
       if (!usedCols.size) {
-        // Row exists on shelf but this specific row has no entries — show shelf-level hint
-        onShelfChange(shelfValue);
+        hint.innerHTML =
+          `✅ <strong>${rowValue}</strong> on this shelf has no entries yet — all columns are free.`;
+        hint.classList.add('visible');
         return;
       }
 
@@ -3038,9 +3005,8 @@
       const recentNote  = recentCols.size
         ? ` <span style="color:var(--blue-dark)">· ${recentCols.size} added this session</span>`
         : '';
-
       hint.innerHTML =
-        `⚠️ <strong>${usedCols.size} col${usedCols.size !== 1 ? 's' : ''} already used on ${rowValue} of this shelf.</strong>${recentNote}<br>` +
+        `⚠️ <strong>${usedCols.size} col${usedCols.size !== 1 ? 's' : ''} already used on ${rowValue}.</strong>${recentNote}<br>` +
         `Cols in use: <strong>${usedColList}</strong>`;
       hint.classList.add('visible');
     }
