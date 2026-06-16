@@ -1009,6 +1009,196 @@
       color: var(--text);
     }
 
+    /* SHARED SLOT TOGGLE IN ADD/EDIT FORM */
+    .share-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--blue-light);
+      border: 1.5px solid var(--blue-mid);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      margin-top: 12px;
+      user-select: none;
+    }
+
+    .share-toggle-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue-dark);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .share-toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue-dark);
+      line-height: 1.3;
+    }
+
+    .share-toggle-sub {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    #model-b-section {
+      display: none;
+      margin-top: 12px;
+    }
+
+    #model-b-section.visible {
+      display: block;
+      animation: fadeSlideIn .2s ease;
+    }
+
+    .extra-model-card {
+      background: var(--surface);
+      border: 1.5px dashed var(--blue-mid);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .extra-model-number {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: var(--blue-dark);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .btn-remove-model {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: var(--red-bg);
+      color: var(--red);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .btn-add-model {
+      width: 100%;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      border: 1.5px dashed var(--blue-mid);
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .btn-add-model:active {
+      opacity: .75;
+    }
+
+    /* Search results: one card per location, models listed inside */
+    .location-card .loc-card-loc {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      padding-bottom: 10px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .loc-count-badge {
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .loc-card-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      cursor: pointer;
+    }
+
+    .loc-card-item + .loc-card-item {
+      border-top: 1px solid var(--border);
+    }
+
+    .loc-card-item .result-icon {
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+    }
+
+    .loc-card-item .result-model {
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    /* Inventory list: wrap items that share a slot in a highlighted group */
+    .inv-loc-group {
+      margin: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--blue-light);
+      border: 1px solid var(--blue-mid);
+      overflow: hidden;
+    }
+
+    .inv-loc-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--blue-dark);
+      padding: 8px 12px 4px;
+    }
+
+    .inv-loc-group .inv-item {
+      background: var(--surface);
+    }
+
+    /* Detail screen: sibling models stored in the same slot */
+    .sibling-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      cursor: pointer;
+    }
+
+    .sibling-item + .sibling-item {
+      border-top: 1px solid var(--border);
+    }
+
+    .sibling-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
     @media (min-width: 481px) {
       #app {
         border-left: 1px solid var(--border);
@@ -1791,6 +1981,21 @@
             <input type="number" id="f-stock" placeholder="e.g. 12" min="0" inputmode="numeric" />
           </div>
         </div>
+
+        <!-- SHARED SLOT TOGGLE -->
+        <label class="share-toggle-row" id="share-slot-toggle" for="f-share-slot">
+          <input type="checkbox" id="f-share-slot" onchange="onShareToggle(this.checked)" />
+          <div>
+            <div class="share-toggle-label">📦 Share this slot with other models</div>
+            <div class="share-toggle-sub">Add multiple models to the same shelf · row · column. This cannot be changed after saving.</div>
+          </div>
+        </label>
+
+        <!-- DYNAMIC EXTRA MODELS SECTION (shown when toggle is on) -->
+        <div id="model-b-section">
+          <div id="extra-models-list"></div>
+          <button class="btn-add-model" onclick="addExtraModelRow()">＋ Add another model</button>
+        </div>
         <button class="btn btn-blue" onclick="saveEntry()">&nbsp;Save entry</button>
         <div id="edit-delete-btn" style="display:none;margin-top:10px">
           <button class="btn btn-outline-red" onclick="promptDelete(editingModel)">&nbsp;Delete this entry</button>
@@ -1959,6 +2164,7 @@
     let prevScreen = 's-search';
     let originScreen = 's-search'; // the tab the user was on before entering detail/edit flow
     let editingModel = null;
+    let editingModelB = null;  // tracks the sibling model in a shared slot during edit
     let pendingDelete = null;
     let recentAdded = [];
 
@@ -2007,6 +2213,7 @@
     const tabOrder = ['s-search', 's-add', 's-inventory', 's-users'];
 
     let navLock = false;
+    let navTimer = null;
 
     function showTab(id) {
 
@@ -2062,6 +2269,8 @@
       }
 
       if (navLock) {
+        // Cancel the pending cleanup so it can't fire after we snap state
+        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         // Add destination first, then clean up — prevents any frame with nothing visible
         next.classList.add('active');
         document.querySelectorAll('.screen').forEach(s => {
@@ -2098,7 +2307,8 @@
 
       navLock = true;
       const animCurrent = current;
-      setTimeout(() => {
+      navTimer = setTimeout(() => {
+        navTimer = null;
         animCurrent.classList.remove('active','slide-out-left','slide-out-right');
         next.classList.remove('slide-in-left','slide-in-right');
         navLock = false;
@@ -2118,6 +2328,7 @@
       if (!current || !next || current === next) return;
 
       if (navLock) {
+        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         next.classList.add('active');
         document.querySelectorAll('.screen').forEach(s => {
           if (s !== next) s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
@@ -2143,7 +2354,8 @@
 
       navLock = true;
       const animCurrent = current;
-      setTimeout(() => {
+      navTimer = setTimeout(() => {
+        navTimer = null;
         animCurrent.classList.remove('active','slide-out-right');
         next.classList.remove('slide-in-back');
         navLock = false;
@@ -2235,10 +2447,16 @@
         return;
       }
 
-      el.innerHTML = results.map(e => {
-        const idx = db.indexOf(e);
-        const ps = encodeURIComponent(JSON.stringify({shelf:e.shelf,row:e.row,col:e.col}));
-        return `
+      el.innerHTML = groupByLocation(results).map(group => {
+        if (group.length === 1) return searchResultCard(group[0]);
+        return searchResultGroupCard(group);
+      }).join('');
+    }
+
+    // Single model — its own card (unchanged layout)
+    function searchResultCard(e) {
+      const idx = db.indexOf(e);
+      return `
  <div class="result-card" onclick="showDetail('${CSS.escape(e.model)}')">
    <div style="display:flex;align-items:center;gap:10px">
      <div class="result-icon">📱</div>
@@ -2257,8 +2475,43 @@
    </div>
    <div id="sb-${idx}" style="display:flex;flex-wrap:nowrap;align-items:center;gap:5px;margin-top:8px">${stockBadge(e.stock)} ${floorBadge(e.shelf.split('|')[1], e.shelf.split('|')[0])}</div>
  </div>`;
-      }).join('');
     }
+
+    // Multiple models in the same shelf/row/col — one shared-slot card
+    function searchResultGroupCard(group) {
+      const e0 = group[0];
+      const [shelfName, floor] = e0.shelf.split('|');
+      const items = group.map(e => {
+        const idx = db.indexOf(e);
+        return `
+   <div class="loc-card-item" onclick="showDetail('${CSS.escape(e.model)}')">
+     <div class="result-icon">📱</div>
+     <div class="result-body">
+       <div class="result-model">${e.model}</div>
+       <div id="sb-${idx}" style="display:flex;flex-wrap:nowrap;align-items:center;gap:5px">${stockBadge(e.stock)}</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+       <div class="stock-stepper">
+         <button class="stepper-btn minus" onclick="quickUpdateStock('${CSS.escape(e.model)}',-1)">−</button>
+         <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock)===0?'var(--red)':parseInt(e.stock)<=5?'var(--amber)':'var(--text)'}">${e.stock}</span>
+         <button class="stepper-btn plus" onclick="quickUpdateStock('${CSS.escape(e.model)}',1)">+</button>
+       </div>
+       <span style="color:var(--text3);font-size:20px;cursor:pointer">›</span>
+     </div>
+   </div>`;
+      }).join('');
+
+      return `
+ <div class="result-card location-card">
+   <div class="loc-card-loc">
+     <span>📍 ${shelfName} · ${e0.row} · ${e0.col}</span>
+     <span class="loc-count-badge">${group.length} models here</span>
+   </div>
+   ${items}
+   <div style="margin-top:8px">${floorBadge(floor, shelfName)}</div>
+ </div>`;
+    }
+
     // ── BADGE ─────────────────────────────────────────────────────────
     function stockBadge(n) {
       n = parseInt(n) || 0;
@@ -2281,6 +2534,23 @@
       return '#10b981';
     }
 
+    // ── LOCATION GROUPING ────────────────────────────────────────────
+    // Groups entries that share the same shelf/floor/row/col so multiple
+    // models stocked in the same slot can be shown together in one card.
+    function locationKey(e) {
+      return e.shelf + '|' + e.row + '|' + e.col;
+    }
+
+    function groupByLocation(list) {
+      const map = new Map();
+      list.forEach(e => {
+        const key = locationKey(e);
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(e);
+      });
+      return Array.from(map.values());
+    }
+
     // ── DETAIL ────────────────────────────────────────────────────────
     function showDetail(model) {
       const activeId = document.querySelector('.screen.active').id;
@@ -2293,6 +2563,22 @@
       if (!e) return;
       const idx = db.indexOf(e);
       const [shelfName, floor] = e.shelf.split('|');
+
+      // Check for sibling models in the same slot
+      const siblings = db.filter(x => x.model !== e.model && locationKey(x) === locationKey(e));
+      const siblingHtml = siblings.length ? `
+    <div class="detail-section">
+      <div class="section-eyebrow">📦 Also stored in this slot</div>
+      ${siblings.map(s => `
+      <div class="sibling-item" onclick="showDetail('${CSS.escape(s.model)}')">
+        <div>
+          <div class="sibling-name">${s.model}</div>
+          <div style="margin-top:4px">${stockBadge(s.stock)}</div>
+        </div>
+        <span style="color:var(--text3);font-size:22px">›</span>
+      </div>`).join('')}
+    </div>` : '';
+
       document.getElementById('detail-title').textContent = e.model;
       document.getElementById('detail-content').innerHTML = `
     <div class="detail-section">
@@ -2332,7 +2618,8 @@
     </div>
     <div class="btn-row" style="margin-top:4px">
       <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
-    </div>`;
+    </div>
+    ${siblingHtml}`;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const detailEl = document.getElementById('s-detail');
       detailEl.classList.add('active');
@@ -2347,26 +2634,94 @@
 
     // ── ADD / EDIT ────────────────────────────────────────────────────
     function clearForm() {
-
       editingModel = null;
+      editingModelB = null;
       document.getElementById('f-model').value = '';
       document.getElementById('f-shelf').value = '';
       document.getElementById('f-row').value = '';
       document.getElementById('f-col').value = '';
       document.getElementById('f-stock').value = '';
-      document.getElementById('f-stock').value = '';
 
-      document.getElementById(
-        'add-title'
-      ).textContent =
-        'Add new model';
+      // Reset shared-slot toggle and dynamic extra model rows
+      const toggle = document.getElementById('f-share-slot');
+      if (toggle) toggle.checked = false;
+      const secB = document.getElementById('model-b-section');
+      if (secB) secB.classList.remove('visible');
+      const list = document.getElementById('extra-models-list');
+      if (list) list.innerHTML = '';
+      extraModelCount = 0;
+      const shareRow = document.getElementById('share-slot-toggle');
+      if (shareRow) shareRow.style.display = '';
 
+      document.getElementById('add-title').textContent = 'Add new model';
       document.getElementById('add-logo').textContent = '➕';
       document.getElementById('add-back-btn').style.display = 'none';
+      document.getElementById('edit-delete-btn').style.display = 'none';
+    }
 
-      document.getElementById(
-        'edit-delete-btn'
-      ).style.display = 'none';
+    let extraModelCount = 0; // tracks how many extra model rows exist
+
+    function onShareToggle(checked) {
+      const secB = document.getElementById('model-b-section');
+      const list = document.getElementById('extra-models-list');
+      if (checked) {
+        secB.classList.add('visible');
+        // Always start with one extra row
+        list.innerHTML = '';
+        extraModelCount = 0;
+        addExtraModelRow();
+      } else {
+        secB.classList.remove('visible');
+        list.innerHTML = '';
+        extraModelCount = 0;
+      }
+    }
+
+    function addExtraModelRow() {
+      extraModelCount++;
+      const n = extraModelCount;
+      const ordinals = ['','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+      const label = (ordinals[n] || (n + 'th')) + ' model in this slot';
+      const div = document.createElement('div');
+      div.className = 'extra-model-card';
+      div.id = 'extra-row-' + n;
+      div.innerHTML = `
+        <div class="extra-model-number">${label}</div>
+        <button class="btn-remove-model" onclick="removeExtraModelRow(${n})" title="Remove">✕</button>
+        <div class="field">
+          <label>Phone model name</label>
+          <input type="text" id="f-model-extra-${n}" placeholder="e.g. iPhone 15 Plus" autocorrect="off" />
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Stock quantity</label>
+          <input type="number" id="f-stock-extra-${n}" placeholder="e.g. 8" min="0" inputmode="numeric" />
+        </div>`;
+      document.getElementById('extra-models-list').appendChild(div);
+      document.getElementById('f-model-extra-' + n).focus();
+    }
+
+    function removeExtraModelRow(n) {
+      const el = document.getElementById('extra-row-' + n);
+      if (el) el.remove();
+      // If no rows left, uncheck and hide the section
+      if (!document.getElementById('extra-models-list').children.length) {
+        document.getElementById('f-share-slot').checked = false;
+        document.getElementById('model-b-section').classList.remove('visible');
+        extraModelCount = 0;
+      }
+    }
+
+    // Collect all filled extra model rows from the form
+    function getExtraModels() {
+      const rows = document.querySelectorAll('.extra-model-card');
+      const extras = [];
+      rows.forEach(row => {
+        const id = row.id.replace('extra-row-', '');
+        const model = (document.getElementById('f-model-extra-' + id)?.value || '').trim();
+        const stock = Number(document.getElementById('f-stock-extra-' + id)?.value || 0);
+        if (model) extras.push({ model, stock });
+      });
+      return extras;
     }
 
     function renderRecentAdded() {
@@ -2391,12 +2746,12 @@
       const e = db.find(x => x.model === model);
       if (!e) return;
       prevScreen = document.querySelector('.screen.active').id;
-      // originScreen is already set by showDetail; only update it if we're
-      // entering edit mode directly from a tab (not via the detail screen)
       if (prevScreen === 's-inventory' || prevScreen === 's-search') {
         originScreen = prevScreen;
       }
       editingModel = model;
+      editingModelB = null;
+
       document.getElementById('add-title').textContent = 'Edit entry';
       document.getElementById('add-logo').textContent = '✏️';
       document.getElementById('f-model').value = e.model;
@@ -2404,6 +2759,55 @@
       document.getElementById('f-row').value = e.row;
       document.getElementById('f-col').value = e.col;
       document.getElementById('f-stock').value = e.stock;
+
+      // Check if this slot has sibling models
+      const siblings = db.filter(x => x.model !== e.model && locationKey(x) === locationKey(e));
+
+      const toggle   = document.getElementById('f-share-slot');
+      const secB     = document.getElementById('model-b-section');
+      const shareRow = document.getElementById('share-slot-toggle');
+      const list     = document.getElementById('extra-models-list');
+      list.innerHTML = '';
+      extraModelCount = 0;
+
+      if (siblings.length) {
+        // Shared slot — pre-populate all sibling rows, lock toggle visible but hidden
+        editingModelB = siblings[0].model; // kept for compat; full list used in saveEntry
+        toggle.checked = true;
+        secB.classList.add('visible');
+        shareRow.style.display = 'none';
+        siblings.forEach(sib => {
+          extraModelCount++;
+          const n = extraModelCount;
+          const ordinals = ['','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+          const label = (ordinals[n] || n + 'th') + ' model in this slot';
+          const div = document.createElement('div');
+          div.className = 'extra-model-card';
+          div.id = 'extra-row-' + n;
+          div.innerHTML = `
+            <div class="extra-model-number">${label}</div>
+            <button class="btn-remove-model" onclick="removeExtraModelRow(${n})" title="Remove">✕</button>
+            <div class="field">
+              <label>Phone model name</label>
+              <input type="text" id="f-model-extra-${n}" value="${sib.model}" autocorrect="off" />
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>Stock quantity</label>
+              <input type="number" id="f-stock-extra-${n}" value="${sib.stock}" min="0" inputmode="numeric" />
+            </div>`;
+          list.appendChild(div);
+        });
+        // Hide "Add another model" button — slot is locked, no new models
+        document.querySelector('#model-b-section .btn-add-model').style.display = 'none';
+      } else {
+        // Single model — reset toggle
+        editingModelB = null;
+        toggle.checked = false;
+        secB.classList.remove('visible');
+        shareRow.style.display = '';
+        document.querySelector('#model-b-section .btn-add-model').style.display = '';
+      }
+
       document.getElementById('add-back-btn').style.display = 'flex';
       document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
       document.getElementById('recent-added-wrap').style.display = 'none';
@@ -2415,162 +2819,140 @@
       document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
     }
 
+    let isSaving = false;
     async function saveEntry() {
+      if (isSaving) return;
+      const model      = document.getElementById('f-model').value.trim();
+      const shelfValue = document.getElementById('f-shelf').value;
+      const row        = document.getElementById('f-row').value;
+      const col        = document.getElementById('f-col').value;
+      const stock      = Number(document.getElementById('f-stock').value);
+      const isShared   = document.getElementById('f-share-slot').checked;
+      const extras     = isShared ? getExtraModels() : [];
 
-      const model =
-        document.getElementById('f-model').value.trim();
-
-      const shelfValue =
-        document.getElementById('f-shelf').value;
-
-      const row =
-        document.getElementById('f-row').value;
-
-      const col =
-        document.getElementById('f-col').value;
-
-      const stock =
-        Number(
-          document.getElementById('f-stock').value
-        );
-
-      if (
-        !model ||
-        !shelfValue ||
-        !row ||
-        !col
-      ) {
+      if (!model || !shelfValue || !row || !col) {
         toast('Please fill all fields');
         return;
+      }
+
+      // Validate extra models — all must have names
+      if (isShared && extras.length === 0) {
+        toast('Add at least one extra model or uncheck the toggle');
+        return;
+      }
+      for (const ex of extras) {
+        if (!ex.model) { toast('Fill in all extra model names'); return; }
       }
 
       const parts = shelfValue.split('|');
       const shelf = parts[0];
       const floor = parts[1];
 
-      // ── DUPLICATE CHECK ───────────────────────────────────────────────
-      // When adding: block if model name already exists
-      // When editing: block if another entry (different from the one being edited) has the same name
-      const normalise = str => String(str).trim().toLowerCase().replace(/^(row|col|shelf)\s*/i, '');
-      const nameConflict = db.find(e => {
-        if (editingModel && e.model === editingModel) return false; // skip self
-        return e.model.trim().toLowerCase() === model.trim().toLowerCase();
-      });
-      if (nameConflict) {
-        toast(`"${model}" already exists in inventory`);
+      // All models being saved in this action (primary + extras)
+      const allModels = [{ model, stock }, ...extras];
+
+      // ── NAME CONFLICT CHECK ───────────────────────────────────────────
+      // Skip self (editingModel / editingModelB siblings) when editing
+      const editingSet = new Set(
+        [editingModel, ...(editingModelB ? [editingModelB] : [])]
+          .filter(Boolean).map(m => m.trim().toLowerCase())
+      );
+      const newNames = allModels.map(m => m.model.trim().toLowerCase());
+
+      // Check duplicates within the batch itself
+      if (new Set(newNames).size !== newNames.length) {
+        toast('All model names in this slot must be different');
         return;
       }
 
-      // Also block if the position is already taken by a different entry
-      const posConflict = db.find(e => {
-        if (editingModel && e.model === editingModel) return false;
-        return e.shelf.trim().toLowerCase() === shelfValue.trim().toLowerCase() &&
-          normalise(e.row) === normalise(row) &&
-          normalise(e.col) === normalise(col);
-      });
-      if (posConflict) {
-        toast(`${shelf} · ${row} · ${col} is taken by "${posConflict.model}"`);
-        return;
-      }
-
-      let payload;
-
-      // EDIT MODE
-      if (editingModel) {
-
-        const origEntry = db.find(e => e.model === editingModel);
-        const origShelf = origEntry ? origEntry.shelf.split('|')[0] : shelf;
-        const origRow   = origEntry ? origEntry.row : row;
-        const origCol   = origEntry ? origEntry.col : col;
-
-        payload = {
-
-          action: "updateInventory",
-
-          originalModel: editingModel,
-          originalShelf: origShelf,
-          originalRow:   origRow,
-          originalCol:   origCol,
-
-          model: model,
-          shelf: shelf,
-          row: row,
-          col: col,
-          stock: stock,
-          floor: floor
-
-        };
-
-      }
-
-      // ADD MODE
-      else {
-
-        payload = {
-
-          action: "addInventory",
-
-          model: model,
-          shelf: shelf,
-          row: row,
-          col: col,
-          stock: stock,
-          floor: floor
-
-        };
-
-      }
-
-      const response =
-        await fetch(API_URL, {
-
-          method: "POST",
-
-          body: JSON.stringify(payload)
-
+      for (const { model: mName } of allModels) {
+        const conflict = db.find(e => {
+          if (editingSet.has(e.model.trim().toLowerCase())) return false;
+          return e.model.trim().toLowerCase() === mName.trim().toLowerCase();
         });
+        if (conflict) { toast(`"${mName}" already exists in inventory`); return; }
+      }
 
-      const result =
-        await response.json();
-
-      if (result.success) {
-
-        toast(
-          editingModel
-            ? "Inventory updated"
-            : "Inventory added"
+      // ── SLOT LOCK CHECK ───────────────────────────────────────────────
+      // Once a slot has any models in it, it is permanently locked.
+      // New entries cannot be added to it at all — not even with the toggle.
+      // (Editing existing occupants is fine; this block only fires on ADD.)
+      if (!editingModel) {
+        const occupants = db.filter(e =>
+          e.shelf.trim().toLowerCase() === shelfValue.trim().toLowerCase() &&
+          e.row === row && e.col === col
         );
-
-        const wasEditing = !!editingModel;
-
-        clearForm();
-
-        editingModel = null;
-
-        document.getElementById(
-          'add-title'
-        ).textContent =
-          'Add new model';
-
-        document.getElementById(
-          'edit-delete-btn'
-        ).style.display = 'none';
-
-        await loadDB();
-
-        if (wasEditing) {
-          showTab(originScreen || 's-search');
-          originScreen = 's-search';
-        } else {
-          recentAdded.unshift(model);
-          renderRecentAdded();
-          document.getElementById('f-model').focus();
+        if (occupants.length > 0) {
+          const names = occupants.map(o => `"${o.model}"`).join(', ');
+          toast(`This slot is locked — already contains ${names}`);
+          return;
         }
+      }
 
+      // ── SAVE ALL MODELS ───────────────────────────────────────────────
+      isSaving = true;
+      const saveBtn = document.querySelector('#s-add .btn-blue');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
+      const saveOne = async (mName, mStock, origName) => {
+        const payload = editingModel
+          ? {
+              action: 'updateInventory',
+              originalModel: origName,
+              originalShelf: shelf, originalRow: row, originalCol: col,
+              model: mName, shelf, row, col, stock: mStock, floor
+            }
+          : {
+              action: 'addInventory',
+              model: mName, shelf, row, col, stock: mStock, floor
+            };
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        return res.json();
+      };
+
+      // In edit mode, the existing siblings come from db (editingModelB covers one;
+      // for 3+ slots, we grab all siblings from db that are not the primary)
+      let siblingOriginals = [];
+      if (editingModel) {
+        siblingOriginals = db
+          .filter(e => e.model !== editingModel && locationKey(e) === locationKey(db.find(x => x.model === editingModel)))
+          .map(e => e.model);
+      }
+
+      // Save primary model
+      const r1 = await saveOne(model, stock, editingModel);
+      if (!r1.success) {
+        toast('Save failed');
+        isSaving = false;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
+        return;
+      }
+
+      // Save extra models
+      for (let i = 0; i < extras.length; i++) {
+        const origName = siblingOriginals[i] || null;
+        const action   = origName ? 'updateInventory' : 'addInventory';
+        const payload  = origName
+          ? { action, originalModel: origName, originalShelf: shelf, originalRow: row, originalCol: col,
+              model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor }
+          : { action, model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      }
+
+      toast(editingModel ? 'Inventory updated' : 'Inventory added');
+      isSaving = false;
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
+      const wasEditing = !!editingModel;
+      clearForm();
+      await loadDB();
+
+      if (wasEditing) {
+        showTab(originScreen || 's-search');
+        originScreen = 's-search';
       } else {
-
-        toast('Operation failed');
-
+        allModels.forEach(m => recentAdded.unshift(m.model));
+        renderRecentAdded();
+        document.getElementById('f-model').focus();
       }
     }
 
@@ -2730,31 +3112,40 @@
 
       // When searching/sorting flat list or custom sort — show flat grouped by floor
       // When no search and default sort — show floor groups as before
+      // Helper: render a location group — single item normal, pair in a highlight wrapper
+      const makeGroup = group => {
+        if (group.length === 1) return makeItem(group[0]);
+        return `<div class="inv-loc-group">
+          <div class="inv-loc-group-label">📦 Shared slot · ${group[0].shelf.split('|')[0]} · ${group[0].row} · ${group[0].col}</div>
+          ${group.map(makeItem).join('')}
+        </div>`;
+      };
+
       if (!q && (sortBy === 'az' || sortBy === 'za') && !onlyLowStock) {
         // Classic grouped view
-        const ground = filtered.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
-        const upper = filtered.filter(e => e.shelf.includes('1st Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
+        const ground    = filtered.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
+        const upper     = filtered.filter(e => e.shelf.includes('1st Floor')    && e.shelf.split('|')[0] !== 'Flip Cover');
         const flipCover = filtered.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
 
         if (ground.length) {
           html += `<div class="floor-heading">🔽 Ground Floor (Downstairs)</div><div class="inv-card">`;
-          html += ground.map(makeItem).join('');
+          html += groupByLocation(ground).map(makeGroup).join('');
           html += '</div>';
         }
         if (upper.length) {
           html += `<div class="floor-heading">🔼 1st Floor (Upstairs)</div><div class="inv-card">`;
-          html += upper.map(makeItem).join('');
+          html += groupByLocation(upper).map(makeGroup).join('');
           html += '</div>';
         }
         if (flipCover.length) {
           html += `<div class="floor-heading">📱 Flip Cover</div><div class="inv-card">`;
-          html += flipCover.map(makeItem).join('');
+          html += groupByLocation(flipCover).map(makeGroup).join('');
           html += '</div>';
         }
       } else {
         // Flat sorted/filtered list
         html += `<div class="inv-card">`;
-        html += filtered.map(makeItem).join('');
+        html += groupByLocation(filtered).map(makeGroup).join('');
         html += '</div>';
       }
 
@@ -3293,6 +3684,7 @@
         if (e.persisted) {
           // Reset navLock and stale animation classes so nav works cleanly after restore
           navLock = false;
+          navTimer = null;
           document.querySelectorAll('.screen').forEach(s => {
             s.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
           });
@@ -3306,6 +3698,7 @@
           // Always reset navLock and clear any stale animation classes when
           // the app comes back into view — prevents the "stuck nav after reopen" bug.
           navLock = false;
+          navTimer = null;
           document.querySelectorAll('.screen').forEach(s => {
             s.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
           });
