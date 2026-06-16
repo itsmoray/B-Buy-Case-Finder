@@ -3107,14 +3107,16 @@
       const seen = new Map();
       db.forEach(item => {
         const key = item.model.toLowerCase();
-        if (key.includes(q) && !seen.has(key)) {
+        if (fuzzyMatch(key, q) < Infinity && !seen.has(key)) {
           seen.set(key, item);
         }
       });
 
       if (seen.size === 0) { closeSuggestions(id); return; }
 
-      const items = [...seen.values()].slice(0, 8);
+      const items = [...seen.values()]
+        .sort((a, b) => fuzzyMatch(a.model, q) - fuzzyMatch(b.model, q))
+        .slice(0, 8);
       const box = document.getElementById(id);
       if (!box) return;
       suggestHighlight[id] = -1;
