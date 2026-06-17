@@ -2576,6 +2576,12 @@
             <div id="dev-locked-list"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
           </div>
           <button class="btn btn-blue" style="margin-top:14px" onclick="loadLockedAccounts()">🔄 Refresh</button>
+
+          <div class="detail-section" style="margin-top:20px">
+            <div class="section-eyebrow" style="margin-bottom:12px">Activity log</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5">This permanently deletes every entry in the activity log. It cannot be undone.</div>
+          </div>
+          <button class="btn btn-outline-red" style="margin-top:8px" onclick="promptClearActivityLog()">🗑 Clear activity log</button>
         </div>
 
       </div>
@@ -4348,9 +4354,16 @@
         };
 
         logEl.innerHTML = entries.map(e => {
-          const ts  = new Date(e.timestamp);
-          const ist = new Date(ts.getTime() + 5.5 * 60 * 60000);
-          const timeStr = ist.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+          // e.timestamp is already an IST wall-clock string ("yyyy-MM-ddTHH:mm:ss")
+          // from the backend — no timezone conversion needed or wanted here.
+          // (Previously this re-parsed it as UTC and added +5:30 AGAIN, which
+          // double-shifted the displayed time.)
+          const timePart = e.timestamp.slice(11, 16); // "HH:mm"
+          let [hh, mm] = timePart.split(':').map(Number);
+          const suffix = hh >= 12 ? 'pm' : 'am';
+          let hh12 = hh % 12;
+          if (hh12 === 0) hh12 = 12;
+          const timeStr = `${hh12}:${String(mm).padStart(2,'0')} ${suffix}`;
           return `<div class="act-entry">
             <div class="act-entry-top">
               <div style="display:flex;align-items:center;gap:7px">
@@ -4475,6 +4488,29 @@
           toast(result.message || 'Unlock failed');
         }
       } catch(err) { toast('Unlock failed'); }
+    }
+
+    // ── CLEAR ACTIVITY LOG ─────────────────────────────────────────────
+    function promptClearActivityLog() {
+      document.getElementById('confirm-msg').textContent = 'This will permanently delete every entry in the activity log. This cannot be undone.';
+      document.getElementById('confirm-overlay').dataset.mode = 'clearActivityLog';
+      document.getElementById('confirm-overlay').classList.add('show');
+    }
+
+    async function doClearActivityLog() {
+      try {
+        const res    = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'clearActivityLog', token: currentToken }) });
+        const result = await res.json();
+        if (result.success) {
+          toast(`Cleared ${result.removed} log entr${result.removed === 1 ? 'y' : 'ies'}`);
+          // If the Activity tab has data loaded, refresh it so it doesn't show stale rows
+          if (document.getElementById('dev-panel-activity').style.display !== 'none') {
+            loadActivityLog();
+          }
+        } else {
+          toast(result.message || 'Clear failed');
+        }
+      } catch(err) { toast('Clear failed'); }
     }
 
     function logout() {
@@ -4725,6 +4761,12 @@
       if (mode === 'forceLogout') {
         closeConfirm();
         await doForceLogout();
+        return;
+      }
+
+      if (mode === 'clearActivityLog') {
+        closeConfirm();
+        await doClearActivityLog();
         return;
       }
 
