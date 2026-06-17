@@ -3823,16 +3823,20 @@
       isSaving = false;
       if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
       const wasEditing = !!editingModel;
+      const dest = originScreen || 's-search';
       clearForm();
-      await loadDB();
 
       if (wasEditing) {
-        showTab(originScreen || 's-search');
+        // Navigate away immediately so the user never sees the Add screen
+        // sitting idle. loadDB() refreshes data silently in the background.
+        showTab(dest);
         originScreen = 's-search';
+        loadDB(); // fire-and-forget
       } else {
         registerRecentSlot(shelfValue, row, col);
         allModels.forEach(m => recentAdded.unshift(m.model));
         renderRecentAdded();
+        await loadDB();
         document.getElementById('f-model').focus();
       }
     }
