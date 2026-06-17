@@ -4597,7 +4597,11 @@
 
       users.forEach(user => {
         const isAdmin = user.role === 'Manager';
-        const canManage = currentRole === 'Manager' || currentRole === 'Developer';
+        // A Manager can manage Staff/Manager accounts, but never a Developer
+        // account. Developers can manage anyone. Mirrors canManageTargetRole_
+        // on the backend, which is the actual enforcement point.
+        const canManage = currentRole === 'Developer'
+          || (currentRole === 'Manager' && user.role !== 'Developer');
         const forceLogoutBtn = currentRole === 'Developer'
           ? `<button class="user-action-btn" style="background:#fde8e8;color:var(--red);border:1px solid #fca5a5" onclick="promptForceLogout('${user.username}')">⏏ Logout</button>`
           : '';
