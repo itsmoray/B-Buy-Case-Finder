@@ -2459,7 +2459,36 @@
           <div class="account-row" style="border:none"><span class="account-row-label">Status</span><span class="account-row-val" style="color:var(--green)">● Active</span></div>
         </div>
         <button class="btn btn-blue" style="margin-top:8px" onclick="openChangePassword()">Change password</button>
+        <button class="btn btn-outline-red" id="dev-tools-btn" style="margin-top:8px;display:none" onclick="showDevTools()">🛠 Developer Tools</button>
         <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()">⏻ Sign out</button>
+      </div>
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+
+    <!-- ── DEVELOPER TOOLS SCREEN ── -->
+    <div class="screen" id="s-dev">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">🛠</div>
+        <div style="flex:1">
+          <div class="topbar-title">Developer Tools</div>
+          <div class="topbar-sub">Session management</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="detail-section">
+          <div class="section-eyebrow" style="margin-bottom:12px">Session storage</div>
+          <div class="account-row"><span class="account-row-label">Total sessions</span><span class="account-row-val" id="dev-sess-total">—</span></div>
+          <div class="account-row"><span class="account-row-label">Active</span><span class="account-row-val" id="dev-sess-active">—</span></div>
+          <div class="account-row" style="border:none"><span class="account-row-label">Expired</span><span class="account-row-val" id="dev-sess-expired">—</span></div>
+        </div>
+        <button class="btn btn-blue" style="margin-top:14px" onclick="refreshSessionCount()">🔄 Refresh count</button>
+        <button class="btn btn-outline-red" style="margin-top:8px" onclick="runSessionCleanup()" id="dev-cleanup-btn">🧹 Clean up expired sessions</button>
       </div>
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
@@ -2478,6 +2507,7 @@
     let db = [];
     let currentUser = null;
     let currentRole = null;
+    let currentToken = null;
     let prevScreen = 's-search';
     let originScreen = 's-search'; // the tab the user was on before entering detail/edit flow
     let editingModel = null;
@@ -2488,9 +2518,16 @@
 
       try {
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL + '?action=inventory&token=' + encodeURIComponent(currentToken));
 
         const data = await response.json();
+
+        if (data && data.success === false) {
+          // Session expired/invalid — bounce back to login
+          toast(data.message || 'Session expired, please log in again');
+          forceLogout();
+          return;
+        }
 
         db = data.map(item => ({
           model: item.Model,
@@ -3606,10 +3643,10 @@
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
-      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
+      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager' || currentRole === 'Developer') ? 'block' : 'none';
 
       // Staff can only edit the stock quantity — lock everything else and hide the share toggle
-      const isStaffEditing = (currentRole !== 'Manager');
+      const isStaffEditing = (currentRole !== 'Manager' && currentRole !== 'Developer');
       ['f-model','f-shelf','f-row','f-col'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -3719,11 +3756,11 @@
 
       const saveOne = async (mName, mStock, origName) => {
         const payload = origName
-          ? { action: 'updateInventory',
+          ? { action: 'updateInventory', token: currentToken,
               originalModel: origName,
               originalShelf: shelf, originalRow: row, originalCol: col,
               model: mName, shelf, row, col, stock: mStock, floor }
-          : { action: 'addInventory',
+          : { action: 'addInventory', token: currentToken,
               model: mName, shelf, row, col, stock: mStock, floor };
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         return res.json();
@@ -3734,9 +3771,10 @@
       // Save primary model
       const r1 = await saveOne(model, stock, primaryOrigName);
       if (!r1.success) {
-        toast('Save failed');
+        toast(r1.message || 'Save failed');
         isSaving = false;
         if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
+        if (r1.message && r1.message.toLowerCase().includes('session')) forceLogout();
         return;
       }
 
@@ -3744,10 +3782,10 @@
       for (let i = 0; i < extras.length; i++) {
         const origNameForExtra = extras[i]._rowEl?.dataset?.originalModel || null;
         const payload = origNameForExtra
-          ? { action: 'updateInventory', originalModel: origNameForExtra,
+          ? { action: 'updateInventory', token: currentToken, originalModel: origNameForExtra,
               originalShelf: shelf, originalRow: row, originalCol: col,
               model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor }
-          : { action: 'addInventory',
+          : { action: 'addInventory', token: currentToken,
               model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
       }
@@ -3769,7 +3807,7 @@
               // This sibling was removed from the form — delete it from the DB
               await fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: 'deleteInventory', model: sib.model })
+                body: JSON.stringify({ action: 'deleteInventory', token: currentToken, model: sib.model })
               });
             }
           }
@@ -3816,6 +3854,7 @@
       const newStock = Math.max(0, parseInt(entry.stock) + delta);
       const payload = {
         action: "updateInventory",
+        token: currentToken,
         originalModel: entry.model,
         originalShelf: entry.shelf.split('|')[0],
         originalRow:   entry.row,
@@ -4025,6 +4064,7 @@
 
       currentUser = result.username;
       currentRole = result.role;
+      currentToken = result.token;
 
       localStorage.setItem(
         'currentUser',
@@ -4034,6 +4074,11 @@
       localStorage.setItem(
         'currentRole',
         currentRole
+      );
+
+      localStorage.setItem(
+        'currentToken',
+        currentToken
       );
 
       setupRole();
@@ -4063,6 +4108,9 @@
 
     currentRole =
       localStorage.getItem('currentRole');
+
+    currentToken =
+      localStorage.getItem('currentToken');
 
     if (currentUser) {
 
@@ -4118,12 +4166,83 @@
         });
 
       }
+
+      const devBtn = document.getElementById('dev-tools-btn');
+      if (devBtn) devBtn.style.display = (currentRole === 'Developer') ? '' : 'none';
+    }
+
+    // ── DEVELOPER TOOLS ───────────────────────────────────────────────
+    function showDevTools() {
+      const current = document.querySelector('.screen.active');
+      if (!current) return;
+      prevScreen = current.id;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'));
+      const devEl = document.getElementById('s-dev');
+      devEl.classList.add('active');
+      devEl.classList.add('slide-in');
+      setTimeout(() => devEl.classList.remove('slide-in'), 350);
+      refreshSessionCount();
+    }
+
+    async function refreshSessionCount() {
+      try {
+        const response = await fetch(API_URL + '?action=getSessionCount&token=' + encodeURIComponent(currentToken));
+        const result = await response.json();
+        if (!result.success) {
+          toast(result.message || 'Unable to load session count');
+          return;
+        }
+        document.getElementById('dev-sess-total').textContent = result.total;
+        document.getElementById('dev-sess-active').textContent = result.active;
+        document.getElementById('dev-sess-expired').textContent = result.expired;
+      } catch (err) {
+        console.error(err);
+        toast('Unable to load session count');
+      }
+    }
+
+    async function runSessionCleanup() {
+      const btn = document.getElementById('dev-cleanup-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Cleaning…'; }
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'cleanupSessions', token: currentToken })
+        });
+        const result = await response.json();
+        if (result.success) {
+          toast(`Removed ${result.removed} expired session${result.removed === 1 ? '' : 's'}`);
+          refreshSessionCount();
+        } else {
+          toast(result.message || 'Cleanup failed');
+        }
+      } catch (err) {
+        console.error(err);
+        toast('Cleanup failed');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🧹 Clean up expired sessions'; }
+      }
     }
 
     function logout() {
 
+      // Best-effort: invalidate the session token server-side too.
+      if (currentToken) {
+        fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'logout', token: currentToken })
+        }).catch(() => {});
+      }
+
       localStorage.clear();
 
+      location.reload();
+    }
+
+    // Used when the server tells us our session is no longer valid
+    // (expired/invalid token) — same effect as a manual logout.
+    function forceLogout() {
+      localStorage.clear();
       location.reload();
     }
     async function createUser() {
@@ -4161,6 +4280,7 @@
           method: 'POST',
           body: JSON.stringify({
             action: 'createUser',
+            token: currentToken,
             username,
             password,
             role
@@ -4186,7 +4306,8 @@
       const response =
         await fetch(
           API_URL +
-          '?action=getUsers'
+          '?action=getUsers' +
+          '&token=' + encodeURIComponent(currentToken)
         );
 
       const users =
@@ -4197,7 +4318,7 @@
       users.forEach(user => {
 
         const isAdmin = user.role === 'Manager';
-        const actionBtns = currentRole === 'Manager' ? `
+        const actionBtns = (currentRole === 'Manager' || currentRole === 'Developer') ? `
           <div class="user-actions">
             <button class="user-action-btn edit" onclick="openEditUser('${user.username}', '${user.role}')">Edit</button>
             <button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>
@@ -4259,6 +4380,7 @@
         method: 'POST',
         body: JSON.stringify({
           action: 'updateUser',
+          token: currentToken,
           originalUsername: editingUsername,
           newUsername,
           newPassword: newPassword || null
@@ -4321,6 +4443,7 @@
         method: 'POST',
         body: JSON.stringify({
           action: 'updateUser',
+          token: currentToken,
           originalUsername: currentUser,
           newUsername: currentUser,
           newPassword: newPass
@@ -4362,6 +4485,7 @@
           method: 'POST',
           body: JSON.stringify({
             action: 'deleteUser',
+            token: currentToken,
             username: pendingDeleteUser
           })
         });
@@ -4385,6 +4509,7 @@
           method: "POST",
           body: JSON.stringify({
             action: "deleteInventory",
+            token: currentToken,
             model: pendingDelete
           })
         });
@@ -4409,7 +4534,7 @@
 
     // ── SWIPE TO GO BACK ──────────────────────────────────────────────
     (function () {
-      const BACK_SCREENS = new Set(['s-detail', 's-account']);
+      const BACK_SCREENS = new Set(['s-detail', 's-account', 's-dev']);
       const EDGE_ZONE    = 30;   // px from left edge to start swipe
       const MIN_SWIPE_X  = 70;   // minimum horizontal travel
       const MAX_RATIO    = 1.2;  // x must be > y * this to be horizontal
