@@ -2826,7 +2826,7 @@
         renderRecentAdded();
       }
 
-      if (id === 's-inventory') renderInventory();
+      if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') renderInventory();
 
       const current = document.querySelector('.screen.active');
       const next = document.getElementById(id);
@@ -4064,7 +4064,13 @@
       const entry = db[idx];
       if (!entry) return;
       const model = entry.model;
-      const newStock = Math.max(0, parseInt(entry.stock) + delta);
+      const oldStock = parseInt(entry.stock);
+      const newStock = Math.max(0, oldStock + delta);
+
+      // ── Optimistic update: write to db and DOM immediately ──
+      entry.stock = newStock;
+      updateStockDOM(idx, newStock, entry);
+
       const payload = {
         action: "updateInventory",
         token: currentToken,
@@ -4083,50 +4089,56 @@
         const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();
         if (result.success) {
-          entry.stock = newStock;
-          // Update inline counter in search results and inventory
-          const countEl = document.getElementById('sc-' + idx);
-          if (countEl) {
-            countEl.textContent = newStock;
-            countEl.style.color = newStock === 0 ? 'var(--red)' : newStock <= 5 ? 'var(--amber)' : 'var(--text)';
-          }
-          // Update dot color in inventory list
-          const dotEl = document.getElementById('sd-' + idx);
-          if (dotEl) {
-            dotEl.style.background = dotColor(newStock);
-          }
-          // Update stats bar in inventory screen
-          const allStocks = db.map(x => parseInt(x.stock) || 0);
-          const newLow = allStocks.filter(s => s <= 5 && s > 0).length;
-          const newOut = allStocks.filter(s => s === 0).length;
-          const statCards = document.querySelectorAll('#s-inventory .stat-card');
-          if (statCards.length >= 3) {
-            const lowCard = statCards[1];
-            const outCard = statCards[2];
-            lowCard.querySelector('.stat-val').textContent = newLow;
-            lowCard.classList.toggle('stat-low', newLow > 0);
-            outCard.querySelector('.stat-val').textContent = newOut;
-            outCard.classList.toggle('stat-out', newOut > 0);
-          }
-          // Update badge in search result card
-          const badgeSearchEl = document.getElementById('sb-' + idx);
-          if (badgeSearchEl) {
-            badgeSearchEl.innerHTML = stockBadge(newStock) + ' ' + floorBadge(entry.shelf.split('|')[1], entry.shelf.split('|')[0]);
-          }
-          // Update detail screen if it's currently showing this model
-          const detailTitle = document.getElementById('detail-title');
-          if (detailTitle && detailTitle.textContent === model) {
-            const numEl = document.getElementById('detail-stock-num');
-            const badgeEl = document.getElementById('detail-stock-badge');
-            if (numEl) { numEl.textContent = newStock; }
-            if (badgeEl) { badgeEl.innerHTML = stockBadge(newStock); }
-          }
           toast(delta > 0 ? `+1 → ${newStock} in stock` : `-1 → ${newStock} in stock`);
         } else {
+          // Revert on failure
+          entry.stock = oldStock;
+          updateStockDOM(idx, oldStock, entry);
           toast('Update failed');
         }
       } catch (e) {
+        // Revert on error
+        entry.stock = oldStock;
+        updateStockDOM(idx, oldStock, entry);
         toast('Update failed');
+      }
+    }
+
+    // Updates all DOM elements for a stock change — called both on optimistic
+    // update and on revert, so renderInventory always reads correct db values
+    function updateStockDOM(idx, stock, entry) {
+      // Stepper count
+      const countEl = document.getElementById('sc-' + idx);
+      if (countEl) {
+        countEl.textContent = stock;
+        countEl.style.color = stock === 0 ? 'var(--red)' : stock <= 5 ? 'var(--amber)' : 'var(--text)';
+      }
+      // Dot color
+      const dotEl = document.getElementById('sd-' + idx);
+      if (dotEl) dotEl.style.background = dotColor(stock);
+      // Stats bar
+      const allStocks = db.map(x => parseInt(x.stock) || 0);
+      const newLow = allStocks.filter(s => s <= 5 && s > 0).length;
+      const newOut = allStocks.filter(s => s === 0).length;
+      const statCards = document.querySelectorAll('#s-inventory .stat-card');
+      if (statCards.length >= 3) {
+        statCards[1].querySelector('.stat-val').textContent = newLow;
+        statCards[1].classList.toggle('stat-low', newLow > 0);
+        statCards[2].querySelector('.stat-val').textContent = newOut;
+        statCards[2].classList.toggle('stat-out', newOut > 0);
+      }
+      // Search result badge
+      const badgeSearchEl = document.getElementById('sb-' + idx);
+      if (badgeSearchEl) {
+        badgeSearchEl.innerHTML = stockBadge(stock) + ' ' + floorBadge(entry.shelf.split('|')[1], entry.shelf.split('|')[0]);
+      }
+      // Detail screen if open on this model
+      const detailTitle = document.getElementById('detail-title');
+      if (detailTitle && detailTitle.textContent === entry.model) {
+        const numEl = document.getElementById('detail-stock-num');
+        const badgeEl = document.getElementById('detail-stock-badge');
+        if (numEl) numEl.textContent = stock;
+        if (badgeEl) badgeEl.innerHTML = stockBadge(stock);
       }
     }
 
