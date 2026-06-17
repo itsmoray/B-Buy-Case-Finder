@@ -3073,6 +3073,14 @@
       const subText = document.getElementById('share-toggle-sub-text');
       if (subText) subText.textContent = 'Add multiple models to the same shelf · row · column. This cannot be changed after saving.';
 
+      // Re-enable fields and restore share toggle visibility (in case staff edit mode locked them)
+      ['f-model','f-shelf','f-row','f-col'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.disabled = false; el.style.opacity = ''; el.style.pointerEvents = ''; }
+      });
+      const secB2 = document.getElementById('model-b-section');
+      if (secB2) secB2.style.display = '';
+
       document.getElementById('add-title').textContent = 'Add new model';
       document.getElementById('add-logo').textContent = '➕';
       document.getElementById('add-back-btn').style.display = 'none';
@@ -3599,6 +3607,20 @@
 
       document.getElementById('add-back-btn').style.display = 'flex';
       document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager') ? 'block' : 'none';
+
+      // Staff can only edit the stock quantity — lock everything else and hide the share toggle
+      const isStaffEditing = (currentRole !== 'Manager');
+      ['f-model','f-shelf','f-row','f-col'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = isStaffEditing;
+          el.style.opacity = isStaffEditing ? '0.6' : '';
+          el.style.pointerEvents = isStaffEditing ? 'none' : '';
+        }
+      });
+      if (shareRow) shareRow.style.display = isStaffEditing ? 'none' : '';
+      if (secB) secB.style.display = isStaffEditing ? 'none' : '';
+
       document.getElementById('recent-added-wrap').style.display = 'none';
       // Hide the clear button — it's only for Add mode
       const clearBtn = document.getElementById('clear-fields-btn');
