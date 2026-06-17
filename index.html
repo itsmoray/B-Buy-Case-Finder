@@ -2516,6 +2516,11 @@
 
     async function loadDB() {
 
+      // Don't attempt a fetch (and never call forceLogout) if there is no token.
+      // This guard prevents a reload loop when the user hasn't logged in yet,
+      // or when visibilitychange fires while the login screen is showing.
+      if (!currentToken) return;
+
       try {
 
         const response = await fetch(API_URL + '?action=inventory&token=' + encodeURIComponent(currentToken));
@@ -4671,7 +4676,8 @@
           document.querySelectorAll('.screen').forEach(s => {
             s.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
           });
-          if (!splashVisible) {
+          // Only show splash if already logged in — don't interrupt the login screen.
+          if (!splashVisible && currentToken) {
             showSplash();
             scheduleHide(1400);
           } else {
