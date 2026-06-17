@@ -2551,6 +2551,7 @@
         <button id="dev-tab-activity" class="dev-tab-btn dev-tab-active" onclick="switchDevTab('activity')">📊 Activity</button>
         <button id="dev-tab-sessions" class="dev-tab-btn" onclick="switchDevTab('sessions')">🔑 Sessions</button>
         <button id="dev-tab-security" class="dev-tab-btn" onclick="switchDevTab('security')">🔒 Security</button>
+        <button id="dev-tab-accounts" class="dev-tab-btn" onclick="switchDevTab('accounts')">👤 Accounts</button>
       </div>
       <div class="scroll-area" style="padding-top:14px">
 
@@ -2611,12 +2612,60 @@
           <button class="btn btn-outline-red" style="margin-top:8px" onclick="promptClearActivityLog()">🗑 Clear activity log</button>
         </div>
 
+        <!-- ACCOUNTS TAB -->
+        <div id="dev-panel-accounts" style="display:none">
+
+          <!-- Existing Developer accounts -->
+          <div class="detail-section">
+            <div class="section-eyebrow" style="margin-bottom:12px">Developer accounts</div>
+            <div id="dev-accounts-list"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+          </div>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="openCreateDeveloper()">➕ Create Developer account</button>
+
+        </div>
+
       </div>
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
         <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
+      </div>
+    </div>
+
+    <!-- EDIT DEVELOPER ACCOUNT DIALOG -->
+    <div class="overlay" id="edit-dev-overlay">
+      <div class="dialog" style="position:relative">
+        <button onclick="closeEditDev()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        <h3 id="edit-dev-title" style="padding-right:36px">Edit Developer account</h3>
+        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">Leave password blank to keep it unchanged.</p>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="edit-dev-name" autocorrect="off" autocapitalize="none">
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>New password</label>
+          <input type="password" id="edit-dev-pass" placeholder="Leave blank to keep current">
+        </div>
+        <button class="btn btn-blue" onclick="submitEditDev()">💾 Save changes</button>
+      </div>
+    </div>
+
+    <!-- CREATE DEVELOPER ACCOUNT DIALOG -->
+    <div class="overlay" id="create-dev-overlay">
+      <div class="dialog" style="position:relative">
+        <button onclick="closeCreateDeveloper()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        <h3 style="padding-right:36px">Create Developer account</h3>
+        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">⚠️ Developer accounts have full access to everything. Create with care.</p>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="create-dev-name" autocorrect="off" autocapitalize="none" placeholder="Enter username">
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>Password</label>
+          <input type="password" id="create-dev-pass" placeholder="Enter password">
+        </div>
+        <button class="btn btn-blue" onclick="submitCreateDeveloper()">✅ Create account</button>
       </div>
     </div>
 
@@ -2681,7 +2730,7 @@
           return;
         }
 
-        db = data.map(item => ({
+        const newDb = data.map(item => ({
           model: item.Model,
           shelf: item.Shelf + "|" + item.Floor,
           row: item.Row,
@@ -2689,13 +2738,18 @@
           stock: Number(item.Stock)
         }));
 
+        // Only re-render if the data actually changed — prevents wiping
+        // in-place DOM updates that quickUpdateStock already made
+        const changed = JSON.stringify(newDb) !== JSON.stringify(db);
+        db = newDb;
+
         saveCachedDB();
 
-        updateTopbarCount();
-
-        doSearch('');
-
-        renderInventory();
+        if (changed) {
+          updateTopbarCount();
+          doSearch('');
+          renderInventory();
+        }
 
       } catch (err) {
 
@@ -4368,12 +4422,13 @@
 
     function switchDevTab(tab) {
       currentDevTab = tab;
-      ['activity','sessions','security'].forEach(t => {
+      ['activity','sessions','security','accounts'].forEach(t => {
         document.getElementById('dev-panel-' + t).style.display = t === tab ? '' : 'none';
         document.getElementById('dev-tab-' + t).classList.toggle('dev-tab-active', t === tab);
       });
       if (tab === 'sessions') refreshSessionCount();
       if (tab === 'security') loadLockedAccounts();
+      if (tab === 'accounts') loadDevAccounts();
       if (tab === 'activity') {
         // Set today's date as default if not already set
         const di = document.getElementById('dev-log-date');
@@ -5053,6 +5108,126 @@
         }
       });
     })();
+
+    // ── DEVELOPER ACCOUNT MANAGEMENT ────────────────────────────────
+    let editingDevUsername = null;
+
+    async function loadDevAccounts() {
+      const listEl = document.getElementById('dev-accounts-list');
+      listEl.innerHTML = '<div style="color:var(--text3);font-size:13px">Loading…</div>';
+      try {
+        const response = await fetch(API_URL + '?action=getUsers&token=' + encodeURIComponent(currentToken));
+        const users = await response.json();
+        const devs = users.filter(u => u.role === 'Developer');
+        if (!devs.length) {
+          listEl.innerHTML = '<div style="color:var(--text3);font-size:13px">No Developer accounts found.</div>';
+          return;
+        }
+        listEl.innerHTML = devs.map(u => `
+          <div class="user-item" style="flex-wrap:wrap;gap:6px">
+            <div class="user-name">${u.username}</div>
+            <span class="user-role-badge" style="background:#ede9fe;color:#5b21b6">Developer</span>
+            <div class="user-actions" style="flex-wrap:wrap;gap:6px">
+              <button class="user-action-btn edit" onclick="openEditDev('${u.username}')">Edit</button>
+            </div>
+          </div>`).join('');
+      } catch(e) {
+        listEl.innerHTML = '<div style="color:var(--red);font-size:13px">Failed to load accounts.</div>';
+      }
+    }
+
+    function openEditDev(username) {
+      editingDevUsername = username;
+      document.getElementById('edit-dev-title').textContent = 'Edit — ' + username;
+      document.getElementById('edit-dev-name').value = username;
+      document.getElementById('edit-dev-pass').value = '';
+      document.getElementById('edit-dev-overlay').classList.add('show');
+    }
+
+    function closeEditDev() {
+      editingDevUsername = null;
+      document.getElementById('edit-dev-overlay').classList.remove('show');
+    }
+
+    async function submitEditDev() {
+      const newUsername = document.getElementById('edit-dev-name').value.trim();
+      const newPassword = document.getElementById('edit-dev-pass').value;
+
+      if (!newUsername) { toast('Username cannot be empty'); return; }
+
+      const payload = {
+        action: 'updateUser',
+        token: currentToken,
+        originalUsername: editingDevUsername,
+        newUsername,
+        newPassword: newPassword || undefined
+      };
+
+      try {
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.success) {
+          // If the Developer edited their own account, update localStorage + UI
+          if (editingDevUsername === currentUser) {
+            currentUser = newUsername;
+            localStorage.setItem('currentUser', currentUser);
+            // Update account screen UI if visible
+            const nameEl = document.getElementById('account-name');
+            const avatarEl = document.getElementById('account-avatar');
+            const usernameEl = document.getElementById('acct-username');
+            if (nameEl) nameEl.textContent = currentUser;
+            if (avatarEl) avatarEl.textContent = currentUser[0].toUpperCase();
+            if (usernameEl) usernameEl.textContent = currentUser;
+          }
+          toast('Account updated');
+          closeEditDev();
+          loadDevAccounts();
+        } else {
+          toast(result.message || 'Update failed');
+        }
+      } catch(e) {
+        toast('Update failed');
+      }
+    }
+
+    function openCreateDeveloper() {
+      document.getElementById('create-dev-name').value = '';
+      document.getElementById('create-dev-pass').value = '';
+      document.getElementById('create-dev-overlay').classList.add('show');
+    }
+
+    function closeCreateDeveloper() {
+      document.getElementById('create-dev-overlay').classList.remove('show');
+    }
+
+    async function submitCreateDeveloper() {
+      const username = document.getElementById('create-dev-name').value.trim();
+      const password = document.getElementById('create-dev-pass').value;
+
+      if (!username || !password) { toast('Enter username and password'); return; }
+
+      const payload = {
+        action: 'createUser',
+        token: currentToken,
+        username,
+        password,
+        role: 'Developer'
+      };
+
+      try {
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.success) {
+          toast('Developer account created');
+          closeCreateDeveloper();
+          loadDevAccounts();
+        } else {
+          toast(result.message || 'Create failed');
+        }
+      } catch(e) {
+        toast('Create failed');
+      }
+    }
 
     // ── FILTER CHIP HELPERS ───────────────────────────────────────────
     function updateChipState(chipId, selectId, defaultVal) {
