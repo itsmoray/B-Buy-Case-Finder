@@ -1929,6 +1929,45 @@
         grid-template-columns: repeat(3, 1fr);
       }
     }
+  
+    /* DEVELOPER TOOLS TABS */
+    .dev-tab-btn {
+      flex: 1;
+      padding: 11px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      background: none;
+      border: none;
+      border-bottom: 2.5px solid transparent;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .dev-tab-btn.dev-tab-active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+    /* ACTIVITY LOG ENTRY */
+    .act-entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .act-entry-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+    .act-user { font-size: 13px; font-weight: 600; color: var(--text); }
+    .act-role  { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: var(--blue-light); color: var(--blue-dark); }
+    .act-role.Staff   { background: var(--green-bg); color: var(--green); }
+    .act-role.Manager { background: var(--amber-bg); color: var(--amber); }
+    .act-action { font-size: 13px; color: var(--text); }
+    .act-detail { font-size: 12px; color: var(--text2); margin-top:2px; }
+    .act-time   { font-size: 11px; color: var(--text3); }
+
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1565ff">
@@ -2477,18 +2516,68 @@
         <div class="logo-mark">🛠</div>
         <div style="flex:1">
           <div class="topbar-title">Developer Tools</div>
-          <div class="topbar-sub">Session management</div>
+          <div class="topbar-sub">Activity · Sessions · Security</div>
         </div>
       </div>
-      <div class="scroll-area">
-        <div class="detail-section">
-          <div class="section-eyebrow" style="margin-bottom:12px">Session storage</div>
-          <div class="account-row"><span class="account-row-label">Total sessions</span><span class="account-row-val" id="dev-sess-total">—</span></div>
-          <div class="account-row"><span class="account-row-label">Active</span><span class="account-row-val" id="dev-sess-active">—</span></div>
-          <div class="account-row" style="border:none"><span class="account-row-label">Expired</span><span class="account-row-val" id="dev-sess-expired">—</span></div>
+      <!-- Dev tab bar -->
+      <div style="display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+        <button id="dev-tab-activity" class="dev-tab-btn dev-tab-active" onclick="switchDevTab('activity')">📊 Activity</button>
+        <button id="dev-tab-sessions" class="dev-tab-btn" onclick="switchDevTab('sessions')">🔑 Sessions</button>
+        <button id="dev-tab-security" class="dev-tab-btn" onclick="switchDevTab('security')">🔒 Security</button>
+      </div>
+      <div class="scroll-area" style="padding-top:14px">
+
+        <!-- ACTIVITY TAB -->
+        <div id="dev-panel-activity">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <input type="date" id="dev-log-date" style="flex:1;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+            <button class="btn btn-blue btn-sm" style="width:auto;padding:10px 16px" onclick="loadActivityLog()">Load</button>
+          </div>
+          <!-- Summary cards -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+            <div class="detail-section" style="margin:0;padding:12px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="dev-act-total">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Total</div>
+            </div>
+            <div class="detail-section" style="margin:0;padding:12px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--green)" id="dev-act-logins">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Logins</div>
+            </div>
+            <div class="detail-section" style="margin:0;padding:12px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--amber)" id="dev-act-updates">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Stock changes</div>
+            </div>
+          </div>
+          <div id="dev-act-log" style="display:flex;flex-direction:column;gap:8px">
+            <div style="text-align:center;color:var(--text3);padding:24px;font-size:14px">Pick a date and tap Load</div>
+          </div>
         </div>
-        <button class="btn btn-blue" style="margin-top:14px" onclick="refreshSessionCount()">🔄 Refresh count</button>
-        <button class="btn btn-outline-red" style="margin-top:8px" onclick="runSessionCleanup()" id="dev-cleanup-btn">🧹 Clean up expired sessions</button>
+
+        <!-- SESSIONS TAB -->
+        <div id="dev-panel-sessions" style="display:none">
+          <div class="detail-section">
+            <div class="section-eyebrow" style="margin-bottom:12px">Overview</div>
+            <div class="account-row"><span class="account-row-label">Total sessions</span><span class="account-row-val" id="dev-sess-total">—</span></div>
+            <div class="account-row"><span class="account-row-label">Active</span><span class="account-row-val" id="dev-sess-active">—</span></div>
+            <div class="account-row" style="border:none"><span class="account-row-label">Expired</span><span class="account-row-val" id="dev-sess-expired">—</span></div>
+          </div>
+          <div class="detail-section" style="margin-top:12px">
+            <div class="section-eyebrow" style="margin-bottom:12px">Active per user</div>
+            <div id="dev-sess-peruser" style="color:var(--text2);font-size:13px">—</div>
+          </div>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="refreshSessionCount()">🔄 Refresh</button>
+          <button class="btn btn-outline-red" style="margin-top:8px" onclick="runSessionCleanup()" id="dev-cleanup-btn">🧹 Clean up expired sessions</button>
+        </div>
+
+        <!-- SECURITY TAB -->
+        <div id="dev-panel-security" style="display:none">
+          <div class="detail-section">
+            <div class="section-eyebrow" style="margin-bottom:12px">Locked accounts</div>
+            <div id="dev-locked-list"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+          </div>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="loadLockedAccounts()">🔄 Refresh</button>
+        </div>
+
       </div>
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
@@ -4067,7 +4156,7 @@
       const result = await response.json();
 
       if (!result.success) {
-        toast('Invalid login');
+        toast(result.message || 'Invalid login');
         return;
       }
 
@@ -4181,6 +4270,28 @@
     }
 
     // ── DEVELOPER TOOLS ───────────────────────────────────────────────
+    // ── DEVELOPER TOOLS ───────────────────────────────────────────────
+    let currentDevTab = 'activity';
+
+    function switchDevTab(tab) {
+      currentDevTab = tab;
+      ['activity','sessions','security'].forEach(t => {
+        document.getElementById('dev-panel-' + t).style.display = t === tab ? '' : 'none';
+        document.getElementById('dev-tab-' + t).classList.toggle('dev-tab-active', t === tab);
+      });
+      if (tab === 'sessions') refreshSessionCount();
+      if (tab === 'security') loadLockedAccounts();
+      if (tab === 'activity') {
+        // Set today's date as default if not already set
+        const di = document.getElementById('dev-log-date');
+        if (!di.value) {
+          const today = new Date();
+          const ist = new Date(today.getTime() + 5.5 * 60 * 60000);
+          di.value = ist.toISOString().slice(0, 10);
+        }
+      }
+    }
+
     function showDevTools() {
       const current = document.querySelector('.screen.active');
       if (!current) return;
@@ -4190,20 +4301,92 @@
       devEl.classList.add('active');
       devEl.classList.add('slide-in');
       setTimeout(() => devEl.classList.remove('slide-in'), 350);
-      refreshSessionCount();
+      // Default to activity tab and load today
+      switchDevTab('activity');
+      const di = document.getElementById('dev-log-date');
+      const today = new Date();
+      const ist = new Date(today.getTime() + 5.5 * 60 * 60000);
+      di.value = ist.toISOString().slice(0, 10);
+      loadActivityLog();
     }
 
+    // ── ACTIVITY LOG ──────────────────────────────────────────────────
+    async function loadActivityLog() {
+      const dateVal = document.getElementById('dev-log-date').value;
+      const logEl   = document.getElementById('dev-act-log');
+      logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:16px;font-size:13px">Loading…</div>';
+      try {
+        const url = API_URL + '?action=getActivityLog&token=' + encodeURIComponent(currentToken) + (dateVal ? '&date=' + dateVal : '');
+        const res    = await fetch(url);
+        const result = await res.json();
+        if (!result.success) { toast(result.message || 'Failed to load log'); return; }
+
+        const entries = result.entries || [];
+        // Summary counts
+        const logins  = entries.filter(e => e.action === 'Login').length;
+        const updates = entries.filter(e => e.action === 'Stock Update' || e.action === 'Update Inventory').length;
+        document.getElementById('dev-act-total').textContent   = entries.length;
+        document.getElementById('dev-act-logins').textContent  = logins;
+        document.getElementById('dev-act-updates').textContent = updates;
+
+        if (!entries.length) {
+          logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:14px">No activity on this date</div>';
+          return;
+        }
+
+        const actionIcon = a => {
+          if (a === 'Login') return '🔓';
+          if (a === 'Stock Update' || a === 'Update Inventory') return '📦';
+          if (a === 'Add Inventory') return '➕';
+          if (a === 'Delete Inventory') return '🗑';
+          if (a === 'Create User') return '👤';
+          if (a === 'Delete User') return '❌';
+          if (a === 'Force Logout') return '⏏';
+          if (a === 'Unlock Account') return '🔓';
+          if (a.includes('Failed')) return '🚫';
+          return '•';
+        };
+
+        logEl.innerHTML = entries.map(e => {
+          const ts  = new Date(e.timestamp);
+          const ist = new Date(ts.getTime() + 5.5 * 60 * 60000);
+          const timeStr = ist.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+          return `<div class="act-entry">
+            <div class="act-entry-top">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:16px">${actionIcon(e.action)}</span>
+                <span class="act-user">${e.username}</span>
+                <span class="act-role ${e.role}">${e.role}</span>
+              </div>
+              <span class="act-time">${timeStr}</span>
+            </div>
+            <div class="act-action">${e.action}</div>
+            ${e.detail ? `<div class="act-detail">${e.detail}</div>` : ''}
+          </div>`;
+        }).join('');
+      } catch(err) {
+        console.error(err);
+        toast('Unable to load activity log');
+      }
+    }
+
+    // ── SESSIONS ──────────────────────────────────────────────────────
     async function refreshSessionCount() {
       try {
         const response = await fetch(API_URL + '?action=getSessionCount&token=' + encodeURIComponent(currentToken));
         const result = await response.json();
-        if (!result.success) {
-          toast(result.message || 'Unable to load session count');
-          return;
-        }
-        document.getElementById('dev-sess-total').textContent = result.total;
-        document.getElementById('dev-sess-active').textContent = result.active;
+        if (!result.success) { toast(result.message || 'Unable to load session count'); return; }
+        document.getElementById('dev-sess-total').textContent   = result.total;
+        document.getElementById('dev-sess-active').textContent  = result.active;
         document.getElementById('dev-sess-expired').textContent = result.expired;
+        const perUserEl = document.getElementById('dev-sess-peruser');
+        if (result.perUser && result.perUser.length) {
+          perUserEl.innerHTML = result.perUser.map(u =>
+            `<div class="account-row" style="border:none;padding:6px 0"><span class="account-row-label">${u.username}</span><span class="account-row-val">${u.count} active</span></div>`
+          ).join('');
+        } else {
+          perUserEl.textContent = 'No active sessions';
+        }
       } catch (err) {
         console.error(err);
         toast('Unable to load session count');
@@ -4231,6 +4414,67 @@
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '🧹 Clean up expired sessions'; }
       }
+    }
+
+    // ── FORCE LOGOUT ──────────────────────────────────────────────────
+    let pendingForceLogoutUser = null;
+
+    function promptForceLogout(username) {
+      if (username === currentUser) { toast('Cannot force-logout yourself'); return; }
+      pendingForceLogoutUser = username;
+      document.getElementById('confirm-msg').textContent = `Force-logout "${username}"? All their active sessions will be immediately invalidated.`;
+      document.getElementById('confirm-overlay').dataset.mode = 'forceLogout';
+      document.getElementById('confirm-overlay').classList.add('show');
+    }
+
+    async function doForceLogout() {
+      if (!pendingForceLogoutUser) return;
+      try {
+        const res    = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'forceLogoutUser', token: currentToken, username: pendingForceLogoutUser }) });
+        const result = await res.json();
+        if (result.success) {
+          toast(`${pendingForceLogoutUser} logged out (${result.removed} session${result.removed !== 1 ? 's' : ''} removed)`);
+        } else {
+          toast(result.message || 'Force logout failed');
+        }
+      } catch(err) { toast('Force logout failed'); }
+      pendingForceLogoutUser = null;
+    }
+
+    // ── LOCKED ACCOUNTS ───────────────────────────────────────────────
+    async function loadLockedAccounts() {
+      const el = document.getElementById('dev-locked-list');
+      el.innerHTML = '<div style="color:var(--text3);font-size:13px">Loading…</div>';
+      try {
+        const res    = await fetch(API_URL + '?action=getLockedAccounts&token=' + encodeURIComponent(currentToken));
+        const result = await res.json();
+        if (!result.success) { toast(result.message || 'Failed'); return; }
+        if (!result.locked.length) {
+          el.innerHTML = '<div style="color:var(--green);font-size:13px;padding:8px 0">✅ No locked accounts</div>';
+          return;
+        }
+        el.innerHTML = result.locked.map(u => `
+          <div class="account-row" style="flex-wrap:wrap;gap:8px;padding:10px 0;align-items:center">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:14px;color:var(--text)">${u.username}</div>
+              <div style="font-size:12px;color:var(--red);margin-top:2px">🔒 Locked — ${u.minLeft} min remaining · ${u.failCount} failed attempts</div>
+            </div>
+            <button class="btn btn-blue btn-sm" style="width:auto;padding:8px 14px" onclick="unlockAccount('${u.username}')">Unlock</button>
+          </div>`).join('');
+      } catch(err) { toast('Unable to load locked accounts'); }
+    }
+
+    async function unlockAccount(username) {
+      try {
+        const res    = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'unlockAccount', token: currentToken, username }) });
+        const result = await res.json();
+        if (result.success) {
+          toast(`${username} unlocked`);
+          loadLockedAccounts();
+        } else {
+          toast(result.message || 'Unlock failed');
+        }
+      } catch(err) { toast('Unlock failed'); }
     }
 
     function logout() {
@@ -4311,42 +4555,33 @@
       }
     }
     async function loadUsers() {
-
-      const response =
-        await fetch(
-          API_URL +
-          '?action=getUsers' +
-          '&token=' + encodeURIComponent(currentToken)
-        );
-
-      const users =
-        await response.json();
-
+      const response = await fetch(API_URL + '?action=getUsers&token=' + encodeURIComponent(currentToken));
+      const users = await response.json();
       let html = '';
 
       users.forEach(user => {
-
         const isAdmin = user.role === 'Manager';
-        const actionBtns = (currentRole === 'Manager' || currentRole === 'Developer') ? `
-          <div class="user-actions">
+        const canManage = currentRole === 'Manager' || currentRole === 'Developer';
+        const forceLogoutBtn = currentRole === 'Developer'
+          ? `<button class="user-action-btn" style="background:#fde8e8;color:var(--red);border:1px solid #fca5a5" onclick="promptForceLogout('${user.username}')">⏏ Logout</button>`
+          : '';
+        const actionBtns = canManage ? `
+          <div class="user-actions" style="flex-wrap:wrap;gap:6px">
             <button class="user-action-btn edit" onclick="openEditUser('${user.username}', '${user.role}')">Edit</button>
             <button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>
+            ${forceLogoutBtn}
           </div>` : '';
 
         html += `
-      <div class="user-item">
+      <div class="user-item" style="flex-wrap:wrap;gap:6px">
         <div class="user-name">${user.username}</div>
         <span class="user-role-badge ${isAdmin ? 'Manager' : ''}">${user.role}</span>
         ${actionBtns}
-      </div>
-    `;
-
+      </div>`;
       });
 
-      document
-        .getElementById(
-          'users-list'
-        ).innerHTML = html || '<div class="empty" style="padding:24px"><p>No Staff accounts found.</p></div>';
+      document.getElementById('users-list').innerHTML =
+        html || '<div class="empty" style="padding:24px"><p>No accounts found.</p></div>';
     }
 
     // ── EDIT USER ─────────────────────────────────────────────────────
@@ -4487,20 +4722,19 @@
     async function confirmDelete() {
       const mode = document.getElementById('confirm-overlay').dataset.mode;
 
+      if (mode === 'forceLogout') {
+        closeConfirm();
+        await doForceLogout();
+        return;
+      }
+
       if (mode === 'user') {
         if (!pendingDeleteUser) return;
-
         const response = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({
-            action: 'deleteUser',
-            token: currentToken,
-            username: pendingDeleteUser
-          })
+          body: JSON.stringify({ action: 'deleteUser', token: currentToken, username: pendingDeleteUser })
         });
-
         const result = await response.json();
-
         if (result.success) {
           toast('User deleted');
           closeConfirm();
@@ -4511,20 +4745,13 @@
         }
 
       } else {
-        // Original inventory delete
+        // Inventory delete
         if (!pendingDelete) return;
-
         const response = await fetch(API_URL, {
           method: "POST",
-          body: JSON.stringify({
-            action: "deleteInventory",
-            token: currentToken,
-            model: pendingDelete
-          })
+          body: JSON.stringify({ action: "deleteInventory", token: currentToken, model: pendingDelete })
         });
-
         const result = await response.json();
-
         if (result.success) {
           toast('Inventory deleted');
           closeConfirm();
