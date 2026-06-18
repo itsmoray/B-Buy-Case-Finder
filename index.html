@@ -2798,6 +2798,10 @@
 
     function showTab(id) {
 
+      // Role-based navigation guard
+      if (id === 's-users' && currentRole !== 'Developer') return;
+      if (id === 's-add' && currentRole === 'Staff') return;
+
       // Clear "recently used" slot markers when leaving the Add screen
       const _currentScreenId = document.querySelector('.screen.active')?.id;
       if (_currentScreenId === 's-add' && id !== 's-add') {
@@ -3871,7 +3875,8 @@
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
-      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Manager' || currentRole === 'Developer') ? 'block' : 'none';
+      // Only Developers can delete entries; Manager and Staff cannot
+      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Developer') ? 'block' : 'none';
 
       // Staff can only edit the stock quantity — lock everything else and hide the share toggle
       const isStaffEditing = (currentRole !== 'Manager' && currentRole !== 'Developer');
@@ -4502,15 +4507,20 @@
         );
 
       if (currentRole === "Staff") {
-
+        // Staff: only Search + Inventory tabs
         addButtons.forEach(btn => {
           btn.style.display = "none";
         });
-
         userButtons.forEach(btn => {
           btn.style.display = "none";
         });
+      }
 
+      if (currentRole === "Manager") {
+        // Manager: Search + Add + Inventory — hide Users tab
+        userButtons.forEach(btn => {
+          btn.style.display = "none";
+        });
       }
 
       const devBtn = document.getElementById('dev-tools-btn');
@@ -4851,10 +4861,13 @@
         const forceLogoutBtn = currentRole === 'Developer'
           ? `<button class="user-action-btn" style="background:#fde8e8;color:var(--red);border:1px solid #fca5a5" onclick="promptForceLogout('${user.username}')">⏏ Logout</button>`
           : '';
+        const deleteBtn = currentRole === 'Developer'
+          ? `<button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>`
+          : '';
         const actionBtns = canManage ? `
           <div class="user-actions" style="flex-wrap:wrap;gap:6px">
             <button class="user-action-btn edit" onclick="openEditUser('${user.username}', '${user.role}')">Edit</button>
-            <button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>
+            ${deleteBtn}
             ${forceLogoutBtn}
           </div>` : '';
 
@@ -4969,11 +4982,15 @@
         return;
       }
 
+      // Use the fresh token from the login check — this ensures the backend
+      // accepts the request regardless of the user's role (Staff included).
+      const freshToken = loginResult.token || currentToken;
+
       const response = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
           action: 'updateUser',
-          token: currentToken,
+          token: freshToken,
           originalUsername: currentUser,
           newUsername: currentUser,
           newPassword: newPass
