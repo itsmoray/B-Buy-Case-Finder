@@ -1017,13 +1017,32 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform .1s, opacity .15s;
+      transition: transform .1s, opacity .12s ease-out;
       flex-shrink: 0;
     }
 
     .stepper-btn:active {
       transform: scale(.88);
       opacity: .75;
+    }
+
+    .stepper-btn.pending {
+      animation: stepperPulse .7s ease-in-out infinite;
+      cursor: default;
+    }
+
+    .stepper-btn.dimmed {
+      opacity: .35;
+      filter: grayscale(60%);
+    }
+
+    .stepper-btn:disabled {
+      cursor: not-allowed;
+    }
+
+    @keyframes stepperPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .55; transform: scale(.92); }
     }
 
     .stepper-btn.minus {
@@ -3880,6 +3899,16 @@
     }
 
     let isSaving = false;
+
+    // Wraps fetch with a timeout so a stalled/dropped connection (the "net lag"
+    // case) fails after a bounded wait instead of hanging the await forever and
+    // leaving the Save button stuck on "Saving…" indefinitely.
+    function fetchWithTimeout(url, options, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+    }
+
     async function saveEntry() {
       if (isSaving) return;
       const model      = document.getElementById('f-model').value.trim();
@@ -3963,85 +3992,99 @@
       const saveBtn = document.querySelector('#s-add .btn-blue');
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
-      const saveOne = async (mName, mStock, origName) => {
-        const payload = origName
-          ? { action: 'updateInventory', token: currentToken,
-              originalModel: origName,
-              originalShelf: shelf, originalRow: row, originalCol: col,
-              model: mName, shelf, row, col, stock: mStock, floor }
-          : { action: 'addInventory', token: currentToken,
-              model: mName, shelf, row, col, stock: mStock, floor };
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        return res.json();
-      };
+      try {
+        const saveOne = async (mName, mStock, origName) => {
+          const payload = origName
+            ? { action: 'updateInventory', token: currentToken,
+                originalModel: origName,
+                originalShelf: shelf, originalRow: row, originalCol: col,
+                model: mName, shelf, row, col, stock: mStock, floor }
+            : { action: 'addInventory', token: currentToken,
+                model: mName, shelf, row, col, stock: mStock, floor };
+          const res = await fetchWithTimeout(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+          return res.json();
+        };
 
-      const primaryOrigName = editingModel || null;
+        const primaryOrigName = editingModel || null;
 
-      // Save primary model
-      const r1 = await saveOne(model, stock, primaryOrigName);
-      if (!r1.success) {
-        toast(r1.message || 'Save failed');
-        isSaving = false;
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
-        if (r1.message && r1.message.toLowerCase().includes('session')) forceLogout();
-        return;
-      }
+        // Save primary model
+        let r1;
+        try {
+          r1 = await saveOne(model, stock, primaryOrigName);
+        } catch (e) {
+          // The request may have actually reached the server even though we
+          // never got a response back (timeout/dropped connection). Refresh
+          // db now so that if the user retries, the duplicate-name check above
+          // will correctly see the entry and block a second save.
+          await loadDB();
+          toast(e.name === 'AbortError' ? 'Connection timed out — please check and try again' : 'Connection failed — please try again');
+          return;
+        }
+        if (!r1.success) {
+          toast(r1.message || 'Save failed');
+          if (r1.message && r1.message.toLowerCase().includes('session')) forceLogout();
+          return;
+        }
 
-      // Save / update extra models
-      for (let i = 0; i < extras.length; i++) {
-        const origNameForExtra = extras[i]._rowEl?.dataset?.originalModel || null;
-        const payload = origNameForExtra
-          ? { action: 'updateInventory', token: currentToken, originalModel: origNameForExtra,
-              originalShelf: shelf, originalRow: row, originalCol: col,
-              model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor }
-          : { action: 'addInventory', token: currentToken,
-              model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-      }
+        // Save / update extra models
+        for (let i = 0; i < extras.length; i++) {
+          const origNameForExtra = extras[i]._rowEl?.dataset?.originalModel || null;
+          const payload = origNameForExtra
+            ? { action: 'updateInventory', token: currentToken, originalModel: origNameForExtra,
+                originalShelf: shelf, originalRow: row, originalCol: col,
+                model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor }
+            : { action: 'addInventory', token: currentToken,
+                model: extras[i].model, shelf, row, col, stock: extras[i].stock, floor };
+          await fetchWithTimeout(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        }
 
-      // Bug 3 fix: in Edit mode, if the user removed siblings (toggle turned OFF,
-      // or individual rows removed), delete any DB sibling that is no longer
-      // represented in the extras list.
-      if (editingModel) {
-        const primaryEntry = db.find(x => x.model === editingModel);
-        if (primaryEntry) {
-          const existingSiblings = db.filter(x =>
-            x.model !== editingModel && locationKey(x) === locationKey(primaryEntry)
-          );
-          const keptOrigNames = new Set(
-            extras.map(ex => ex._rowEl?.dataset?.originalModel).filter(Boolean)
-          );
-          for (const sib of existingSiblings) {
-            if (!keptOrigNames.has(sib.model)) {
-              // This sibling was removed from the form — delete it from the DB
-              await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'deleteInventory', token: currentToken, model: sib.model })
-              });
+        // Bug 3 fix: in Edit mode, if the user removed siblings (toggle turned OFF,
+        // or individual rows removed), delete any DB sibling that is no longer
+        // represented in the extras list.
+        if (editingModel) {
+          const primaryEntry = db.find(x => x.model === editingModel);
+          if (primaryEntry) {
+            const existingSiblings = db.filter(x =>
+              x.model !== editingModel && locationKey(x) === locationKey(primaryEntry)
+            );
+            const keptOrigNames = new Set(
+              extras.map(ex => ex._rowEl?.dataset?.originalModel).filter(Boolean)
+            );
+            for (const sib of existingSiblings) {
+              if (!keptOrigNames.has(sib.model)) {
+                // This sibling was removed from the form — delete it from the DB
+                await fetchWithTimeout(API_URL, {
+                  method: 'POST',
+                  body: JSON.stringify({ action: 'deleteInventory', token: currentToken, model: sib.model })
+                });
+              }
             }
           }
         }
-      }
 
-      toast(editingModel ? 'Inventory updated' : 'Inventory added');
-      isSaving = false;
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
-      const wasEditing = !!editingModel;
-      const dest = originScreen || 's-search';
-      clearForm();
+        toast(editingModel ? 'Inventory updated' : 'Inventory added');
+        const wasEditing = !!editingModel;
+        const dest = originScreen || 's-search';
+        clearForm();
 
-      if (wasEditing) {
-        // Navigate away immediately so the user never sees the Add screen
-        // sitting idle. loadDB() refreshes data silently in the background.
-        showTab(dest);
-        originScreen = 's-search';
-        loadDB(); // fire-and-forget
-      } else {
-        registerRecentSlot(shelfValue, row, col);
-        allModels.forEach(m => recentAdded.unshift(m.model));
-        renderRecentAdded();
-        await loadDB();
-        document.getElementById('f-model').focus();
+        if (wasEditing) {
+          // Navigate away immediately so the user never sees the Add screen
+          // sitting idle. loadDB() refreshes data silently in the background.
+          showTab(dest);
+          originScreen = 's-search';
+          loadDB(); // fire-and-forget
+        } else {
+          registerRecentSlot(shelfValue, row, col);
+          allModels.forEach(m => recentAdded.unshift(m.model));
+          renderRecentAdded();
+          await loadDB();
+          document.getElementById('f-model').focus();
+        }
+      } finally {
+        // Always runs — on success, failure, timeout, or thrown error — so the
+        // button can never get stuck on "Saving…" the way it could before.
+        isSaving = false;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\u00a0Save entry'; }
       }
     }
 
@@ -4060,16 +4103,24 @@
     }
 
     // ── QUICK STOCK UPDATE ────────────────────────────────────────────
+    // Tracks which item indices currently have a stock update in flight,
+    // so rapid double-taps are ignored instead of racing each other.
+    const stockUpdateInFlight = new Set();
+
     async function quickUpdateStock(idx, delta) {
       const entry = db[idx];
       if (!entry) return;
-      const model = entry.model;
+
+      // Ignore taps while a previous request for this item is still pending —
+      // prevents double-tap races where the DB only ends up applying one of two clicks.
+      if (stockUpdateInFlight.has(idx)) return;
+
       const oldStock = parseInt(entry.stock);
       const newStock = Math.max(0, oldStock + delta);
+      if (newStock === oldStock) return; // already at floor (0), nothing to do
 
-      // ── Optimistic update: write to db and DOM immediately ──
-      entry.stock = newStock;
-      updateStockDOM(idx, newStock, entry);
+      stockUpdateInFlight.add(idx);
+      setStepperDisabled(idx, true, delta);
 
       const payload = {
         action: "updateInventory",
@@ -4089,33 +4140,72 @@
         const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();
         if (result.success) {
+          // ── Only now, after DB confirms, update db + DOM ──
+          entry.stock = newStock;
+          updateStockDOM(idx, newStock, entry);
           toast(delta > 0 ? `+1 → ${newStock} in stock` : `-1 → ${newStock} in stock`);
         } else {
-          // Revert on failure
-          entry.stock = oldStock;
-          updateStockDOM(idx, oldStock, entry);
-          toast('Update failed');
+          toast(result.message || 'Update failed');
         }
       } catch (e) {
-        // Revert on error
-        entry.stock = oldStock;
-        updateStockDOM(idx, oldStock, entry);
         toast('Update failed');
+      } finally {
+        stockUpdateInFlight.delete(idx);
+        setStepperDisabled(idx, false);
       }
     }
 
-    // Updates all DOM elements for a stock change — called both on optimistic
-    // update and on revert, so renderInventory always reads correct db values
-    function updateStockDOM(idx, stock, entry) {
-      // Stepper count
+    // Disables/enables the +/- buttons for a given item while its request is in flight.
+    // The pressed button (matching delta) gets a pulse animation; the other one just dims.
+    // Finds every stepper for this idx currently in the DOM (search result, inventory
+    // list row, and/or detail screen may all be rendering the same item at once).
+    function setStepperDisabled(idx, disabled, delta) {
+      const steppers = new Set();
       const countEl = document.getElementById('sc-' + idx);
       if (countEl) {
+        const s = countEl.closest('.stock-stepper');
+        if (s) steppers.add(s);
+      }
+      // Exact match on idx (avoids "1" matching "11", "12", etc. as a substring)
+      const idxPattern = new RegExp(`quickUpdateStock\\(${idx},`);
+      document.querySelectorAll('.stepper-btn').forEach(btn => {
+        const oc = btn.getAttribute('onclick') || '';
+        if (idxPattern.test(oc)) {
+          const s = btn.closest('.stock-stepper');
+          if (s) steppers.add(s);
+        }
+      });
+      steppers.forEach(stepper => {
+        stepper.querySelectorAll('.stepper-btn').forEach(btn => {
+          btn.disabled = disabled;
+          btn.style.pointerEvents = disabled ? 'none' : '';
+          const isPressed = disabled && delta !== undefined &&
+            ((delta > 0 && btn.classList.contains('plus')) ||
+             (delta < 0 && btn.classList.contains('minus')));
+          btn.classList.toggle('pending', isPressed);
+          btn.classList.toggle('dimmed', disabled && !isPressed);
+        });
+      });
+    }
+
+    // Updates all DOM elements for a stock change — called only after the
+    // server confirms the update succeeded, so the DOM always matches the DB.
+    // Uses querySelectorAll (not getElementById) because the same idx can appear
+    // in more than one screen's markup at once (e.g. Search and Inventory both
+    // render "sc-{idx}" nodes, and old screens stay in the DOM, just hidden via
+    // the .active class). getElementById only returns the first match in document
+    // order, which could silently patch a hidden, stale copy instead of the one
+    // the user is actually looking at — so every matching node gets updated here.
+    function updateStockDOM(idx, stock, entry) {
+      // Stepper count(s)
+      document.querySelectorAll('[id="sc-' + idx + '"]').forEach(countEl => {
         countEl.textContent = stock;
         countEl.style.color = stock === 0 ? 'var(--red)' : stock <= 5 ? 'var(--amber)' : 'var(--text)';
-      }
-      // Dot color
-      const dotEl = document.getElementById('sd-' + idx);
-      if (dotEl) dotEl.style.background = dotColor(stock);
+      });
+      // Dot color(s)
+      document.querySelectorAll('[id="sd-' + idx + '"]').forEach(dotEl => {
+        dotEl.style.background = dotColor(stock);
+      });
       // Stats bar
       const allStocks = db.map(x => parseInt(x.stock) || 0);
       const newLow = allStocks.filter(s => s <= 5 && s > 0).length;
@@ -4127,11 +4217,10 @@
         statCards[2].querySelector('.stat-val').textContent = newOut;
         statCards[2].classList.toggle('stat-out', newOut > 0);
       }
-      // Search result badge
-      const badgeSearchEl = document.getElementById('sb-' + idx);
-      if (badgeSearchEl) {
+      // Search result badge(s)
+      document.querySelectorAll('[id="sb-' + idx + '"]').forEach(badgeSearchEl => {
         badgeSearchEl.innerHTML = stockBadge(stock) + ' ' + floorBadge(entry.shelf.split('|')[1], entry.shelf.split('|')[0]);
-      }
+      });
       // Detail screen if open on this model
       const detailTitle = document.getElementById('detail-title');
       if (detailTitle && detailTitle.textContent === entry.model) {
@@ -5114,6 +5203,10 @@
           if (!splashVisible && currentToken) {
             showSplash();
             scheduleHide(1400);
+            // App was reopened from background (e.g. recents/app switcher) —
+            // silently refresh data, same as pressing the 🔄 Refresh button,
+            // so the user sees the latest stock/inventory before tapping anything.
+            loadDB();
           } else {
             blurActive();
           }
