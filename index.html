@@ -161,6 +161,10 @@
       visibility: hidden;
       opacity: 0;
       pointer-events: none;
+      /* Promote each screen to its own GPU compositor layer so slide/fade
+         animations run entirely on the GPU thread and never block the main
+         thread — eliminates jank on mid-range Android phones. */
+      will-change: opacity, transform;
     }
 
     .screen.active {
@@ -334,6 +338,11 @@
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      /* Tell the browser this element only scrolls vertically — it can
+         immediately commit vertical scroll without waiting to see if the
+         touch might become a horizontal swipe gesture. Eliminates the
+         ~100ms disambiguation delay that caused swipe-back lag on mobile. */
+      touch-action: pan-y;
       padding: 16px 14px 24px;
       min-height: 0;
     }
@@ -3496,7 +3505,7 @@
       const detailEl = document.getElementById('s-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
     }
 
     function editCurrent() {
@@ -4135,7 +4144,7 @@
       const addEl = document.getElementById('s-add');
       addEl.classList.add('active');
       addEl.classList.add('slide-in');
-      setTimeout(() => addEl.classList.remove('slide-in'), 350);
+      setTimeout(() => addEl.classList.remove('slide-in'), 300);
       document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
     }
 
@@ -4809,7 +4818,7 @@
       const devEl = document.getElementById('s-dev');
       devEl.classList.add('active');
       devEl.classList.add('slide-in');
-      setTimeout(() => devEl.classList.remove('slide-in'), 350);
+      setTimeout(() => devEl.classList.remove('slide-in'), 300);
       // Default to activity tab and load today
       switchDevTab('activity');
       const di = document.getElementById('dev-log-date');
@@ -5240,7 +5249,7 @@
       const detailEl = document.getElementById('s-user-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
     }
 
     function onUdPermToggle(checkbox, key) {
@@ -5447,8 +5456,13 @@
 
       function createIndicator() {
         indicator = document.createElement('div');
+        // Append inside #app, not body — body-level elements are outside the
+        // stacking context created by #app's transform:translateZ(0), which
+        // caused the indicator to render on a separate compositor layer and
+        // occasionally not appear at all on the first swipe attempt.
+        const app = document.getElementById('app') || document.body;
         Object.assign(indicator.style, {
-          position: 'fixed', top: '0', left: '0', bottom: '0',
+          position: 'absolute', top: '0', left: '0', bottom: '0',
           width: '4px',
           background: 'var(--blue)',
           opacity: '0',
@@ -5457,11 +5471,13 @@
           borderRadius: '0 4px 4px 0',
           pointerEvents: 'none'
         });
-        document.body.appendChild(indicator);
+        app.appendChild(indicator);
       }
 
       document.addEventListener('touchstart', function (e) {
         const touch = e.touches[0];
+        // Cache the active screen once per touch instead of querying on
+        // every move event — avoids repeated layout reads mid-gesture.
         const screen = document.querySelector('.screen.active');
         if (!screen) return;
         const isBackScreen = BACK_SCREENS.has(screen.id) || (screen.id === 's-add' && !!editingModel);
@@ -5471,7 +5487,9 @@
         startY = touch.clientY;
         tracking = true;
         if (!indicator) createIndicator();
-        indicator.style.opacity = '0.5';
+        // Show immediately on touchstart so it never appears to be missing
+        indicator.style.opacity = '0.6';
+        indicator.style.width = '4px';
       }, { passive: true });
 
       document.addEventListener('touchmove', function (e) {
@@ -5481,7 +5499,7 @@
         const dy = Math.abs(touch.clientY - startY);
         if (dx > 0) {
           const progress = Math.min(dx / 120, 1);
-          if (indicator) indicator.style.width = (4 + progress * 8) + 'px';
+          if (indicator) indicator.style.width = (4 + progress * 10) + 'px';
         }
       }, { passive: true });
 
