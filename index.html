@@ -1425,12 +1425,6 @@
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       padding-bottom: 2px;
-      /* Without this, the browser sees a horizontally-scrollable container
-         and waits ~300ms on every touch to decide if it is a horizontal swipe
-         or a tap — which is why inventory items always lag. Declaring pan-x
-         tells it this row only scrolls sideways, so taps on the list below
-         are dispatched immediately, matching the search tab behaviour. */
-      touch-action: pan-x;
     }
 
     .filter-row::-webkit-scrollbar { display: none; }
@@ -3140,6 +3134,14 @@
       // Reset prevScreen only after the animation completes so that any
       // second goBack() call during the 300 ms window is blocked by navLock
       // (above) rather than snapping to the wrong screen with a stale prevScreen.
+      // Set prevScreen immediately — NOT inside the setTimeout — so that if the
+      // user taps an inventory item before the 300ms animation timer fires,
+      // showDetail() reads the correct prevScreen ('s-inventory') and records it
+      // properly. When prevScreen was set inside the timer it would overwrite
+      // whatever showDetail() had just set, corrupting the back-stack and
+      // causing the lag/lock on every subsequent navigation from inventory.
+      prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
+
       navLock = true;
       const animCurrent = current;
       navTimer = setTimeout(() => {
@@ -3154,10 +3156,6 @@
           renderInventory();
           invDirty = false;
         }
-        // Landing back on the detail screen should chain to whichever tab that
-        // detail/edit flow actually originated from (Search or Inventory), not
-        // always Search — otherwise a second back press skips past Inventory.
-        prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
       }, 300);
     }
 
