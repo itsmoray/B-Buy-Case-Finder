@@ -161,10 +161,10 @@
       visibility: hidden;
       opacity: 0;
       pointer-events: none;
-      /* Promote each screen to its own GPU compositor layer so slide/fade
-         animations run entirely on the GPU thread and never block the main
-         thread — eliminates jank on mid-range Android phones. */
-      will-change: opacity, transform;
+      /* will-change is applied only during active animations (via the
+         slide-in/slide-out classes) so we don't keep every screen promoted
+         to a GPU compositor layer at all times — that was burning memory and
+         causing whole-app jank after a few navigations. */
     }
 
     .screen.active {
@@ -272,22 +272,27 @@
 
     .slide-in-right {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: opacity, transform;
     }
 
     .slide-out-left {
       animation: fadeSlideOut .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: opacity, transform;
     }
 
     .slide-in-left {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: opacity, transform;
     }
 
     .slide-in {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: opacity, transform;
     }
 
     .slide-in-back {
       animation: fadeSlideInBack .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: opacity, transform;
     }
 
     @keyframes fadeSlideInBack {
@@ -3923,10 +3928,16 @@
         // a focused input out from under the mobile keyboard like that can
         // leave the keyboard/viewport in an unsettled state, which is what
         // makes the very next transition (e.g. a swipe-back) feel janky.
+        // We defer the innerHTML wipe by one rAF so the browser finishes its
+        // blur/keyboard-dismiss layout pass before we tear the DOM — this is
+        // what prevents the whole-app lag after toggling shared-slot off and
+        // then swiping back.
         if (document.activeElement && list.contains(document.activeElement)) {
           document.activeElement.blur();
         }
-        list.innerHTML = '';
+        requestAnimationFrame(() => {
+          list.innerHTML = '';
+        });
         extraModelCount = 0;
         if (subText) {
           subText.textContent = editingModel
@@ -4545,19 +4556,19 @@
       const makeItem = e => {
         const idx = db.indexOf(e);
         return `
-      <div class="inv-item">
+      <div class="inv-item" onclick="showDetail('${CSS.escape(e.model)}')">
         <div class="inv-dot" id="sd-${idx}" style="background:${dotColor(e.stock)}"></div>
-        <div class="inv-info" onclick="showDetail('${CSS.escape(e.model)}')" style="cursor:pointer">
+        <div class="inv-info">
           <div class="inv-name">${e.model}</div>
           <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col} · <span style="color:var(--blue-dark);font-size:11px;font-weight:600">${e.shelf.split('|')[1]}</span></div>
         </div>
-        <div style="display:flex;align-items:center;gap:4px">
+        <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
           <div class="stock-stepper">
             <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock(${idx},-1)">−</button>
             <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
             <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock(${idx},1)">+</button>
           </div>
-          <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center" onclick="showDetail('${CSS.escape(e.model)}')">›</span>
+          <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center">›</span>
         </div>
       </div>`;
       };
