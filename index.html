@@ -161,10 +161,10 @@
       visibility: hidden;
       opacity: 0;
       pointer-events: none;
-      /* will-change is applied only during active animations (via the
-         slide-in/slide-out classes) so we don't keep every screen promoted
-         to a GPU compositor layer at all times — that was burning memory and
-         causing whole-app jank after a few navigations. */
+      /* Promote each screen to its own GPU compositor layer so slide/fade
+         animations run entirely on the GPU thread and never block the main
+         thread — eliminates jank on mid-range Android phones. */
+      will-change: opacity, transform;
     }
 
     .screen.active {
@@ -272,27 +272,22 @@
 
     .slide-in-right {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      will-change: opacity, transform;
     }
 
     .slide-out-left {
       animation: fadeSlideOut .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      will-change: opacity, transform;
     }
 
     .slide-in-left {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      will-change: opacity, transform;
     }
 
     .slide-in {
       animation: fadeSlideIn .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      will-change: opacity, transform;
     }
 
     .slide-in-back {
       animation: fadeSlideInBack .28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      will-change: opacity, transform;
     }
 
     @keyframes fadeSlideInBack {
@@ -3506,11 +3501,27 @@
       <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
     </div>
     ${siblingHtml}`;
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      // Snap any stale animation classes off every screen before starting a
+      // new transition — if goBack()'s 300ms timer hasn't fired yet, the
+      // previous screen still carries slide-in-back / slide-out-right.
+      // Those stale classes fight the new slide-in and cause the 1-second
+      // freeze that repeats every time you re-open a detail from inventory.
+      const animClasses = ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'];
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active', ...animClasses);
+      });
+
       const detailEl = document.getElementById('s-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
+
+      navLock = true;
+      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+      navTimer = setTimeout(() => {
+        navTimer = null;
+        detailEl.classList.remove('slide-in');
+        navLock = false;
+      }, 300);
     }
 
     function editCurrent() {
@@ -3928,16 +3939,10 @@
         // a focused input out from under the mobile keyboard like that can
         // leave the keyboard/viewport in an unsettled state, which is what
         // makes the very next transition (e.g. a swipe-back) feel janky.
-        // We defer the innerHTML wipe by one rAF so the browser finishes its
-        // blur/keyboard-dismiss layout pass before we tear the DOM — this is
-        // what prevents the whole-app lag after toggling shared-slot off and
-        // then swiping back.
         if (document.activeElement && list.contains(document.activeElement)) {
           document.activeElement.blur();
         }
-        requestAnimationFrame(() => {
-          list.innerHTML = '';
-        });
+        list.innerHTML = '';
         extraModelCount = 0;
         if (subText) {
           subText.textContent = editingModel
