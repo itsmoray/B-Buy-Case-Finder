@@ -3498,7 +3498,15 @@
       const secB = document.getElementById('model-b-section');
       if (secB) secB.classList.remove('visible');
       const list = document.getElementById('extra-models-list');
-      if (list) list.innerHTML = '';
+      if (list) {
+        // Same guard as onShareToggle(false): don't rip out a still-focused
+        // field — blur it first so the mobile keyboard/viewport settles
+        // cleanly before the screen transitions away.
+        if (document.activeElement && list.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+        list.innerHTML = '';
+      }
       extraModelCount = 0;
       const shareRow = document.getElementById('share-slot-toggle');
       if (shareRow) {
@@ -3869,6 +3877,14 @@
         }
       } else {
         secB.classList.remove('visible');
+        // If a field inside this list (e.g. the auto-focused new row's input)
+        // still has focus, blur it before ripping it out of the DOM. Removing
+        // a focused input out from under the mobile keyboard like that can
+        // leave the keyboard/viewport in an unsettled state, which is what
+        // makes the very next transition (e.g. a swipe-back) feel janky.
+        if (document.activeElement && list.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
         list.innerHTML = '';
         extraModelCount = 0;
         if (subText) {
