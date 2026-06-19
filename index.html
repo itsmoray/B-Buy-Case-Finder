@@ -1425,6 +1425,12 @@
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       padding-bottom: 2px;
+      /* Without this, the browser sees a horizontally-scrollable container
+         and waits ~300ms on every touch to decide if it is a horizontal swipe
+         or a tap — which is why inventory items always lag. Declaring pan-x
+         tells it this row only scrolls sideways, so taps on the list below
+         are dispatched immediately, matching the search tab behaviour. */
+      touch-action: pan-x;
     }
 
     .filter-row::-webkit-scrollbar { display: none; }
@@ -3501,27 +3507,11 @@
       <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
     </div>
     ${siblingHtml}`;
-      // Snap any stale animation classes off every screen before starting a
-      // new transition — if goBack()'s 300ms timer hasn't fired yet, the
-      // previous screen still carries slide-in-back / slide-out-right.
-      // Those stale classes fight the new slide-in and cause the 1-second
-      // freeze that repeats every time you re-open a detail from inventory.
-      const animClasses = ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'];
-      document.querySelectorAll('.screen').forEach(s => {
-        s.classList.remove('active', ...animClasses);
-      });
-
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const detailEl = document.getElementById('s-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-
-      navLock = true;
-      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-      navTimer = setTimeout(() => {
-        navTimer = null;
-        detailEl.classList.remove('slide-in');
-        navLock = false;
-      }, 300);
+      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
     }
 
     function editCurrent() {
