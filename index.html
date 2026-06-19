@@ -3001,9 +3001,10 @@
       }
 
       if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') {
-        // Defer renderInventory so the slide animation starts on this frame
-        // rather than being blocked by the synchronous DOM rebuild.
-        requestAnimationFrame(() => renderInventory());
+        // Render inventory content before the animation starts so the screen
+        // is fully populated when it slides in — prevents the blank/black flash
+        // and mid-animation jank seen on mobile when the render was deferred.
+        renderInventory();
       }
 
       const current = document.querySelector('.screen.active');
