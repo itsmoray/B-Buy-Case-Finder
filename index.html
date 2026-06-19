@@ -3107,7 +3107,10 @@
         animCurrent.classList.remove('active','slide-out-right');
         next.classList.remove('slide-in-back');
         navLock = false;
-        prevScreen = 's-search';
+        // Landing back on the detail screen should chain to whichever tab that
+        // detail/edit flow actually originated from (Search or Inventory), not
+        // always Search — otherwise a second back press skips past Inventory.
+        prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
       }, 300);
     }
 
