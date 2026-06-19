@@ -3371,29 +3371,37 @@
 
     // ── DETAIL ────────────────────────────────────────────────────────
     function showDetail(model) {
-      // ── Determine the true origin tab ────────────────────────────────
-      // During a tab-switch animation both the outgoing and incoming screens
-      // hold the .active class simultaneously, so querySelector('.screen.active')
-      // returns whichever comes first in DOM order (s-search), not the one the
-      // user actually tapped from. Reading the active nav-button instead gives
-      // the correct intent regardless of animation state.
-      const activeNavBtn = document.querySelector('.nav-btn.active');
-      const navOnclick   = activeNavBtn ? (activeNavBtn.getAttribute('onclick') || '') : '';
-      const tabIds = ['s-search', 's-inventory', 's-add', 's-users'];
-      const activeTabId  = tabIds.find(id => navOnclick.includes("'" + id + "'") || navOnclick.includes('"'+ id +'"'))
-                        || document.querySelector('.screen.active')?.id
-                        || 's-search';
-
-      prevScreen = activeTabId;
-      if (activeTabId === 's-search' || activeTabId === 's-inventory') {
-        originScreen = activeTabId;
+      // If a tab-switch slide animation is still in flight (navLock), the outgoing
+      // screen still carries the 'active' class alongside the incoming one for the
+      // duration of that animation. Querying '.screen.active' in that window can
+      // match the OLD screen (whichever comes first in the HTML) instead of the tab
+      // the user is actually looking at — which mis-records prevScreen and sends
+      // the back button/swipe to the wrong tab later. Snap the animation to its
+      // finished state immediately (same cleanup showTab()'s own timer would do)
+      // before reading which screen is current.
+      if (navLock) {
+        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+        document.querySelectorAll('.screen.active').forEach(s => {
+          if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
+            s.classList.remove('active', 'slide-out-left', 'slide-out-right');
+          } else {
+            s.classList.remove('slide-in', 'slide-in-left', 'slide-in-right', 'slide-in-back');
+          }
+        });
+        navLock = false;
       }
-
+      const activeId = document.querySelector('.screen.active').id;
+      prevScreen = activeId;
+      // Track the originating tab so we can return there after edit/delete
+      if (activeId === 's-search' || activeId === 's-inventory') {
+        originScreen = activeId;
+      }
       const e = db.find(x => x.model === model);
       if (!e) return;
       const idx = db.indexOf(e);
       const [shelfName, floor] = e.shelf.split('|');
 
+      // Check for sibling models in the same slot
       const siblings = db.filter(x => x.model !== e.model && locationKey(x) === locationKey(e));
       const siblingHtml = siblings.length ? `
     <div class="detail-section">
@@ -3408,7 +3416,8 @@
       </div>`).join('')}
     </div>` : '';
 
-      const contentHtml = `
+      document.getElementById('detail-title').textContent = e.model;
+      document.getElementById('detail-content').innerHTML = `
     <div class="detail-section">
       <div class="section-eyebrow">📍 Location</div>
       <div class="loc-grid">
@@ -3448,23 +3457,11 @@
       <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
     </div>
     ${siblingHtml}`;
-
-      // Cancel any pending nav animation so the screen switch is clean,
-      // then write DOM and trigger the slide in one rAF — this lets the
-      // browser paint the current frame before the heavy innerHTML write,
-      // eliminating the lag felt when opening detail from the inventory tab.
-      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-      navLock = false;
-
-      requestAnimationFrame(() => {
-        document.getElementById('detail-title').textContent = e.model;
-        document.getElementById('detail-content').innerHTML = contentHtml;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        const detailEl = document.getElementById('s-detail');
-        detailEl.classList.add('active');
-        detailEl.classList.add('slide-in');
-        setTimeout(() => detailEl.classList.remove('slide-in'), 350);
-      });
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const detailEl = document.getElementById('s-detail');
+      detailEl.classList.add('active');
+      detailEl.classList.add('slide-in');
+      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
     }
 
     function editCurrent() {
@@ -4044,10 +4041,8 @@
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
-      // Developers can always delete; Managers and Staff can too if their deleteEntry toggle is on
-      const canDeleteEntry = (currentRole === 'Developer') ||
-        (currentRole === 'Manager' && !!currentPermissions.deleteEntry) ||
-        (currentRole === 'Staff' && !!currentPermissions.deleteEntry);
+      // Developers can always delete; Staff can too if their deleteEntry toggle is on
+      const canDeleteEntry = (currentRole === 'Developer') || (currentRole === 'Staff' && !!currentPermissions.deleteEntry);
       document.getElementById('edit-delete-btn').style.display = canDeleteEntry ? 'block' : 'none';
 
       // Staff can only edit the stock quantity — lock everything else and hide the share toggle.
