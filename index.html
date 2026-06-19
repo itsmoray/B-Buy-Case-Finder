@@ -3000,7 +3000,11 @@
         renderRecentAdded();
       }
 
-      if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') renderInventory();
+      if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') {
+        // Defer renderInventory so the slide animation starts on this frame
+        // rather than being blocked by the synchronous DOM rebuild.
+        requestAnimationFrame(() => renderInventory());
+      }
 
       const current = document.querySelector('.screen.active');
       const next = document.getElementById(id);
@@ -3067,27 +3071,17 @@
     }
 
     function goBack() {
+      // Guard: ignore while a back-navigation animation is already in flight.
+      // This prevents a double-tap or swipe+button combo from firing goBack()
+      // twice — the second call would see the already-reset prevScreen and
+      // incorrectly land on Search instead of the originating tab.
+      if (navLock) return;
+
       const current = document.querySelector('.screen.active');
       const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
       const next = document.getElementById(target);
 
       if (!current || !next || current === next) return;
-
-      if (navLock) {
-        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-        next.classList.add('active');
-        document.querySelectorAll('.screen').forEach(s => {
-          if (s !== next) s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
-        });
-        next.classList.remove('slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right');
-        navLock = false;
-        document.querySelectorAll('.nav-btn').forEach((b) => {
-          const onclick = b.getAttribute('onclick') || '';
-          b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
-        });
-        prevScreen = 's-search';
-        return;
-      }
 
       ['slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'].forEach(c => {
         current.classList.remove(c);
@@ -3098,6 +3092,14 @@
       next.classList.add('active');
       next.classList.add('slide-in-back');
 
+      document.querySelectorAll('.nav-btn').forEach((b) => {
+        const onclick = b.getAttribute('onclick') || '';
+        b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
+      });
+
+      // Reset prevScreen only after the animation completes so that any
+      // second goBack() call during the 300 ms window is blocked by navLock
+      // (above) rather than snapping to the wrong screen with a stale prevScreen.
       navLock = true;
       const animCurrent = current;
       navTimer = setTimeout(() => {
@@ -3105,14 +3107,8 @@
         animCurrent.classList.remove('active','slide-out-right');
         next.classList.remove('slide-in-back');
         navLock = false;
+        prevScreen = 's-search';
       }, 300);
-
-      document.querySelectorAll('.nav-btn').forEach((b) => {
-        const onclick = b.getAttribute('onclick') || '';
-        b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
-      });
-
-      prevScreen = 's-search';
     }
 
     // ── HAMBURGER MENU ────────────────────────────────────────────────
@@ -4026,8 +4022,10 @@
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
-      // Developers can always delete; Staff can too if their deleteEntry toggle is on
-      const canDeleteEntry = (currentRole === 'Developer') || (currentRole === 'Staff' && !!currentPermissions.deleteEntry);
+      // Developers can always delete; Managers and Staff can too if their deleteEntry toggle is on
+      const canDeleteEntry = (currentRole === 'Developer') ||
+        (currentRole === 'Manager' && !!currentPermissions.deleteEntry) ||
+        (currentRole === 'Staff' && !!currentPermissions.deleteEntry);
       document.getElementById('edit-delete-btn').style.display = canDeleteEntry ? 'block' : 'none';
 
       // Staff can only edit the stock quantity — lock everything else and hide the share toggle.
