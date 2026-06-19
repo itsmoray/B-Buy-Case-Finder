@@ -1132,6 +1132,62 @@
       margin-top: 2px;
     }
 
+    /* PERMISSION TOGGLES — User detail screen (Developer only) */
+    .perm-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    .perm-toggle-row input[type="checkbox"] {
+      display: none;
+    }
+
+    .perm-toggle-row.toggled {
+      background: var(--blue-light);
+      border-color: var(--blue-mid);
+    }
+
+    .perm-toggle-row.toggled .track {
+      background: var(--blue);
+    }
+
+    .perm-toggle-row.toggled .thumb {
+      transform: translateX(18px);
+    }
+
+    .perm-toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .perm-toggle-row.toggled .perm-toggle-label {
+      color: var(--blue-dark);
+    }
+
+    .perm-toggle-sub {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    .user-info-clickable {
+      cursor: pointer;
+    }
+    .user-info-clickable:active {
+      opacity: 0.7;
+    }
+
     #model-b-section {
       display: none;
       margin-top: 12px;
@@ -2521,6 +2577,74 @@
 
     </div>
 
+    <!-- ── USER DETAIL / PERMISSIONS SCREEN (Developer only) ── -->
+    <div class="screen" id="s-user-detail">
+      <div class="topbar">
+        <button class="topbar-back" onclick="goBack()">&#8592;</button>
+        <div class="logo-mark">👤</div>
+        <div style="flex:1;min-width:0">
+          <div class="topbar-title" id="ud-title">User</div>
+          <div class="topbar-sub" id="ud-role-sub">Account details</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="form-card">
+          <div class="field" style="margin-bottom:0">
+            <label>Username</label>
+            <input type="text" id="ud-username" disabled style="opacity:.7">
+          </div>
+        </div>
+
+        <div class="section-eyebrow" style="margin-top:18px;margin-bottom:8px">Password</div>
+        <div class="form-card">
+          <div class="field" style="margin-bottom:0">
+            <label>New password</label>
+            <input type="password" id="ud-new-pass" placeholder="Leave blank to keep current">
+          </div>
+        </div>
+        <button class="btn btn-blue" style="margin-top:10px" onclick="saveUserDetailPassword()">💾 Update password</button>
+
+        <div class="section-eyebrow" style="margin-top:22px;margin-bottom:8px">Permissions</div>
+
+        <label class="perm-toggle-row" id="ud-perm-addEntry">
+          <input type="checkbox" onchange="onUdPermToggle(this,'addEntry')">
+          <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
+          <div>
+            <div class="perm-toggle-label">➕ Add Entry tab</div>
+            <div class="perm-toggle-sub">Show the Add tab in the bottom nav for this account.</div>
+          </div>
+        </label>
+
+        <label class="perm-toggle-row" id="ud-perm-deleteEntry">
+          <input type="checkbox" onchange="onUdPermToggle(this,'deleteEntry')">
+          <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
+          <div>
+            <div class="perm-toggle-label">🗑️ Delete Entry option</div>
+            <div class="perm-toggle-sub">Allow this account to delete inventory entries.</div>
+          </div>
+        </label>
+
+        <label class="perm-toggle-row" id="ud-perm-usersTab">
+          <input type="checkbox" onchange="onUdPermToggle(this,'usersTab')">
+          <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
+          <div>
+            <div class="perm-toggle-label">👥 Users tab</div>
+            <div class="perm-toggle-sub">Show the Users tab in the bottom nav for this account.</div>
+          </div>
+        </label>
+
+        <label class="perm-toggle-row" id="ud-perm-fullEdit-row" style="display:none">
+          <input type="checkbox" onchange="onUdPermToggle(this,'fullEdit')">
+          <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
+          <div>
+            <div class="perm-toggle-label">✏️ Full edit access to entries</div>
+            <div class="perm-toggle-sub">Staff-only — when on, this account can edit every field of an entry, not just stock.</div>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
     <!-- ── ACCOUNT SCREEN ── -->
     <div class="screen" id="s-account">
       <div class="topbar">
@@ -2698,6 +2822,7 @@
     let currentUser = null;
     let currentRole = null;
     let currentToken = null;
+    let currentPermissions = {};
     let prevScreen = 's-search';
     let originScreen = 's-search'; // the tab the user was on before entering detail/edit flow
     let editingModel = null;
@@ -2798,9 +2923,9 @@
 
     function showTab(id) {
 
-      // Role-based navigation guard
-      if (id === 's-users' && currentRole !== 'Developer') return;
-      if (id === 's-add' && currentRole === 'Staff') return;
+      // Role-based navigation guard (Developer-granted permission toggles can open these up)
+      if (id === 's-users' && currentRole !== 'Developer' && !currentPermissions.usersTab) return;
+      if (id === 's-add' && currentRole === 'Staff' && !currentPermissions.addEntry) return;
 
       // Clear "recently used" slot markers when leaving the Add screen
       const _currentScreenId = document.querySelector('.screen.active')?.id;
@@ -3875,11 +4000,14 @@
       }
 
       document.getElementById('add-back-btn').style.display = 'flex';
-      // Only Developers can delete entries; Manager and Staff cannot
-      document.getElementById('edit-delete-btn').style.display = (currentRole === 'Developer') ? 'block' : 'none';
+      // Developers can always delete; Staff can too if their deleteEntry toggle is on
+      const canDeleteEntry = (currentRole === 'Developer') || (currentRole === 'Staff' && !!currentPermissions.deleteEntry);
+      document.getElementById('edit-delete-btn').style.display = canDeleteEntry ? 'block' : 'none';
 
-      // Staff can only edit the stock quantity — lock everything else and hide the share toggle
-      const isStaffEditing = (currentRole !== 'Manager' && currentRole !== 'Developer');
+      // Staff can only edit the stock quantity — lock everything else and hide the share toggle.
+      // Unless their fullEdit toggle is on, in which case they get full edit like a Manager.
+      const isStaffEditing = (currentRole !== 'Manager' && currentRole !== 'Developer') &&
+        !(currentRole === 'Staff' && currentPermissions.fullEdit);
       ['f-model','f-shelf','f-row','f-col'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -4416,6 +4544,7 @@
       currentUser = result.username;
       currentRole = result.role;
       currentToken = result.token;
+      currentPermissions = result.permissions || {};
 
       localStorage.setItem(
         'currentUser',
@@ -4430,6 +4559,11 @@
       localStorage.setItem(
         'currentToken',
         currentToken
+      );
+
+      localStorage.setItem(
+        'currentPermissions',
+        JSON.stringify(currentPermissions)
       );
 
       setupRole();
@@ -4462,6 +4596,12 @@
 
     currentToken =
       localStorage.getItem('currentToken');
+
+    try {
+      currentPermissions = JSON.parse(localStorage.getItem('currentPermissions') || '{}') || {};
+    } catch (e) {
+      currentPermissions = {};
+    }
 
     if (currentUser) {
 
@@ -4507,19 +4647,21 @@
         );
 
       if (currentRole === "Staff") {
-        // Staff: only Search + Inventory tabs
+        // Staff: only Search + Inventory tabs by default — unless a
+        // Developer has switched on the matching permission toggle.
         addButtons.forEach(btn => {
-          btn.style.display = "none";
+          btn.style.display = currentPermissions.addEntry ? "" : "none";
         });
         userButtons.forEach(btn => {
-          btn.style.display = "none";
+          btn.style.display = currentPermissions.usersTab ? "" : "none";
         });
       }
 
       if (currentRole === "Manager") {
-        // Manager: Search + Add + Inventory — hide Users tab
+        // Manager: Search + Add + Inventory — hide Users tab unless a
+        // Developer has switched on the usersTab toggle for this account.
         userButtons.forEach(btn => {
-          btn.style.display = "none";
+          btn.style.display = currentPermissions.usersTab ? "" : "none";
         });
       }
 
@@ -4843,14 +4985,18 @@
         loadUsers();
       }
     }
+    let usersCache = {};
     async function loadUsers() {
       const response = await fetch(API_URL + '?action=getUsers&token=' + encodeURIComponent(currentToken));
       const users = await response.json();
       let html = '';
+      usersCache = {};
 
       users.forEach(user => {
         // Managers must not see Developer accounts at all
         if (currentRole === 'Manager' && user.role === 'Developer') return;
+
+        usersCache[user.username] = user;
 
         const isAdmin = user.role === 'Manager';
         // A Manager can manage Staff/Manager accounts, but never a Developer
@@ -4871,10 +5017,17 @@
             ${forceLogoutBtn}
           </div>` : '';
 
+        // Only Developer accounts can open the detail/permissions screen.
+        const nameBlockAttrs = currentRole === 'Developer'
+          ? `class="user-info-clickable" onclick="openUserDetail('${user.username}')"`
+          : '';
+
         html += `
       <div class="user-item" style="flex-wrap:wrap;gap:6px">
-        <div class="user-name">${user.username}</div>
-        <span class="user-role-badge ${isAdmin ? 'Manager' : ''}">${user.role}</span>
+        <div ${nameBlockAttrs} style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="user-name">${user.username}</div>
+          <span class="user-role-badge ${isAdmin ? 'Manager' : ''}">${user.role}</span>
+        </div>
         ${actionBtns}
       </div>`;
       });
@@ -4938,6 +5091,103 @@
         loadUsers();
       } else {
         toast('Update failed');
+      }
+    }
+
+    // ── USER DETAIL / PERMISSIONS SCREEN (Developer only) ──────────────
+    let udUsername = null;
+    let udPermissions = {};
+
+    function openUserDetail(username) {
+      if (currentRole !== 'Developer') return; // Developer-only feature
+      const user = usersCache[username];
+      if (!user) return;
+
+      udUsername = username;
+      udPermissions = Object.assign({}, user.permissions || {});
+
+      document.getElementById('ud-title').textContent = username;
+      document.getElementById('ud-role-sub').textContent = user.role + ' account';
+      document.getElementById('ud-username').value = username;
+      document.getElementById('ud-new-pass').value = '';
+
+      ['addEntry', 'deleteEntry', 'usersTab', 'fullEdit'].forEach(key => {
+        const row = document.getElementById('ud-perm-' + key) || document.getElementById('ud-perm-' + key + '-row');
+        const cb  = row ? row.querySelector('input[type="checkbox"]') : null;
+        if (!cb || !row) return;
+        cb.checked = !!udPermissions[key];
+        row.classList.toggle('toggled', cb.checked);
+      });
+
+      // "Add Entry tab" is meaningless for Managers — they already always
+      // have it. Only show this toggle when viewing a Staff account.
+      document.getElementById('ud-perm-addEntry').style.display = (user.role === 'Staff') ? '' : 'none';
+
+      // "Full edit access" only makes sense for Staff accounts
+      document.getElementById('ud-perm-fullEdit-row').style.display = (user.role === 'Staff') ? '' : 'none';
+
+      const current = document.querySelector('.screen.active');
+      if (current) prevScreen = current.id;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active','slide-in','slide-in-left','slide-in-right','slide-in-back','slide-out-left','slide-out-right'));
+      const detailEl = document.getElementById('s-user-detail');
+      detailEl.classList.add('active');
+      detailEl.classList.add('slide-in');
+      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+    }
+
+    function onUdPermToggle(checkbox, key) {
+      const row = checkbox.closest('.perm-toggle-row');
+      if (row) row.classList.toggle('toggled', checkbox.checked);
+      udPermissions[key] = checkbox.checked;
+      saveUserDetailPermissions();
+    }
+
+    async function saveUserDetailPermissions() {
+      if (!udUsername) return;
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'updateUserPermissions',
+            token: currentToken,
+            username: udUsername,
+            permissions: udPermissions
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          toast('Permissions updated');
+          if (usersCache[udUsername]) usersCache[udUsername].permissions = udPermissions;
+        } else {
+          toast(result.message || 'Could not update permissions');
+        }
+      } catch (e) {
+        toast('Connection failed');
+      }
+    }
+
+    async function saveUserDetailPassword() {
+      const newPassword = document.getElementById('ud-new-pass').value.trim();
+      if (!newPassword) {
+        toast('Enter a new password first');
+        return;
+      }
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateUser',
+          token: currentToken,
+          originalUsername: udUsername,
+          newUsername: udUsername,
+          newPassword
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast('Password updated');
+        document.getElementById('ud-new-pass').value = '';
+      } else {
+        toast(result.message || 'Update failed');
       }
     }
 
@@ -5079,7 +5329,7 @@
 
     // ── SWIPE TO GO BACK ──────────────────────────────────────────────
     (function () {
-      const BACK_SCREENS = new Set(['s-detail', 's-account', 's-dev']);
+      const BACK_SCREENS = new Set(['s-detail', 's-account', 's-dev', 's-user-detail']);
       const EDGE_ZONE    = 30;   // px from left edge to start swipe
       const MIN_SWIPE_X  = 70;   // minimum horizontal travel
       const MAX_RATIO    = 1.2;  // x must be > y * this to be horizontal
