@@ -3957,6 +3957,22 @@
     function editEntry(model, dbIdx) {
       const e = db.find(x => x.model === model);
       if (!e) return;
+      // Same guard as showDetail(): if a slide animation is still in flight,
+      // two screens can carry the 'active' class at once, so reading
+      // '.screen.active' here could pick up the OLD screen instead of the one
+      // the user is actually on — corrupting prevScreen/originScreen for the
+      // back button. Snap any in-flight animation to its finished state first.
+      if (navLock) {
+        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+        document.querySelectorAll('.screen.active').forEach(s => {
+          if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
+            s.classList.remove('active', 'slide-out-left', 'slide-out-right');
+          } else {
+            s.classList.remove('slide-in', 'slide-in-left', 'slide-in-right', 'slide-in-back');
+          }
+        });
+        navLock = false;
+      }
       prevScreen = document.querySelector('.screen.active').id;
       if (prevScreen === 's-inventory' || prevScreen === 's-search') {
         originScreen = prevScreen;
