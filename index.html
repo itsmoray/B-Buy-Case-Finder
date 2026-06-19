@@ -2838,7 +2838,12 @@
         db = JSON.parse(raw);
         updateTopbarCount();
         doSearch('');
-        renderInventory();
+        const invActive = document.querySelector('.screen.active')?.id === 's-inventory';
+        if (invActive) {
+          renderInventory();
+        } else {
+          invDirty = true;
+        }
         return true;
       } catch(e) { return false; }
     }
@@ -2918,7 +2923,17 @@
         if (changed) {
           updateTopbarCount();
           doSearch('');
-          renderInventory();
+          // Only re-render inventory if it is currently visible — otherwise just
+          // flag it dirty so the next showTab('s-inventory') call picks up the
+          // fresh data. Rebuilding a hidden list mid-interaction destroys the DOM
+          // while the user may be touching it (detail screen → back → tap item),
+          // which was causing the 3-click problem on the inventory tab.
+          const invActive = document.querySelector('.screen.active')?.id === 's-inventory';
+          if (invActive) {
+            renderInventory();
+          } else {
+            invDirty = true;
+          }
         }
 
       } catch (err) {
@@ -2946,6 +2961,10 @@
 
     let navLock = false;
     let navTimer = null;
+    // Tracks whether the inventory list needs a re-render when the user
+    // next navigates to the inventory tab. Set to true by loadDB() whenever
+    // data changes while the inventory screen is not the active screen.
+    let invDirty = true;
 
     function showTab(id) {
 
@@ -3001,10 +3020,15 @@
       }
 
       if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') {
-        // Render inventory content before the animation starts so the screen
-        // is fully populated when it slides in — prevents the blank/black flash
-        // and mid-animation jank seen on mobile when the render was deferred.
-        renderInventory();
+        // Only rebuild the inventory list if it is empty (first visit) or
+        // if a background loadDB() marked it dirty while it was hidden.
+        // Rebuilding on every tab-switch destroys the DOM mid-touch on mobile,
+        // which is why taps needed 3+ clicks to register on the second visit.
+        const invEl = document.getElementById('inv-content');
+        if (!invEl || !invEl.children.length || invDirty) {
+          renderInventory();
+          invDirty = false;
+        }
       }
 
       const current = document.querySelector('.screen.active');
@@ -3108,6 +3132,13 @@
         animCurrent.classList.remove('active','slide-out-right');
         next.classList.remove('slide-in-back');
         navLock = false;
+        // If we just landed back on inventory and a background loadDB() updated
+        // data while it was hidden, re-render now (after animation) so the list
+        // is fresh without breaking any in-flight touch on the way in.
+        if (target === 's-inventory' && invDirty) {
+          renderInventory();
+          invDirty = false;
+        }
         // Landing back on the detail screen should chain to whichever tab that
         // detail/edit flow actually originated from (Search or Inventory), not
         // always Search — otherwise a second back press skips past Inventory.
