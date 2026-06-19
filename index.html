@@ -3371,18 +3371,29 @@
 
     // ── DETAIL ────────────────────────────────────────────────────────
     function showDetail(model) {
-      const activeId = document.querySelector('.screen.active').id;
-      prevScreen = activeId;
-      // Track the originating tab so we can return there after edit/delete
-      if (activeId === 's-search' || activeId === 's-inventory') {
-        originScreen = activeId;
+      // ── Determine the true origin tab ────────────────────────────────
+      // During a tab-switch animation both the outgoing and incoming screens
+      // hold the .active class simultaneously, so querySelector('.screen.active')
+      // returns whichever comes first in DOM order (s-search), not the one the
+      // user actually tapped from. Reading the active nav-button instead gives
+      // the correct intent regardless of animation state.
+      const activeNavBtn = document.querySelector('.nav-btn.active');
+      const navOnclick   = activeNavBtn ? (activeNavBtn.getAttribute('onclick') || '') : '';
+      const tabIds = ['s-search', 's-inventory', 's-add', 's-users'];
+      const activeTabId  = tabIds.find(id => navOnclick.includes("'" + id + "'") || navOnclick.includes('"'+ id +'"'))
+                        || document.querySelector('.screen.active')?.id
+                        || 's-search';
+
+      prevScreen = activeTabId;
+      if (activeTabId === 's-search' || activeTabId === 's-inventory') {
+        originScreen = activeTabId;
       }
+
       const e = db.find(x => x.model === model);
       if (!e) return;
       const idx = db.indexOf(e);
       const [shelfName, floor] = e.shelf.split('|');
 
-      // Check for sibling models in the same slot
       const siblings = db.filter(x => x.model !== e.model && locationKey(x) === locationKey(e));
       const siblingHtml = siblings.length ? `
     <div class="detail-section">
@@ -3397,8 +3408,7 @@
       </div>`).join('')}
     </div>` : '';
 
-      document.getElementById('detail-title').textContent = e.model;
-      document.getElementById('detail-content').innerHTML = `
+      const contentHtml = `
     <div class="detail-section">
       <div class="section-eyebrow">📍 Location</div>
       <div class="loc-grid">
@@ -3438,11 +3448,23 @@
       <button class="btn btn-blue" onclick="editEntry('${CSS.escape(e.model)}')">Edit entry</button>
     </div>
     ${siblingHtml}`;
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const detailEl = document.getElementById('s-detail');
-      detailEl.classList.add('active');
-      detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+
+      // Cancel any pending nav animation so the screen switch is clean,
+      // then write DOM and trigger the slide in one rAF — this lets the
+      // browser paint the current frame before the heavy innerHTML write,
+      // eliminating the lag felt when opening detail from the inventory tab.
+      if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+      navLock = false;
+
+      requestAnimationFrame(() => {
+        document.getElementById('detail-title').textContent = e.model;
+        document.getElementById('detail-content').innerHTML = contentHtml;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const detailEl = document.getElementById('s-detail');
+        detailEl.classList.add('active');
+        detailEl.classList.add('slide-in');
+        setTimeout(() => detailEl.classList.remove('slide-in'), 350);
+      });
     }
 
     function editCurrent() {
