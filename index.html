@@ -2851,12 +2851,38 @@
       try { localStorage.removeItem(DB_CACHE_KEY); } catch(e) {}
     }
 
+    // Silently re-fetches this account's permission toggles and re-applies
+    // them to the nav (Add/Users tabs). Safe to call often — cheap request,
+    // and setupRole() is idempotent. Never blocks or shows an error toast;
+    // a failure here just means permissions stay as they were.
+    async function refreshMyPermissions() {
+      if (!currentToken) return;
+      try {
+        const response = await fetch(API_URL + '?action=getMyPermissions&token=' + encodeURIComponent(currentToken));
+        const result = await response.json();
+        if (result && result.success) {
+          const updated = result.permissions || {};
+          if (JSON.stringify(updated) !== JSON.stringify(currentPermissions)) {
+            currentPermissions = updated;
+            localStorage.setItem('currentPermissions', JSON.stringify(currentPermissions));
+            setupRole();
+          }
+        }
+      } catch (e) {
+        // Ignore — next loadDB() call will try again
+      }
+    }
+
     async function loadDB() {
 
       // Don't attempt a fetch (and never call forceLogout) if there is no token.
       // This guard prevents a reload loop when the user hasn't logged in yet,
       // or when visibilitychange fires while the login screen is showing.
       if (!currentToken) return;
+
+      // Fire-and-forget — picks up any permission toggle a Developer switched
+      // on/off since this device last logged in, without requiring a logout.
+      refreshMyPermissions();
 
       // Show cached data instantly while fetch runs in background
       loadCachedDB();
