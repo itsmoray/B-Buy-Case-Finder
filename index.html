@@ -4518,6 +4518,17 @@
     }
 
     // ── INVENTORY ─────────────────────────────────────────────────────
+    // Rendering all ~788 entries into the DOM at once (vs Search's capped
+    // list of 10) is what made Inventory feel laggy/transition-less compared
+    // to Search — every renderInventory() call was rebuilding hundreds of
+    // nodes. Cap the rendered list and let the user load more on demand.
+    const INV_PAGE_SIZE = 50;
+    let invDisplayCount = INV_PAGE_SIZE;
+    let _invLastFilterSig = null;
+    function loadMoreInventory() {
+      invDisplayCount += INV_PAGE_SIZE;
+      renderInventory();
+    }
     function renderInventory() {
       const el = document.getElementById('inv-content');
       const sub = document.getElementById('inv-sub');
@@ -4533,6 +4544,15 @@
       const floorFilter = document.getElementById('inv-floor-filter')?.value || '';
       const onlyLowStock = document.getElementById('inv-low-stock')?.checked || false;
       const onlyOutStock = document.getElementById('inv-out-stock')?.checked || false;
+
+      // Reset pagination back to the first page whenever the filter/sort
+      // combination actually changes (but NOT on a plain data refresh with
+      // the same filters — that would annoyingly collapse a "loaded more" list).
+      const _filterSig = JSON.stringify([q, sortBy, floorFilter, onlyLowStock, onlyOutStock]);
+      if (_filterSig !== _invLastFilterSig) {
+        invDisplayCount = INV_PAGE_SIZE;
+        _invLastFilterSig = _filterSig;
+      }
 
       // Stats always from full db
       const total = db.length;
@@ -4596,6 +4616,10 @@
         return;
       }
 
+      // Only build DOM nodes for the current page — rendering all ~788
+      // entries at once was the actual source of the Inventory-tab lag.
+      const pageItems = filtered.slice(0, invDisplayCount);
+
       // When searching/sorting flat list or custom sort — show flat grouped by floor
       // When no search and default sort — show floor groups as before
       // Helper: render a location group — single item normal, pair in a highlight wrapper
@@ -4609,9 +4633,9 @@
 
       if (!q && (sortBy === 'az' || sortBy === 'za') && !onlyLowStock && !onlyOutStock) {
         // Classic grouped view
-        const ground    = filtered.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
-        const upper     = filtered.filter(e => e.shelf.includes('1st Floor')    && e.shelf.split('|')[0] !== 'Flip Cover');
-        const flipCover = filtered.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
+        const ground    = pageItems.filter(e => e.shelf.includes('Ground Floor') && e.shelf.split('|')[0] !== 'Flip Cover');
+        const upper     = pageItems.filter(e => e.shelf.includes('1st Floor')    && e.shelf.split('|')[0] !== 'Flip Cover');
+        const flipCover = pageItems.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
 
         if (ground.length) {
           html += `<div class="floor-heading">🔽 Ground Floor (Downstairs)</div><div class="inv-card">`;
@@ -4631,8 +4655,13 @@
       } else {
         // Flat sorted/filtered list
         html += `<div class="inv-card">`;
-        html += groupByLocation(filtered).map(makeGroup).join('');
+        html += groupByLocation(pageItems).map(makeGroup).join('');
         html += '</div>';
+      }
+
+      if (filtered.length > pageItems.length) {
+        const remaining = filtered.length - pageItems.length;
+        html += `<button class="btn btn-blue" style="margin:14px 16px;width:calc(100% - 32px)" onclick="loadMoreInventory()">Load more (${remaining} remaining)</button>`;
       }
 
       el.innerHTML = html;
