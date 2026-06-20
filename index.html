@@ -2847,12 +2847,16 @@
         db = JSON.parse(raw);
         updateTopbarCount();
         doSearch('');
-        const invActive = document.querySelector('.screen.active')?.id === 's-inventory';
-        if (invActive) {
-          renderInventory();
-        } else {
-          invDirty = true;
-        }
+        // Render inventory immediately and unconditionally — same as search
+        // above. The previous code only rendered inventory here if it was
+        // the visible screen, and otherwise deferred via invDirty until the
+        // user navigated back into it. That meant every reopen of the app
+        // (visibilitychange → loadDB → here) queued an inventory rebuild
+        // that would later fire right as the user tapped/swiped back into
+        // the tab, eating that touch. Rendering now, while the screen is
+        // off-screen and nothing is touching it, is exactly as safe as it
+        // is for search and avoids the rebuild ever colliding with a touch.
+        renderInventory();
         return true;
       } catch(e) { return false; }
     }
@@ -2932,17 +2936,12 @@
         if (changed) {
           updateTopbarCount();
           doSearch('');
-          // Only re-render inventory if it is currently visible — otherwise just
-          // flag it dirty so the next showTab('s-inventory') call picks up the
-          // fresh data. Rebuilding a hidden list mid-interaction destroys the DOM
-          // while the user may be touching it (detail screen → back → tap item),
-          // which was causing the 3-click problem on the inventory tab.
-          const invActive = document.querySelector('.screen.active')?.id === 's-inventory';
-          if (invActive) {
-            renderInventory();
-          } else {
-            invDirty = true;
-          }
+          // Render inventory immediately and unconditionally — same as
+          // search. See the matching comment in loadCachedDB() for why the
+          // old "only render if visible, else mark dirty for later" approach
+          // was the actual cause of the inventory-only lag: it pushed the
+          // rebuild to collide with the user's next touch on that tab.
+          renderInventory();
         }
 
       } catch (err) {
@@ -2970,13 +2969,6 @@
 
     let navLock = false;
     let navTimer = null;
-    // True while any finger is currently on the screen — used to avoid
-    // rebuilding the inventory DOM mid-touch (see goBack()).
-    let touchActive = false;
-    // Tracks whether the inventory list needs a re-render when the user
-    // next navigates to the inventory tab. Set to true by loadDB() whenever
-    // data changes while the inventory screen is not the active screen.
-    let invDirty = true;
 
     function showTab(id) {
 
@@ -3012,7 +3004,13 @@
         addEl.classList.remove('slide-in');
         void addEl.offsetWidth;
         addEl.classList.add('slide-in');
-        setTimeout(() => addEl.classList.remove('slide-in'), 300);
+        navLock = true;
+        if (navTimer) clearTimeout(navTimer);
+        navTimer = setTimeout(() => {
+          navTimer = null;
+          addEl.classList.remove('slide-in');
+          navLock = false;
+        }, 300);
         document.querySelectorAll('.nav-btn').forEach((b) => {
           const onclick = b.getAttribute('onclick') || '';
           b.classList.toggle('active', onclick.includes("'s-add'") || onclick.includes('"s-add"'));
@@ -3031,17 +3029,12 @@
         renderRecentAdded();
       }
 
-      if (id === 's-inventory' && document.querySelector('.screen.active')?.id !== 's-inventory') {
-        // Only rebuild the inventory list if it is empty (first visit) or
-        // if a background loadDB() marked it dirty while it was hidden.
-        // Rebuilding on every tab-switch destroys the DOM mid-touch on mobile,
-        // which is why taps needed 3+ clicks to register on the second visit.
-        const invEl = document.getElementById('inv-content');
-        if (!invEl || !invEl.children.length || invDirty) {
-          renderInventory();
-          invDirty = false;
-        }
-      }
+      // Inventory's list (inv-content) is kept up to date continuously by
+      // loadDB()/loadCachedDB() — same as search's search-results — so no
+      // special render-on-entry handling is needed here. Removed the old
+      // "render if empty or dirty" block: it used to rebuild the list right
+      // as the user tapped into this tab, which is what made the inventory
+      // tab's navigation feel laggy compared to search.
 
       const current = document.querySelector('.screen.active');
       const next = document.getElementById(id);
@@ -3134,12 +3127,9 @@
         b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
       });
 
-      // Set prevScreen immediately — not inside the setTimeout — so that if the
-      // user taps an inventory item before the 300ms animation timer fires,
-      // showDetail() reads the correct prevScreen and records it properly
-      // instead of having it overwritten late by this delayed assignment.
-      prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
-
+      // Reset prevScreen only after the animation completes so that any
+      // second goBack() call during the 300 ms window is blocked by navLock
+      // (above) rather than snapping to the wrong screen with a stale prevScreen.
       navLock = true;
       const animCurrent = current;
       navTimer = setTimeout(() => {
@@ -3147,27 +3137,10 @@
         animCurrent.classList.remove('active','slide-out-right');
         next.classList.remove('slide-in-back');
         navLock = false;
-        // If we just landed back on inventory and a background loadDB() updated
-        // data while it was hidden, re-render now — but deferred by one extra
-        // frame and only if the user isn't already touching the screen again.
-        // Rebuilding inv-content synchronously right as the back animation
-        // ends was replacing the DOM nodes at the exact moment the user's
-        // next tap could land on them, which silently ate that tap (or the
-        // swipe-tracking touch) and is what caused the "works once, then
-        // lags/swipe-stalls on the second try" pattern.
-        if (target === 's-inventory' && invDirty) {
-          requestAnimationFrame(() => {
-            if (touchActive) {
-              // User already has a finger down on the new screen — don't
-              // rip the DOM out from under that touch. The next call to
-              // showTab('s-inventory') or goBack() will retry since invDirty
-              // is still true.
-              return;
-            }
-            renderInventory();
-            invDirty = false;
-          });
-        }
+        // Landing back on the detail screen should chain to whichever tab that
+        // detail/edit flow actually originated from (Search or Inventory), not
+        // always Search — otherwise a second back press skips past Inventory.
+        prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
       }, 300);
     }
 
@@ -3521,7 +3494,13 @@
       const detailEl = document.getElementById('s-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
+      navLock = true;
+      if (navTimer) clearTimeout(navTimer);
+      navTimer = setTimeout(() => {
+        navTimer = null;
+        detailEl.classList.remove('slide-in');
+        navLock = false;
+      }, 300);
     }
 
     function editCurrent() {
@@ -4160,7 +4139,13 @@
       const addEl = document.getElementById('s-add');
       addEl.classList.add('active');
       addEl.classList.add('slide-in');
-      setTimeout(() => addEl.classList.remove('slide-in'), 300);
+      navLock = true;
+      if (navTimer) clearTimeout(navTimer);
+      navTimer = setTimeout(() => {
+        navTimer = null;
+        addEl.classList.remove('slide-in');
+        navLock = false;
+      }, 300);
       document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
     }
 
@@ -4708,7 +4693,13 @@
         showTab('s-search');
         const searchScreen = document.getElementById('s-search');
         searchScreen.classList.add('slide-in');
-        setTimeout(() => searchScreen.classList.remove('slide-in'), 400);
+        navLock = true;
+        if (navTimer) clearTimeout(navTimer);
+        navTimer = setTimeout(() => {
+          navTimer = null;
+          searchScreen.classList.remove('slide-in');
+          navLock = false;
+        }, 400);
         loadDB();
       }, 240);
 
@@ -4834,7 +4825,13 @@
       const devEl = document.getElementById('s-dev');
       devEl.classList.add('active');
       devEl.classList.add('slide-in');
-      setTimeout(() => devEl.classList.remove('slide-in'), 300);
+      navLock = true;
+      if (navTimer) clearTimeout(navTimer);
+      navTimer = setTimeout(() => {
+        navTimer = null;
+        devEl.classList.remove('slide-in');
+        navLock = false;
+      }, 300);
       // Default to activity tab and load today
       switchDevTab('activity');
       const di = document.getElementById('dev-log-date');
@@ -5265,7 +5262,13 @@
       const detailEl = document.getElementById('s-user-detail');
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
-      setTimeout(() => detailEl.classList.remove('slide-in'), 300);
+      navLock = true;
+      if (navTimer) clearTimeout(navTimer);
+      navTimer = setTimeout(() => {
+        navTimer = null;
+        detailEl.classList.remove('slide-in');
+        navLock = false;
+      }, 300);
     }
 
     function onUdPermToggle(checkbox, key) {
@@ -5491,7 +5494,6 @@
       }
 
       document.addEventListener('touchstart', function (e) {
-        touchActive = true;
         const touch = e.touches[0];
         // Cache the active screen once per touch instead of querying on
         // every move event — avoids repeated layout reads mid-gesture.
@@ -5521,7 +5523,6 @@
       }, { passive: true });
 
       document.addEventListener('touchend', function (e) {
-        touchActive = false;
         if (!tracking) return;
         tracking = false;
         if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
@@ -5536,7 +5537,6 @@
       }, { passive: true });
 
       document.addEventListener('touchcancel', function () {
-        touchActive = false;
         tracking = false;
         if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
       }, { passive: true });
