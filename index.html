@@ -2970,6 +2970,9 @@
 
     let navLock = false;
     let navTimer = null;
+    // True while any finger is currently on the screen — used to avoid
+    // rebuilding the inventory DOM mid-touch (see goBack()).
+    let touchActive = false;
     // Tracks whether the inventory list needs a re-render when the user
     // next navigates to the inventory tab. Set to true by loadDB() whenever
     // data changes while the inventory screen is not the active screen.
@@ -3131,15 +3134,10 @@
         b.classList.toggle('active', onclick.includes("'" + target + "'") || onclick.includes('"' + target + '"'));
       });
 
-      // Reset prevScreen only after the animation completes so that any
-      // second goBack() call during the 300 ms window is blocked by navLock
-      // (above) rather than snapping to the wrong screen with a stale prevScreen.
-      // Set prevScreen immediately — NOT inside the setTimeout — so that if the
+      // Set prevScreen immediately — not inside the setTimeout — so that if the
       // user taps an inventory item before the 300ms animation timer fires,
-      // showDetail() reads the correct prevScreen ('s-inventory') and records it
-      // properly. When prevScreen was set inside the timer it would overwrite
-      // whatever showDetail() had just set, corrupting the back-stack and
-      // causing the lag/lock on every subsequent navigation from inventory.
+      // showDetail() reads the correct prevScreen and records it properly
+      // instead of having it overwritten late by this delayed assignment.
       prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
 
       navLock = true;
@@ -3150,11 +3148,25 @@
         next.classList.remove('slide-in-back');
         navLock = false;
         // If we just landed back on inventory and a background loadDB() updated
-        // data while it was hidden, re-render now (after animation) so the list
-        // is fresh without breaking any in-flight touch on the way in.
+        // data while it was hidden, re-render now — but deferred by one extra
+        // frame and only if the user isn't already touching the screen again.
+        // Rebuilding inv-content synchronously right as the back animation
+        // ends was replacing the DOM nodes at the exact moment the user's
+        // next tap could land on them, which silently ate that tap (or the
+        // swipe-tracking touch) and is what caused the "works once, then
+        // lags/swipe-stalls on the second try" pattern.
         if (target === 's-inventory' && invDirty) {
-          renderInventory();
-          invDirty = false;
+          requestAnimationFrame(() => {
+            if (touchActive) {
+              // User already has a finger down on the new screen — don't
+              // rip the DOM out from under that touch. The next call to
+              // showTab('s-inventory') or goBack() will retry since invDirty
+              // is still true.
+              return;
+            }
+            renderInventory();
+            invDirty = false;
+          });
         }
       }, 300);
     }
@@ -5479,6 +5491,7 @@
       }
 
       document.addEventListener('touchstart', function (e) {
+        touchActive = true;
         const touch = e.touches[0];
         // Cache the active screen once per touch instead of querying on
         // every move event — avoids repeated layout reads mid-gesture.
@@ -5508,6 +5521,7 @@
       }, { passive: true });
 
       document.addEventListener('touchend', function (e) {
+        touchActive = false;
         if (!tracking) return;
         tracking = false;
         if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
@@ -5522,6 +5536,7 @@
       }, { passive: true });
 
       document.addEventListener('touchcancel', function () {
+        touchActive = false;
         tracking = false;
         if (indicator) { indicator.style.opacity = '0'; indicator.style.width = '4px'; }
       }, { passive: true });
