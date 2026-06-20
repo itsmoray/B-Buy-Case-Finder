@@ -3235,10 +3235,28 @@
       const floor = document.getElementById('floor-filter')?.value || '';
       const lowStock = document.getElementById('low-stock')?.checked;
       const outStock = document.getElementById('out-stock')?.checked;
+      const qTrim = q.trim();
+
+      // Single comparator used everywhere below — for the initial sort, for
+      // re-sorting items inside a re-expanded sibling group, and for ordering
+      // the groups themselves. Previously each of those three steps used a
+      // different (or no) comparator, so the chosen sort kept getting
+      // discarded by the later grouping/expansion steps.
+      function relevance(model) {
+        return fuzzyMatch(model, qTrim);
+      }
+      function compareItems(a, b) {
+        if (qTrim) {
+          const r = relevance(a.model) - relevance(b.model);
+          if (r !== 0) return r;
+        }
+        if (sortBy === 'az') return a.model.localeCompare(b.model);
+        return (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0);
+      }
 
       let results = [...db];
 
-      if (q.trim()) {
+      if (qTrim) {
         results = results.filter(e => fuzzyMatch(e.model, q) < Infinity);
       }
 
@@ -3255,26 +3273,7 @@
         results = results.filter(e => parseInt(e.stock) <= 5);
       }
 
-      if (q.trim()) {
-        function relevance(model) {
-          return fuzzyMatch(model, q.trim());
-        }
-        if (sortBy === 'az') {
-          results.sort((a, b) => {
-            const r = relevance(a.model) - relevance(b.model);
-            return r !== 0 ? r : a.model.localeCompare(b.model);
-          });
-        } else {
-          results.sort((a, b) => {
-            const r = relevance(a.model) - relevance(b.model);
-            return r !== 0 ? r : (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0);
-          });
-        }
-      } else if (sortBy === 'az') {
-        results.sort((a, b) => a.model.localeCompare(b.model));
-      } else {
-        results.sort((a, b) => (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0));
-      }
+      results.sort(compareItems);
 
       results = results.slice(0, limit);
 
@@ -3293,19 +3292,10 @@
 
       const groups = groupByLocation(fullResults);
 
-      // When a search query is active, sort groups by the best relevance score
-      // of any model inside the group, then reorder models within each group too.
-      if (q.trim()) {
-        function groupRelevance(model) {
-          return fuzzyMatch(model, q.trim());
-        }
-        // Sort models within each group so the best match rises to the top
-        groups.forEach(group => {
-          group.sort((a, b) => groupRelevance(a.model) - groupRelevance(b.model));
-        });
-        // Sort the groups themselves by their best-matching model
-        groups.sort((a, b) => groupRelevance(a[0].model) - groupRelevance(b[0].model));
-      }
+      // Re-apply the same comparator to keep the chosen sort intact after
+      // grouping/sibling-expansion reordered things back to db's raw order.
+      groups.forEach(group => group.sort(compareItems));
+      groups.sort((a, b) => compareItems(a[0], b[0]));
 
       el.innerHTML = groups.map(group => {
         if (group.length === 1) return searchResultCard(group[0]);
