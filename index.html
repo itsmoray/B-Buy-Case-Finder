@@ -1876,10 +1876,13 @@
 
       /* Search results as a responsive card grid */
       #search-results {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        align-items: start;
-        gap: 12px;
+        column-count: 2;
+        column-gap: 12px;
+      }
+
+      #search-results > * {
+        break-inside: avoid;
+        margin-bottom: 12px;
       }
 
       #search-results .result-card {
@@ -1887,7 +1890,7 @@
       }
 
       #search-results .empty {
-        grid-column: 1 / -1;
+        column-span: all;
       }
 
       /* Inventory items as a card grid instead of a stacked list */
@@ -2032,7 +2035,7 @@
       }
 
       #search-results {
-        grid-template-columns: repeat(3, 1fr);
+        column-count: 3;
       }
 
       .inv-card {
@@ -3282,18 +3285,16 @@
         return;
       }
 
-      // Group by location AFTER slicing so we don't cut a shared slot in half.
-      // Then re-expand to individual models, re-group, and ensure every sibling
-      // of any model that made it through the limit also appears.
-      const slicedKeys = new Set(results.map(e => locationKey(e)));
-      // Pull in any db entries that share a location key with sliced results
-      // (siblings that were beyond the limit boundary)
-      const fullResults = db.filter(e => slicedKeys.has(locationKey(e)));
+      // Group only the items that actually matched the search/filters —
+      // same approach as Inventory's renderInventory(). Previously this
+      // re-expanded to pull in EVERY db entry sharing the exact same
+      // shelf/row/col as a match, on the assumption they were intentional
+      // "shared slot" siblings — but plenty of unrelated items just happen
+      // to share that same row/col, so a single match could balloon into
+      // showing an entire shelf's worth of unrelated phones.
+      const groups = groupByLocation(results);
 
-      const groups = groupByLocation(fullResults);
-
-      // Re-apply the same comparator to keep the chosen sort intact after
-      // grouping/sibling-expansion reordered things back to db's raw order.
+      // Re-apply the same comparator to keep the chosen sort intact after grouping.
       groups.forEach(group => group.sort(compareItems));
       groups.sort((a, b) => compareItems(a[0], b[0]));
 
