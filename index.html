@@ -3100,12 +3100,17 @@
       });
     }
 
+    let pendingGoBack = false;
     function goBack() {
       // Guard: ignore while a back-navigation animation is already in flight.
       // This prevents a double-tap or swipe+button combo from firing goBack()
       // twice — the second call would see the already-reset prevScreen and
       // incorrectly land on Search instead of the originating tab.
-      if (navLock) return;
+      // Instead of dropping this call, queue it so it replays automatically
+      // once the in-flight transition finishes — otherwise a swipe that lands
+      // during that 300ms window just did nothing (felt "stuck"), and the
+      // next swipe attempt would then fire with stale state and skip its animation.
+      if (navLock) { pendingGoBack = true; return; }
 
       const current = document.querySelector('.screen.active');
       const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
@@ -3141,6 +3146,10 @@
         // detail/edit flow actually originated from (Search or Inventory), not
         // always Search — otherwise a second back press skips past Inventory.
         prevScreen = (target === 's-detail') ? (originScreen || 's-search') : 's-search';
+        if (pendingGoBack) {
+          pendingGoBack = false;
+          goBack();
+        }
       }, 300);
     }
 
@@ -3492,6 +3501,12 @@
     ${siblingHtml}`;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const detailEl = document.getElementById('s-detail');
+      // Force a reflow between removing and re-adding 'slide-in' — otherwise,
+      // if this element still carries 'slide-in' from a transition that got
+      // cancelled/snapped earlier, classList.add() on an already-present
+      // class is a no-op and the fade/slide animation silently fails to replay.
+      detailEl.classList.remove('slide-in');
+      void detailEl.offsetWidth;
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
       navLock = true;
@@ -4137,6 +4152,11 @@
       if (clearBtn) clearBtn.style.display = 'none';
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const addEl = document.getElementById('s-add');
+      // Same reflow fix as showDetail() — without this, a leftover 'slide-in'
+      // class from an earlier cancelled transition makes classList.add() a
+      // no-op, so the screen appears with no transition at all.
+      addEl.classList.remove('slide-in');
+      void addEl.offsetWidth;
       addEl.classList.add('active');
       addEl.classList.add('slide-in');
       navLock = true;
