@@ -8,17 +8,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BBuy Case Finder">
-  <meta name="theme-color" content="#4638d9">
+  <meta name="theme-color" content="#1a56db">
   <title>B Buy Case Finder — Store Inventory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue: #4638d9;
-      --blue-dark: #362aa8;
-      --blue-light: #edeaff;
-      --blue-mid: #c9c0fb;
+      --blue: #0d3ca3;
+      --blue-dark: #092a75;
+      --blue-light: #e5ecfc;
+      --blue-mid: #b8cdf5;
       --green: #057a55;
       --green-bg: #def7ec;
       --amber: #92400e;
@@ -31,11 +31,15 @@
       --border: #e7e6ec;
       --border2: #d3d2db;
       --surface: #ffffff;
-      --bg: #f5f4f8;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --shadow: 0 1px 2px rgba(22, 22, 28, .06), 0 1px 1px rgba(22, 22, 28, .04);
-      --shadow-md: 0 8px 20px rgba(22, 22, 28, .08), 0 2px 6px rgba(22, 22, 28, .06);
+      --bg: #f2f3f7;
+      --radius: 18px;
+      --radius-sm: 14px;
+      --radius-lg: 22px;
+      --radius-xl: 26px;
+      --shadow: 0 1px 2px rgba(17, 24, 39, .04), 0 1px 1px rgba(17, 24, 39, .03);
+      --shadow-md: 0 10px 24px rgba(17, 24, 39, .10), 0 2px 8px rgba(17, 24, 39, .06);
+      --shadow-soft: 0 1px 2px rgba(17, 24, 39, .04), 0 10px 24px rgba(17, 24, 39, .08);
+      --shadow-topbar: 0 10px 24px rgba(13, 60, 163, .28);
       --font-display: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
@@ -145,14 +149,18 @@
 
     /* TOP BAR */
     .topbar {
-      background: #000;
+      background: linear-gradient(165deg, var(--blue), var(--blue-dark));
       color: #fff;
       padding:
-        calc(env(safe-area-inset-top) + 14px) 16px 12px;
+        calc(env(safe-area-inset-top) + 16px) 18px 22px;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+      box-shadow: var(--shadow-topbar);
+      position: relative;
+      z-index: 2;
     }
 
     .topbar-back {
@@ -196,11 +204,11 @@
 
     /* TOPBAR LOGO IMAGE */
     .topbar-logo {
-      height: 50px;
+      height: 46px;
       width: auto;
       flex-shrink: 0;
-      border-radius: 6px;
-      background: #000;
+      border-radius: 10px;
+      background: transparent;
     }
 
     /* SCREEN TRANSITIONS */
@@ -400,7 +408,7 @@
          touch might become a horizontal swipe gesture. Eliminates the
          ~100ms disambiguation delay that caused swipe-back lag on mobile. */
       touch-action: pan-y;
-      padding: 16px 14px 24px;
+      padding: 18px 16px 28px;
       min-height: 0;
     }
 
@@ -409,11 +417,11 @@
       background: var(--surface);
       display: flex;
       flex-shrink: 0;
-      gap: 2px;
-      margin: 0 14px max(14px, env(safe-area-inset-bottom));
-      padding: 6px;
-      border-radius: 28px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, .14), 0 2px 8px rgba(0, 0, 0, .08);
+      gap: 4px;
+      margin: 0 16px max(16px, env(safe-area-inset-bottom));
+      padding: 8px;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 10px 28px rgba(17, 24, 39, .16), 0 2px 8px rgba(17, 24, 39, .08);
     }
 
     .nav-btn {
@@ -422,22 +430,22 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      padding: 8px 4px 7px;
+      padding: 9px 4px 8px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--text3);
       cursor: pointer;
       border: none;
       background: none;
-      border-radius: 20px;
-      transition: color .15s;
+      border-radius: 16px;
+      transition: color .15s, background-color .2s;
     }
 
     .nav-btn .nav-icon {
       font-size: 19px;
       line-height: 1;
-      width: 34px;
-      height: 34px;
+      width: 30px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -447,21 +455,12 @@
 
     .nav-btn.active {
       color: var(--blue);
+      background: var(--blue-light);
     }
 
     .nav-btn.active .nav-icon {
-      background: var(--blue-light);
-      box-shadow: 0 3px 8px rgba(70, 56, 217, .25);
-    }
-
-    .nav-btn.active::after {
-      content: '';
-      display: block;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--blue);
-      margin-top: 2px;
+      background: transparent;
+      box-shadow: none;
     }
 
     /* STICKY SEARCH HEADER */
@@ -545,25 +544,25 @@
 
     .result-card {
       background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      border-radius: var(--radius-lg);
+      border: none;
+      padding: 16px 18px;
+      margin-bottom: 14px;
       cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: box-shadow .15s, border-color .15s;
+      box-shadow: var(--shadow-soft);
+      transition: transform .15s, box-shadow .15s;
       display: flex;
       flex-direction: column;
     }
 
     .result-card:active {
-      box-shadow: none;
-      border-color: var(--blue);
+      transform: scale(.98);
+      box-shadow: var(--shadow);
     }
 
     .result-icon {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-sm);
       background: var(--blue-light);
       display: flex;
@@ -636,11 +635,11 @@
     /* DETAIL SCREEN */
     .detail-section {
       background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+      border: none;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
     }
 
     .section-eyebrow {
@@ -721,11 +720,11 @@
     /* FORM */
     .form-card {
       background: var(--surface);
-      border-radius: var(--radius);
-      border: 1.5px solid var(--border2);
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+      border-radius: var(--radius-lg);
+      border: none;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
     }
 
     .field {
@@ -811,6 +810,7 @@
     .btn-blue {
       background: var(--blue);
       color: #fff;
+      box-shadow: 0 6px 16px rgba(13, 60, 163, .28);
     }
 
     .btn-outline-red {
@@ -842,14 +842,14 @@
       letter-spacing: .09em;
       text-transform: uppercase;
       color: #475569;
-      margin: 20px 0 8px;
+      margin: 22px 0 10px;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 12px 7px 14px;
-      background: #f1f5f9;
-      border-left: 3px solid #94a3b8;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 8px 14px;
+      background: #eef1f6;
+      border: none;
+      border-radius: 20px;
     }
 
     .floor-heading:first-child {
@@ -858,17 +858,17 @@
 
     .inv-card {
       background: var(--surface);
-      border-radius: var(--radius);
-      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-lg);
+      border: none;
       overflow: hidden;
-      margin-bottom: 10px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.09), 0 1px 4px rgba(0,0,0,.06);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
     }
 
     .inv-item {
       display: flex;
       align-items: center;
-      padding: 14px 14px;
+      padding: 15px 16px;
       min-height: 56px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
@@ -915,28 +915,28 @@
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 10px;
+      margin: -8px 0 18px;
+      position: relative;
+      z-index: 3;
     }
 
     .stat-card {
       background: var(--surface);
-      border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      padding: 14px 12px;
+      border-radius: var(--radius-lg);
+      border: none;
+      padding: 16px 12px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+      box-shadow: var(--shadow-soft);
     }
 
     .stat-card.stat-low {
       background: var(--surface);
-      border-color: var(--border);
       border-top: 3px solid #f59e0b;
     }
 
     .stat-card.stat-out {
       background: var(--surface);
-      border-color: var(--border);
       border-top: 3px solid #ef4444;
     }
 
@@ -1029,8 +1029,8 @@
 
     .dialog {
       background: var(--surface);
-      border-radius: var(--radius) var(--radius) 0 0;
-      padding: 24px 20px 32px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 26px 22px 34px;
       width: 100%;
     }
 
@@ -1454,7 +1454,7 @@
 
     /* Option label styling for recently-used items this session — blue */
     select option.opt-recent {
-      color: #4638d9;
+      color: #1a56db;
       font-weight: 600;
     }
 
@@ -1765,7 +1765,7 @@
       width: 100%;
       height: 3px;
       border-radius: 3px;
-      background: rgba(70, 56, 217, .18);
+      background: rgba(26, 86, 219, .15);
       overflow: hidden;
       margin-top: 10px;
       opacity: 0;
@@ -1874,17 +1874,17 @@
     /* ACCOUNT SCREEN */
     .account-card {
       background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      border: none;
       padding: 32px 20px 24px;
       text-align: center;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
     }
     .account-avatar {
-      width: 72px;
-      height: 72px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
-      background: var(--blue);
+      background: linear-gradient(165deg, var(--blue), var(--blue-dark));
       color: #fff;
       font-size: 30px;
       font-weight: 700;
@@ -1892,6 +1892,7 @@
       align-items: center;
       justify-content: center;
       margin: 0 auto 14px;
+      box-shadow: 0 6px 16px rgba(13, 60, 163, .28);
     }
     .account-name {
       font-size: 20px;
