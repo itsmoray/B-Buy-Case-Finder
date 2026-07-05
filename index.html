@@ -2715,20 +2715,21 @@
 
         <!-- ACTIVITY TAB -->
         <div id="dev-panel-activity">
-          <div style="margin-bottom:8px">
-            <input type="text" id="dev-log-search" placeholder="🔍 Search by user, action, or detail…" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" oninput="onDevLogSearchInput()">
+          <div class="search-box" style="margin-bottom:8px">
+            <span class="ico">🔍</span>
+            <input type="text" id="dev-log-search" placeholder="Search by user, action, or detail…" oninput="onDevLogSearchInput()"
+              autocomplete="off" autocorrect="off" spellcheck="false" />
+            <button class="search-clear-btn" id="dev-log-search-clear-btn" onclick="clearDevLogSearch()" aria-label="Clear search">✕</button>
           </div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <label for="dev-log-from" style="font-size:13px;color:var(--text2);width:38px;flex-shrink:0">From</label>
             <input type="date" id="dev-log-from" style="flex:1;min-width:0;width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onchange="loadActivityLog()">
           </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
             <label for="dev-log-to" style="font-size:13px;color:var(--text2);width:38px;flex-shrink:0">To</label>
             <input type="date" id="dev-log-to" style="flex:1;min-width:0;width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onchange="loadActivityLog()">
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-            <button class="btn btn-blue btn-sm" style="width:auto;padding:10px 16px" onclick="loadActivityLog()">Load</button>
-          </div>
+          <button class="btn btn-blue btn-sm" style="width:100%;padding:12px;margin-bottom:14px" onclick="loadActivityLog()">Load</button>
           <!-- Summary cards -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
             <div class="detail-section" style="margin:0;padding:12px;text-align:center">
@@ -4896,6 +4897,8 @@
       document.getElementById('dev-log-from').value = todayStr;
       document.getElementById('dev-log-to').value   = todayStr;
       document.getElementById('dev-log-search').value = '';
+      const devSearchClearBtn = document.getElementById('dev-log-search-clear-btn');
+      if (devSearchClearBtn) devSearchClearBtn.classList.remove('visible');
       loadActivityLog();
     }
 
@@ -4961,6 +4964,9 @@
 
     let devLogSearchTimer = null;
     function onDevLogSearchInput() {
+      const clearBtn = document.getElementById('dev-log-search-clear-btn');
+      const val = document.getElementById('dev-log-search').value;
+      if (clearBtn) clearBtn.classList.toggle('visible', val.length > 0);
       // Debounced live search — mirrors the instant feel of the Home tab
       // search, but with a short delay since this one hits the server
       // instead of filtering an already-loaded local list.
@@ -4969,6 +4975,14 @@
         devLogSearchTimer = null;
         loadActivityLog();
       }, 350);
+    }
+
+    function clearDevLogSearch() {
+      const input = document.getElementById('dev-log-search');
+      const clearBtn = document.getElementById('dev-log-search-clear-btn');
+      if (input) { input.value = ''; input.focus(); }
+      if (clearBtn) clearBtn.classList.remove('visible');
+      loadActivityLog();
     }
 
     let devLogRequestSeq = 0;
