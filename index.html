@@ -6,135 +6,33 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BBuy Case Finder">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#1a56db">
   <title>B Buy Case Finder — Store Inventory</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue: #0d3ca3;
-      --blue-dark: #092a75;
-      --blue-light: #e5ecfc;
-      --blue-mid: #b8cdf5;
+      --blue: #1a56db;
+      --blue-dark: #1240a8;
+      --blue-light: #e8f0fe;
+      --blue-mid: #c7d9fc;
       --green: #057a55;
       --green-bg: #def7ec;
       --amber: #92400e;
       --amber-bg: #fef3c7;
       --red: #9b1c1c;
       --red-bg: #fde8e8;
-      --text: #16161c;
-      --text2: #6d6d7a;
-      --text3: #9d9da8;
-      --border: #e7e6ec;
-      --border2: #d3d2db;
+      --text: #111827;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --border: #e5e7eb;
+      --border2: #d1d5db;
       --surface: #ffffff;
-      --bg: #f2f3f7;
-      --radius: 18px;
-      --radius-sm: 14px;
-      --radius-lg: 22px;
-      --radius-xl: 26px;
-      --shadow: 0 1px 2px rgba(17, 24, 39, .04), 0 1px 1px rgba(17, 24, 39, .03);
-      --shadow-md: 0 10px 24px rgba(17, 24, 39, .10), 0 2px 8px rgba(17, 24, 39, .06);
-      --shadow-soft: 0 1px 2px rgba(17, 24, 39, .04), 0 10px 24px rgba(17, 24, 39, .08);
-      --shadow-topbar: 0 10px 24px rgba(0, 0, 0, .28);
-      --font-display: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --dot-green: #10b981;
-      --dot-amber: #f59e0b;
-      --dot-red: #ef4444;
-      --scrim: rgba(0, 0, 0, .45);
-    }
-
-    /* DARK MODE — same variable names, swapped values. Toggled via
-       data-theme="dark" on <html>, persisted in localStorage. */
-    html[data-theme="dark"] {
-      --blue: #5c8bf0;
-      --blue-dark: #3f6bd6;
-      --blue-light: #1b2a4a;
-      --blue-mid: #2c3f6b;
-      --green: #34d399;
-      --green-bg: #113328;
-      --amber: #fbbf24;
-      --amber-bg: #3a2a0c;
-      --red: #f87171;
-      --red-bg: #3a1414;
-      --text: #f2f2f5;
-      --text2: #a9a9b6;
-      --text3: #75757f;
-      --border: #2a2a33;
-      --border2: #38383f;
-      --surface: #1b1b21;
-      --surface2: #24242c;
-      --bg: #121216;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 1px 1px rgba(0, 0, 0, .25);
-      --shadow-md: 0 10px 24px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .3);
-      --shadow-soft: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 24px rgba(0, 0, 0, .4);
-      --shadow-topbar: 0 10px 24px rgba(0, 0, 0, .5);
-      --scrim: rgba(0, 0, 0, .7);
-    }
-
-    html[data-theme="dark"] body,
-    html[data-theme="dark"] #app { background: #000; }
-
-    html[data-theme="dark"] .topbar-logo { filter: brightness(1.05); }
-
-    /* Smooth theme swap instead of an abrupt flash */
-    body, .topbar, .screen, .inv-card, .detail-section, .stat-card,
-    .form-card, .result-card, .dialog, .bottom-nav, .search-sticky-header {
-      transition: background-color .25s ease, color .25s ease, border-color .25s ease;
-    }
-
-    /* Inline icon glyphs (replace former emoji icons) — inherit surrounding
-       text color and scale with the parent's font-size, just like the
-       emoji they replaced. */
-    .icon-glyph {
-      width: 1em;
-      height: 1em;
-      vertical-align: -0.15em;
-      flex-shrink: 0;
-    }
-
-    /* SKELETON LOADERS — replace plain "Loading…" text with shimmering
-       placeholder blocks that hint at the shape of the incoming content. */
-    @keyframes skeletonShimmer {
-      to { background-position: -135% 0; }
-    }
-
-    .skel-row {
-      height: 14px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
-      background-size: 250% 100%;
-      animation: skeletonShimmer 1.3s ease-in-out infinite;
-    }
-
-    .skel-row:last-child { margin-bottom: 0; }
-    .skel-row.w-60 { width: 60%; }
-    .skel-row.w-75 { width: 75%; }
-    .skel-row.w-90 { width: 90%; }
-    .skel-row.w-40 { width: 40%; }
-
-    .skel-card {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      margin-bottom: 8px;
-    }
-    .skel-card:last-child { margin-bottom: 0; }
-
-    .skel-pill {
-      display: inline-block;
-      height: 11px;
-      width: 70px;
-      border-radius: 6px;
-      vertical-align: middle;
-      background: linear-gradient(90deg, rgba(255,255,255,.25) 25%, rgba(255,255,255,.5) 50%, rgba(255,255,255,.25) 75%);
-      background-size: 250% 100%;
-      animation: skeletonShimmer 1.3s ease-in-out infinite;
+      --bg: #f3f4f6;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, .1);
     }
 
     * {
@@ -147,12 +45,11 @@
     html,
     body {
       height: 100%;
-      background: var(--bg);
+      background: #000;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: var(--text);
       margin: 0;
       overflow: hidden;
-      overscroll-behavior: none;
     }
 
     /* Center the app card horizontally on screens wider than the app itself */
@@ -169,7 +66,7 @@
       width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      background: var(--bg);
+      background: #000;
       position: relative;
       overflow: hidden;
       /* Makes #app the containing block for any position:fixed children
@@ -193,20 +90,15 @@
 
     /* TOP BAR */
     .topbar {
-      background: linear-gradient(165deg, #1a1a1e, #000);
+      background: #000;
       color: #fff;
       padding:
-        calc(env(safe-area-inset-top) + 16px) 18px 22px;
+        calc(env(safe-area-inset-top) + 14px) 16px 12px;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
-      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-      box-shadow: var(--shadow-topbar);
-      position: relative;
-      z-index: 2;
     }
-
 
     .topbar-back {
       background: none;
@@ -226,7 +118,6 @@
     }
 
     .topbar-title {
-      font-family: var(--font-display);
       font-size: 18px;
       font-weight: 600;
       flex: 1;
@@ -249,11 +140,11 @@
 
     /* TOPBAR LOGO IMAGE */
     .topbar-logo {
-      height: 46px;
+      height: 50px;
       width: auto;
       flex-shrink: 0;
-      border-radius: 10px;
-      background: transparent;
+      border-radius: 6px;
+      background: #000;
     }
 
     /* SCREEN TRANSITIONS */
@@ -312,7 +203,6 @@
     }
 
     .splash-name {
-      font-family: var(--font-display);
       color: #fff;
       font-size: 17px;
       font-weight: 600;
@@ -453,14 +343,8 @@
          touch might become a horizontal swipe gesture. Eliminates the
          ~100ms disambiguation delay that caused swipe-back lag on mobile. */
       touch-action: pan-y;
-      padding: 18px 16px 28px;
+      padding: 16px 14px 24px;
       min-height: 0;
-      /* Stop rubber-band/bounce at the top or bottom of the list from
-         "chaining" into the app shell behind it. Without this, scrolling
-         fast to the bottom can make the whole shell appear to jump/shake
-         for a frame as the browser tries to bounce something that has
-         nowhere further to go. */
-      overscroll-behavior-y: contain;
     }
 
     /* BOTTOM NAV */
@@ -468,11 +352,11 @@
       background: var(--surface);
       display: flex;
       flex-shrink: 0;
-      gap: 4px;
-      margin: 0 16px max(16px, env(safe-area-inset-bottom));
-      padding: 8px;
-      border-radius: var(--radius-xl);
-      box-shadow: 0 10px 28px rgba(17, 24, 39, .16), 0 2px 8px rgba(17, 24, 39, .08);
+      gap: 2px;
+      margin: 0 14px max(14px, env(safe-area-inset-bottom));
+      padding: 6px;
+      border-radius: 28px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .14), 0 2px 8px rgba(0, 0, 0, .08);
     }
 
     .nav-btn {
@@ -481,22 +365,22 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      padding: 9px 4px 8px;
+      padding: 8px 4px 7px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text3);
       cursor: pointer;
       border: none;
       background: none;
-      border-radius: 16px;
-      transition: color .15s, background-color .2s;
+      border-radius: 20px;
+      transition: color .15s;
     }
 
     .nav-btn .nav-icon {
       font-size: 19px;
       line-height: 1;
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -506,12 +390,21 @@
 
     .nav-btn.active {
       color: var(--blue);
-      background: var(--blue-light);
     }
 
     .nav-btn.active .nav-icon {
-      background: transparent;
-      box-shadow: none;
+      background: var(--blue-light);
+      box-shadow: 0 3px 8px rgba(26, 86, 219, .22);
+    }
+
+    .nav-btn.active::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--blue);
+      margin-top: 2px;
     }
 
     /* STICKY SEARCH HEADER */
@@ -595,25 +488,25 @@
 
     .result-card {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: none;
-      padding: 16px 18px;
-      margin-bottom: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-bottom: 10px;
       cursor: pointer;
-      box-shadow: var(--shadow-soft);
-      transition: transform .15s, box-shadow .15s;
+      box-shadow: var(--shadow);
+      transition: box-shadow .15s, border-color .15s;
       display: flex;
       flex-direction: column;
     }
 
     .result-card:active {
-      transform: scale(.98);
-      box-shadow: var(--shadow);
+      box-shadow: none;
+      border-color: var(--blue);
     }
 
     .result-icon {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: var(--radius-sm);
       background: var(--blue-light);
       display: flex;
@@ -686,11 +579,11 @@
     /* DETAIL SCREEN */
     .detail-section {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: none;
-      padding: 18px;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
     }
 
     .section-eyebrow {
@@ -771,11 +664,11 @@
     /* FORM */
     .form-card {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: none;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border2);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
     }
 
     .field {
@@ -861,7 +754,6 @@
     .btn-blue {
       background: var(--blue);
       color: #fff;
-      box-shadow: 0 6px 16px rgba(13, 60, 163, .28);
     }
 
     .btn-outline-red {
@@ -892,15 +784,15 @@
       font-weight: 800;
       letter-spacing: .09em;
       text-transform: uppercase;
-      color: var(--text2);
-      margin: 22px 0 10px;
+      color: #475569;
+      margin: 20px 0 8px;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 14px;
-      background: var(--bg);
-      border: none;
-      border-radius: 20px;
+      padding: 7px 12px 7px 14px;
+      background: #f1f5f9;
+      border-left: 3px solid #94a3b8;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     }
 
     .floor-heading:first-child {
@@ -909,17 +801,17 @@
 
     .inv-card {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border2);
       overflow: hidden;
-      margin-bottom: 14px;
-      box-shadow: none;
+      margin-bottom: 10px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.09), 0 1px 4px rgba(0,0,0,.06);
     }
 
     .inv-item {
       display: flex;
       align-items: center;
-      padding: 15px 16px;
+      padding: 14px 14px;
       min-height: 56px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
@@ -936,12 +828,10 @@
     }
 
     .inv-dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 0 3px rgba(0,0,0,.06);
-      transition: background-color .2s;
     }
 
     .inv-info {
@@ -968,33 +858,32 @@
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: -8px 0 18px;
-      position: relative;
-      z-index: 3;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .stat-card {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: none;
-      padding: 16px 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      padding: 14px 12px;
       text-align: center;
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
     }
 
     .stat-card.stat-low {
       background: var(--surface);
+      border-color: var(--border);
       border-top: 3px solid #f59e0b;
     }
 
     .stat-card.stat-out {
       background: var(--surface);
+      border-color: var(--border);
       border-top: 3px solid #ef4444;
     }
 
     .stat-val {
-      font-family: var(--font-display);
       font-size: 32px;
       font-weight: 800;
       color: var(--text);
@@ -1027,7 +916,6 @@
     }
 
     .empty h3 {
-      font-family: var(--font-display);
       font-size: 16px;
       font-weight: 600;
       color: var(--text2);
@@ -1059,9 +947,6 @@
       z-index: 999;
       box-shadow: var(--shadow-md);
       max-width: 90vw;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     .toast.show {
@@ -1085,13 +970,12 @@
 
     .dialog {
       background: var(--surface);
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-      padding: 26px 22px 34px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 20px 32px;
       width: 100%;
     }
 
     .dialog h3 {
-      font-family: var(--font-display);
       font-size: 17px;
       font-weight: 700;
       margin-bottom: 8px;
@@ -1451,7 +1335,7 @@
       border-radius: var(--radius-sm);
       margin-top: 5px;
       border: 1px solid var(--border);
-      box-shadow: none;
+      box-shadow: var(--shadow);
     }
 
     .inv-loc-group .inv-item:last-child {
@@ -1795,7 +1679,6 @@
     }
 
     .login-heading {
-      font-family: var(--font-display);
       font-size: 21px;
       font-weight: 700;
       color: #fff;
@@ -1930,17 +1813,17 @@
     /* ACCOUNT SCREEN */
     .account-card {
       background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: none;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
       padding: 32px 20px 24px;
       text-align: center;
-      box-shadow: var(--shadow-soft);
+      box-shadow: var(--shadow);
     }
     .account-avatar {
-      width: 76px;
-      height: 76px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      background: linear-gradient(165deg, var(--blue), var(--blue-dark));
+      background: var(--blue);
       color: #fff;
       font-size: 30px;
       font-weight: 700;
@@ -1948,7 +1831,6 @@
       align-items: center;
       justify-content: center;
       margin: 0 auto 14px;
-      box-shadow: 0 6px 16px rgba(13, 60, 163, .28);
     }
     .account-name {
       font-size: 20px;
@@ -2202,345 +2084,12 @@
       border-radius: 3px;
     }
 
-    /* ── LOW STOCK ALERT BANNER ─────────────────────────────────────── */
-    .low-stock-banner {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, var(--amber-bg), var(--red-bg));
-      border: 1.5px solid var(--amber);
-      border-radius: var(--radius-sm);
-      padding: 11px 12px 11px 14px;
-      margin-bottom: 14px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--amber);
-      animation: fadeSlideIn .3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-    }
-
-    .low-stock-banner.dismissing {
-      animation: fadeSlideOut .18s ease forwards;
-    }
-
-    .low-stock-banner-icon {
-      display: flex;
-      flex-shrink: 0;
-      font-size: 18px;
-    }
-
-    .low-stock-banner-text {
-      flex: 1;
-      min-width: 0;
-      color: var(--text);
-    }
-
-    .low-stock-banner-text strong {
-      color: var(--amber);
-    }
-
-    .low-stock-banner-view {
-      flex-shrink: 0;
-      background: var(--amber);
-      color: #fff;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .low-stock-banner-close {
-      flex-shrink: 0;
-      background: none;
-      border: none;
-      color: var(--text2);
-      font-size: 13px;
-      cursor: pointer;
-      padding: 4px;
-      line-height: 1;
-    }
-
-    /* ── RECENT SEARCH CHIPS ────────────────────────────────────────── */
-    .recent-chips-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .recent-chips-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-      color: var(--text3);
-    }
-
-    .recent-chips-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .recent-chip {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      color: var(--text2);
-      border-radius: 20px;
-      padding: 7px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-    }
-
-    .recent-chip:active {
-      transform: scale(.96);
-      background: var(--bg);
-    }
-
-    /* ── STICKY FLOOR HEADERS ───────────────────────────────────────── */
-    .floor-heading {
-      position: sticky;
-      top: -1px;
-      z-index: 4;
-      /* No backdrop-filter here — blurring a sticky element on every
-         scroll frame is expensive and was causing scroll jank on the
-         home screen. The solid var(--bg) background above already
-         fully covers content passing underneath. */
-    }
-
-    /* ── STEPPER "POP" CONFIRMATION ─────────────────────────────────── */
-    @keyframes stepperPop {
-      0%   { transform: scale(1); }
-      35%  { transform: scale(1.35); }
-      100% { transform: scale(1); }
-    }
-
-    .stepper-pop {
-      animation: stepperPop .32s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: inline-block;
-    }
-
-    /* ── MODAL SCALE-IN (edit-user / create-developer style dialogs) ── */
-    .overlay.overlay-center {
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .overlay.overlay-center .dialog {
-      border-radius: var(--radius-xl);
-      width: 100%;
-      max-width: 380px;
-      transform: scale(.85);
-      opacity: 0;
-      transition: transform .22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity .18s ease;
-    }
-
-    .overlay.overlay-center.show .dialog {
-      transform: scale(1);
-      opacity: 1;
-    }
-
-    /* ── TOAST WITH ICON ────────────────────────────────────────────── */
-    .toast-icon {
-      display: inline-flex;
-      flex-shrink: 0;
-      opacity: 0;
-      transform: scale(.4);
-      transition: transform .25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity .2s ease;
-    }
-
-    .toast.show .toast-icon {
-      opacity: 1;
-      transform: scale(1);
-      transition-delay: .08s;
-    }
-
-    .toast-body {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* ── SWIPE-TO-ADJUST CARDS ──────────────────────────────────────── */
-    .swipe-host {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .swipe-actions {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      padding-right: 14px;
-      background: linear-gradient(90deg, transparent, var(--blue-light) 40%);
-    }
-
-    .swipe-content-inner {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      flex: 1;
-      min-width: 0;
-      background: var(--surface);
-      transition: transform .18s ease-out;
-      touch-action: pan-y;
-    }
-
-    .swipe-content-inner.swiped {
-      transform: translateX(-104px);
-    }
-
-    /* ── COLLAPSING TOPBAR ──────────────────────────────────────────── */
-    .topbar {
-      transition: padding .2s ease, box-shadow .2s ease;
-    }
-
-    .topbar.collapsed {
-      padding: calc(env(safe-area-inset-top) + 8px) 18px 10px;
-    }
-
-    .topbar.collapsed .topbar-title {
-      font-size: 15px;
-    }
-
-    .topbar.collapsed .topbar-sub {
-      opacity: 0;
-      max-height: 0;
-      margin-top: 0;
-      overflow: hidden;
-    }
-
-    .topbar.collapsed .topbar-logo {
-      height: 32px;
-    }
-
-    .topbar.collapsed .logo-mark {
-      width: 24px;
-      height: 24px;
-      font-size: 13px;
-    }
-
-    /* ── SCROLL TO TOP BUTTON ────────────────────────────────────────── */
-    .scroll-top-btn {
-      position: absolute;
-      right: 18px;
-      bottom: 92px;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--blue);
-      color: #fff;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow-md);
-      cursor: pointer;
-      z-index: 50;
-      opacity: 0;
-      transform: translateY(12px) scale(.9);
-      pointer-events: none;
-      transition: opacity .2s ease, transform .2s ease;
-    }
-
-    .scroll-top-btn.visible {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-
-    /* ── BOTTOM NAV LOW-STOCK BADGE DOT ─────────────────────────────── */
-    .nav-badge-dot {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--red);
-      border: 1.5px solid var(--surface);
-    }
-
-    .nav-btn .nav-icon {
-      position: relative;
-    }
-
-    /* ── DETAIL HERO STOCK BLOCK ─────────────────────────────────────── */
-    .detail-hero {
-      background: linear-gradient(165deg, var(--blue), var(--blue-dark));
-      border-radius: var(--radius-lg);
-      padding: 22px 20px;
-      margin-bottom: 14px;
-      color: #fff;
-      box-shadow: var(--shadow-topbar);
-    }
-
-    .detail-hero-top {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .detail-hero-num {
-      font-family: var(--font-display);
-      font-size: 56px;
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-
-    .detail-hero-label {
-      font-size: 13px;
-      opacity: .8;
-      margin-top: 4px;
-      font-weight: 500;
-    }
-
-    .detail-hero-steppers {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .detail-hero-steppers .stepper-btn {
-      width: 44px;
-      height: 44px;
-      font-size: 24px;
-      background: rgba(255,255,255,.16);
-      color: #fff;
-    }
-
-    .detail-hero-steppers .stepper-btn.minus { background: rgba(255,255,255,.16); color: #fff; }
-    .detail-hero-steppers .stepper-btn.plus  { background: rgba(255,255,255,.24); color: #fff; }
-
-    .detail-hero-badge-row {
-      margin-top: 14px;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .detail-hero-badge-row .badge {
-      background: rgba(255,255,255,.16);
-      color: #fff;
-    }
-
   </style>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#1565ff">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BBuy">
 
   <link rel="apple-touch-icon" href="icon-512.png">
@@ -2598,7 +2147,7 @@
     </div>
 
     <!-- TOAST -->
-    <div class="toast" id="toast"><span class="toast-icon" id="toast-icon"></span><span class="toast-body" id="toast-body"></span></div>
+    <div class="toast" id="toast"></div>
 
     <!-- CONFIRM DIALOG -->
     <div class="overlay" id="confirm-overlay">
@@ -2615,7 +2164,7 @@
     <!-- CLEAR FIELDS CONFIRMATION -->
     <div class="overlay" id="clear-fields-overlay">
       <div class="dialog">
-        <h3><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Clear all fields?</h3>
+        <h3>🗑 Clear all fields?</h3>
         <p>This will erase everything you've typed so far. You'll start fresh with a blank form.</p>
         <div class="dialog-btns">
           <button class="btn btn-outline-red btn-sm" style="flex:1" onclick="confirmClearFields()">Yes, clear it</button>
@@ -2627,7 +2176,7 @@
     <!-- SHARE TOGGLE OFF CONFIRMATION -->
     <div class="overlay" id="share-off-overlay">
       <div class="dialog">
-        <h3><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg>️ Turn off shared slot?</h3>
+        <h3>⚠️ Turn off shared slot?</h3>
         <p id="share-off-msg">This slot has other models in it. Turning off the toggle will <strong>remove all sibling models</strong> from this slot when you save. This cannot be undone.</p>
         <div class="dialog-btns">
           <button class="btn btn-outline-red btn-sm" style="flex:1" onclick="confirmShareOff()">Yes, turn it off</button>
@@ -2637,7 +2186,7 @@
     </div>
 
     <!-- EDIT USER DIALOG -->
-    <div class="overlay overlay-center" id="edit-user-overlay">
+    <div class="overlay" id="edit-user-overlay">
       <div class="dialog" style="position:relative">
         <button onclick="closeEditUser()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         <h3 id="edit-user-title" style="padding-right:36px">Edit Staff account</h3>
@@ -2650,11 +2199,11 @@
           <label>New password</label>
           <input type="password" id="edit-user-pass" placeholder="Leave blank to keep current">
         </div>
-        <button class="btn btn-blue" onclick="submitEditUser()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3"/><rect x="7" y="13" width="10" height="7"/></svg> Save changes</button>
+        <button class="btn btn-blue" onclick="submitEditUser()">💾 Save changes</button>
       </div>
     </div>
     <!-- CHANGE PASSWORD DIALOG -->
-    <div class="overlay overlay-center" id="change-pass-overlay">
+    <div class="overlay" id="change-pass-overlay">
       <div class="dialog" style="position:relative">
         <button onclick="closeChangePassword()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         <h3 style="padding-right:36px">Change password</h3>
@@ -2671,7 +2220,7 @@
           <label>Confirm new password</label>
           <input type="password" id="change-pass-confirm" autocomplete="off">
         </div>
-        <button class="btn btn-blue" onclick="submitChangePassword()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3"/><rect x="7" y="13" width="10" height="7"/></svg> Update password</button>
+        <button class="btn btn-blue" onclick="submitChangePassword()">💾 Update password</button>
       </div>
     </div>
     <div class="screen" id="s-search">
@@ -2679,26 +2228,25 @@
         <img src="icon-512222.png" class="topbar-logo" alt="BBuy" />
         <div style="flex:1;min-width:0">
           <div class="topbar-title">B Buy Case Finder</div>
-          <div class="topbar-sub" id="topbar-count"><span class="skel-pill"></span></div>
+          <div class="topbar-sub" id="topbar-count">Loading…</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <button onclick="loadDB()" class="topbar-action-btn"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg> Refresh</button>
+          <button onclick="loadDB()" class="topbar-action-btn">🔄 Refresh</button>
           <div style="position:relative">
-            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleHamburger(event)" aria-label="Menu">
-              <span class="ham-icon" id="ham-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></span>
+            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleHamburger()" aria-label="Menu">
+              <span class="ham-icon" id="ham-icon">☰</span>
             </button>
             <div class="hamburger-menu" id="hamburger-menu">
-              <button class="ham-item" onclick="showTab('s-account');toggleHamburger()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg><span>Your Profile</span></button>
-              <button class="ham-item" id="ham-theme-toggle" onclick="toggleDarkMode()"><span id="ham-theme-icon" style="display:flex"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg></span><span id="ham-theme-label">Dark mode</span></button>
+              <button class="ham-item" onclick="showTab('s-account');toggleHamburger()">👤 Your Profile</button>
               <div class="ham-divider"></div>
-              <button class="ham-item ham-item-red" onclick="logout()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.2 6.2a8 8 0 1 0 11.6 0"/></svg><span>Logout</span></button>
+              <button class="ham-item ham-item-red" onclick="logout()">⏻ Logout</button>
             </div>
           </div>
         </div>
       </div>
       <div class="search-sticky-header">
         <div class="filter-row">
-          <div class="filter-chip has-icon" id="chip-limit"><span class="chip-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span>
+          <div class="filter-chip has-icon" id="chip-limit"><span class="chip-icon">📊</span>
             <select id="result-limit" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-limit','result-limit','10');updateSearchClearBtn()">
               <option value="10">Show 10</option>
               <option value="20">Show 20</option>
@@ -2706,13 +2254,13 @@
               <option value="50">Show 50</option>
             </select>
           </div>
-          <div class="filter-chip has-icon" id="chip-sort"><span class="chip-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><polyline points="4 7 7 4 10 7"/><line x1="17" y1="20" x2="17" y2="4"/><polyline points="14 17 17 20 20 17"/></svg></span>
+          <div class="filter-chip has-icon" id="chip-sort"><span class="chip-icon">↕</span>
             <select id="sort-by" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-sort','sort-by','az');updateSearchClearBtn()">
               <option value="az">A–Z</option>
               <option value="stock">Stock ↓</option>
             </select>
           </div>
-          <div class="filter-chip has-icon" id="chip-floor"><span class="chip-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><line x1="9" y1="7" x2="9" y2="7.01"/><line x1="15" y1="7" x2="15" y2="7.01"/><line x1="9" y1="11" x2="9" y2="11.01"/><line x1="15" y1="11" x2="15" y2="11.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="15" y1="15" x2="15" y2="15.01"/><path d="M10 21v-4h4v4"/></svg></span>
+          <div class="filter-chip has-icon" id="chip-floor"><span class="chip-icon">🏢</span>
             <select id="floor-filter" onchange="doSearch(document.getElementById('search-input').value);updateChipState('chip-floor','floor-filter','');updateSearchClearBtn()">
               <option value="">All Floors</option>
               <option value="Ground Floor">Ground Floor</option>
@@ -2722,25 +2270,23 @@
           </div>
           <div class="filter-check-chip" id="chip-low-stock" onclick="toggleLowStockChip('low-stock','chip-low-stock',document.getElementById('search-input').value);updateSearchClearBtn()">
             <input type="checkbox" id="low-stock">
-            <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg> Low stock
+            ⚡ Low stock
           </div>
           <div class="filter-check-chip" id="chip-out-stock" onclick="toggleOutStockChip('out-stock','chip-out-stock',document.getElementById('search-input').value);updateSearchClearBtn()">
             <input type="checkbox" id="out-stock">
-            <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.5" y1="18.5" x2="18.5" y2="5.5"/></svg> Out of stock
+            🚫 Out of stock
           </div>
           <button class="filter-clear-btn" id="search-clear-filters-btn" onclick="clearAllSearchFilters()">✕ Clear all</button>
         </div>
 
         <div class="search-box" style="margin-bottom:0">
-          <span class="ico"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>
+          <span class="ico">🔍</span>
           <input type="text" id="search-input" placeholder="Search phone model…" oninput="onSearchInput(this.value)"
             autocomplete="off" autocorrect="off" spellcheck="false" />
           <button class="search-clear-btn" id="search-clear-btn" onclick="clearSearch()" aria-label="Clear search">✕</button>
         </div>
       </div>
-      <div class="scroll-area" id="search-scroll-area">
-        <div id="low-stock-banner" class="low-stock-banner" style="display:none"></div>
-        <div id="recent-search-chips" class="recent-chips-wrap" style="display:none"></div>
+      <div class="scroll-area">
         <div id="search-results">
           <div class="empty">
             <div class="empty-icon">
@@ -2757,10 +2303,10 @@
         </div>
       </div>
       <div class="bottom-nav">
-        <button class="nav-btn active" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn active" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
 
@@ -2776,10 +2322,10 @@
       </div>
       <div class="scroll-area" id="detail-content"></div>
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
 
@@ -2787,12 +2333,12 @@
     <div class="screen" id="s-add">
       <div class="topbar">
         <button class="topbar-back" id="add-back-btn" onclick="goBack()" style="display:none">&#8592;</button>
-        <div class="logo-mark" id="add-logo"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        <div class="logo-mark" id="add-logo">➕</div>
         <div style="flex:1">
           <div class="topbar-title" id="add-title">Add new model</div>
           <div class="topbar-sub">Fill in the details below</div>
         </div>
-        <button class="topbar-action-btn" id="clear-fields-btn" onclick="promptClearFields()" style="display:none;background:rgba(239,68,68,.18);color:#fca5a5;font-size:12px;padding:5px 10px"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Clear</button>
+        <button class="topbar-action-btn" id="clear-fields-btn" onclick="promptClearFields()" style="display:none;background:rgba(239,68,68,.18);color:#fca5a5;font-size:12px;padding:5px 10px">🗑 Clear</button>
       </div>
       <div class="scroll-area">
         <div class="form-card">
@@ -2909,7 +2455,7 @@
           <input type="checkbox" id="f-share-slot" onchange="onShareToggleIntent(this)" />
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
-            <div class="share-toggle-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4.5L21 8v8l-9 4.5L3 16z"/><path d="M3 8l9 4.5L21 8"/><line x1="12" y1="12.5" x2="12" y2="21"/></svg> Share this slot with other models</div>
+            <div class="share-toggle-label">📦 Share this slot with other models</div>
             <div class="share-toggle-sub" id="share-toggle-sub-text">Add multiple models to the same shelf · row · column. This cannot be changed after saving.</div>
           </div>
         </label>
@@ -2929,17 +2475,17 @@
         </div>
       </div>
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn active" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn active" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
 
     <!-- ── INVENTORY SCREEN ── -->
     <div class="screen" id="s-inventory">
       <div class="topbar">
-        <div class="logo-mark"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></div>
+        <div class="logo-mark">📋</div>
         <div style="flex:1">
           <div class="topbar-title">Inventory</div>
           <div class="topbar-sub" id="inv-sub">All models</div>
@@ -2947,7 +2493,7 @@
       </div>
       <div class="search-sticky-header">
         <div class="filter-row">
-          <div class="filter-chip has-icon" id="chip-inv-sort"><span class="chip-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><polyline points="4 7 7 4 10 7"/><line x1="17" y1="20" x2="17" y2="4"/><polyline points="14 17 17 20 20 17"/></svg></span>
+          <div class="filter-chip has-icon" id="chip-inv-sort"><span class="chip-icon">↕</span>
             <select id="inv-sort-by" onchange="renderInventory();updateChipState('chip-inv-sort','inv-sort-by','az');updateInvClearBtn()">
               <option value="az">A–Z</option>
               <option value="za">Z–A</option>
@@ -2955,7 +2501,7 @@
               <option value="stock-asc">Stock ↑</option>
             </select>
           </div>
-          <div class="filter-chip has-icon" id="chip-inv-floor"><span class="chip-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><line x1="9" y1="7" x2="9" y2="7.01"/><line x1="15" y1="7" x2="15" y2="7.01"/><line x1="9" y1="11" x2="9" y2="11.01"/><line x1="15" y1="11" x2="15" y2="11.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="15" y1="15" x2="15" y2="15.01"/><path d="M10 21v-4h4v4"/></svg></span>
+          <div class="filter-chip has-icon" id="chip-inv-floor"><span class="chip-icon">🏢</span>
             <select id="inv-floor-filter" onchange="renderInventory();updateChipState('chip-inv-floor','inv-floor-filter','');updateInvClearBtn()">
               <option value="">All Floors</option>
               <option value="Ground Floor">Ground Floor</option>
@@ -2965,16 +2511,16 @@
           </div>
           <div class="filter-check-chip" id="chip-inv-low-stock" onclick="toggleLowStockChip('inv-low-stock','chip-inv-low-stock',null);updateInvClearBtn()">
             <input type="checkbox" id="inv-low-stock">
-            <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg> Low stock
+            ⚡ Low stock
           </div>
           <div class="filter-check-chip" id="chip-inv-out-stock" onclick="toggleOutStockChip('inv-out-stock','chip-inv-out-stock',null);updateInvClearBtn()">
             <input type="checkbox" id="inv-out-stock">
-            <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.5" y1="18.5" x2="18.5" y2="5.5"/></svg> Out of stock
+            🚫 Out of stock
           </div>
           <button class="filter-clear-btn" id="inv-clear-filters-btn" onclick="clearAllInvFilters()">✕ Clear all</button>
         </div>
         <div class="search-box" style="margin-bottom:0">
-          <span class="ico"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>
+          <span class="ico">🔍</span>
           <input type="text" id="inv-search-input" placeholder="Search phone model…"
             oninput="onInvSearchInput(this.value)"
             autocomplete="off" autocorrect="off" spellcheck="false" />
@@ -2982,20 +2528,19 @@
         </div>
       </div>
       <div class="scroll-area" id="inv-content"></div>
-      <button class="scroll-top-btn" id="inv-scroll-top-btn" onclick="document.getElementById('inv-content').scrollTo({top:0,behavior:'smooth'})" aria-label="Scroll to top"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="6"/><polyline points="6 11 12 5 18 11"/></svg></button>
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
         <button class="nav-btn active" onclick="showTab('s-inventory')"><span
-            class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+            class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
     <!-- ── USERS SCREEN ── -->
     <div class="screen" id="s-users">
 
       <div class="topbar">
-        <div class="logo-mark"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></div>
+        <div class="logo-mark">👥</div>
         <div style="flex:1">
           <div class="topbar-title">Users</div>
           <div class="topbar-sub">Manage Staff accounts</div>
@@ -3039,10 +2584,10 @@
       </div>
 
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn active" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn active" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
 
     </div>
@@ -3051,7 +2596,7 @@
     <div class="screen" id="s-user-detail">
       <div class="topbar">
         <button class="topbar-back" onclick="goBack()">&#8592;</button>
-        <div class="logo-mark"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg></div>
+        <div class="logo-mark">👤</div>
         <div style="flex:1;min-width:0">
           <div class="topbar-title" id="ud-title">User</div>
           <div class="topbar-sub" id="ud-role-sub">Account details</div>
@@ -3072,7 +2617,7 @@
             <input type="password" id="ud-new-pass" placeholder="Leave blank to keep current">
           </div>
         </div>
-        <button class="btn btn-blue" style="margin-top:10px" onclick="saveUserDetailPassword()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3"/><rect x="7" y="13" width="10" height="7"/></svg> Update password</button>
+        <button class="btn btn-blue" style="margin-top:10px" onclick="saveUserDetailPassword()">💾 Update password</button>
 
         <div class="section-eyebrow" style="margin-top:22px;margin-bottom:8px">Permissions</div>
 
@@ -3080,7 +2625,7 @@
           <input type="checkbox" onchange="onUdPermToggle(this,'addEntry')">
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
-            <div class="perm-toggle-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Entry tab</div>
+            <div class="perm-toggle-label">➕ Add Entry tab</div>
             <div class="perm-toggle-sub">Show the Add tab in the bottom nav for this account.</div>
           </div>
         </label>
@@ -3089,7 +2634,7 @@
           <input type="checkbox" onchange="onUdPermToggle(this,'deleteEntry')">
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
-            <div class="perm-toggle-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>️ Delete Entry option</div>
+            <div class="perm-toggle-label">🗑️ Delete Entry option</div>
             <div class="perm-toggle-sub">Allow this account to delete inventory entries.</div>
           </div>
         </label>
@@ -3098,7 +2643,7 @@
           <input type="checkbox" onchange="onUdPermToggle(this,'usersTab')">
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
-            <div class="perm-toggle-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg> Users tab</div>
+            <div class="perm-toggle-label">👥 Users tab</div>
             <div class="perm-toggle-sub">Show the Users tab in the bottom nav for this account.</div>
           </div>
         </label>
@@ -3107,7 +2652,7 @@
           <input type="checkbox" onchange="onUdPermToggle(this,'fullEdit')">
           <span class="share-toggle-switch"><span class="track"></span><span class="thumb"></span></span>
           <div>
-            <div class="perm-toggle-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.8-3.8L15.6 5.4a1.7 1.7 0 0 1 2.4 0l1.6 1.6a1.7 1.7 0 0 1 0 2.4L8.8 20.2z"/><line x1="14" y1="7" x2="17" y2="10"/></svg> Full edit access to entries</div>
+            <div class="perm-toggle-label">✏️ Full edit access to entries</div>
             <div class="perm-toggle-sub">Staff-only — when on, this account can edit every field of an entry, not just stock.</div>
           </div>
         </label>
@@ -3119,7 +2664,7 @@
     <div class="screen" id="s-account">
       <div class="topbar">
         <button class="topbar-back" onclick="goBack()">&#8592;</button>
-        <div class="logo-mark"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg></div>
+        <div class="logo-mark">👤</div>
         <div style="flex:1">
           <div class="topbar-title">Account</div>
           <div class="topbar-sub">Signed in details</div>
@@ -3138,14 +2683,14 @@
           <div class="account-row" style="border:none"><span class="account-row-label">Status</span><span class="account-row-val" style="color:var(--green)">● Active</span></div>
         </div>
         <button class="btn btn-blue" style="margin-top:8px" onclick="openChangePassword()">Change password</button>
-        <button class="btn btn-outline-red" id="dev-tools-btn" style="margin-top:8px;display:none" onclick="showDevTools()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Developer Tools</button>
-        <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.2 6.2a8 8 0 1 0 11.6 0"/></svg> Sign out</button>
+        <button class="btn btn-outline-red" id="dev-tools-btn" style="margin-top:8px;display:none" onclick="showDevTools()">🛠 Developer Tools</button>
+        <button class="btn btn-outline-red" style="margin-top:8px" onclick="logout()">⏻ Sign out</button>
       </div>
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
 
@@ -3153,7 +2698,7 @@
     <div class="screen" id="s-dev">
       <div class="topbar">
         <button class="topbar-back" onclick="goBack()">&#8592;</button>
-        <div class="logo-mark"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></div>
+        <div class="logo-mark">🛠</div>
         <div style="flex:1">
           <div class="topbar-title">Developer Tools</div>
           <div class="topbar-sub">Activity · Sessions · Security</div>
@@ -3161,17 +2706,17 @@
       </div>
       <!-- Dev tab bar -->
       <div style="display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-        <button id="dev-tab-activity" class="dev-tab-btn dev-tab-active" onclick="switchDevTab('activity')"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg> Activity</button>
-        <button id="dev-tab-sessions" class="dev-tab-btn" onclick="switchDevTab('sessions')"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.8 12.2L20 3"/><path d="M16.5 6.5l3 3"/><path d="M13.5 9.5l2.5 2.5"/></svg> Sessions</button>
-        <button id="dev-tab-security" class="dev-tab-btn" onclick="switchDevTab('security')"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Security</button>
-        <button id="dev-tab-accounts" class="dev-tab-btn" onclick="switchDevTab('accounts')"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg> Accounts</button>
+        <button id="dev-tab-activity" class="dev-tab-btn dev-tab-active" onclick="switchDevTab('activity')">📊 Activity</button>
+        <button id="dev-tab-sessions" class="dev-tab-btn" onclick="switchDevTab('sessions')">🔑 Sessions</button>
+        <button id="dev-tab-security" class="dev-tab-btn" onclick="switchDevTab('security')">🔒 Security</button>
+        <button id="dev-tab-accounts" class="dev-tab-btn" onclick="switchDevTab('accounts')">👤 Accounts</button>
       </div>
       <div class="scroll-area" style="padding-top:14px">
 
         <!-- ACTIVITY TAB -->
         <div id="dev-panel-activity">
           <div class="search-box" style="margin-bottom:8px">
-            <span class="ico"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>
+            <span class="ico">🔍</span>
             <input type="text" id="dev-log-search" placeholder="Search by user, action, or detail…" oninput="onDevLogSearchInput()"
               autocomplete="off" autocorrect="off" spellcheck="false" />
             <button class="search-clear-btn" id="dev-log-search-clear-btn" onclick="clearDevLogSearch()" aria-label="Clear search">✕</button>
@@ -3217,23 +2762,23 @@
             <div class="section-eyebrow" style="margin-bottom:12px">Active per user</div>
             <div id="dev-sess-peruser" style="color:var(--text2);font-size:13px">—</div>
           </div>
-          <button class="btn btn-blue" style="margin-top:14px" onclick="refreshSessionCount()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg> Refresh</button>
-          <button class="btn btn-outline-red" style="margin-top:8px" onclick="runSessionCleanup()" id="dev-cleanup-btn"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2z"/><path d="M18.5 14l.6 2.4l2.4.6-2.4.6-.6 2.4-.6-2.4-2.4-.6 2.4-.6z"/></svg> Clean up expired sessions</button>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="refreshSessionCount()">🔄 Refresh</button>
+          <button class="btn btn-outline-red" style="margin-top:8px" onclick="runSessionCleanup()" id="dev-cleanup-btn">🧹 Clean up expired sessions</button>
         </div>
 
         <!-- SECURITY TAB -->
         <div id="dev-panel-security" style="display:none">
           <div class="detail-section">
             <div class="section-eyebrow" style="margin-bottom:12px">Locked accounts</div>
-            <div id="dev-locked-list"><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div></div>
+            <div id="dev-locked-list"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
           </div>
-          <button class="btn btn-blue" style="margin-top:14px" onclick="loadLockedAccounts()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg> Refresh</button>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="loadLockedAccounts()">🔄 Refresh</button>
 
           <div class="detail-section" style="margin-top:20px">
             <div class="section-eyebrow" style="margin-bottom:12px">Activity log</div>
             <div style="font-size:13px;color:var(--text2);line-height:1.5">This permanently deletes every entry in the activity log. It cannot be undone.</div>
           </div>
-          <button class="btn btn-outline-red" style="margin-top:8px" onclick="promptClearActivityLog()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Clear activity log</button>
+          <button class="btn btn-outline-red" style="margin-top:8px" onclick="promptClearActivityLog()">🗑 Clear activity log</button>
         </div>
 
         <!-- ACCOUNTS TAB -->
@@ -3242,23 +2787,23 @@
           <!-- Existing Developer accounts -->
           <div class="detail-section">
             <div class="section-eyebrow" style="margin-bottom:12px">Developer accounts</div>
-            <div id="dev-accounts-list"><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div></div>
+            <div id="dev-accounts-list"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
           </div>
-          <button class="btn btn-blue" style="margin-top:14px" onclick="openCreateDeveloper()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Create Developer account</button>
+          <button class="btn btn-blue" style="margin-top:14px" onclick="openCreateDeveloper()">➕ Create Developer account</button>
 
         </div>
 
       </div>
       <div class="bottom-nav">
-        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
-        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
-        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
+        <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon">🔍</span>Search</button>
+        <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon">➕</span>Add</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon">📋</span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon">👥</span>Users</button>
       </div>
     </div>
 
     <!-- EDIT DEVELOPER ACCOUNT DIALOG -->
-    <div class="overlay overlay-center" id="edit-dev-overlay">
+    <div class="overlay" id="edit-dev-overlay">
       <div class="dialog" style="position:relative">
         <button onclick="closeEditDev()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         <h3 id="edit-dev-title" style="padding-right:36px">Edit Developer account</h3>
@@ -3271,16 +2816,16 @@
           <label>New password</label>
           <input type="password" id="edit-dev-pass" placeholder="Leave blank to keep current">
         </div>
-        <button class="btn btn-blue" onclick="submitEditDev()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3"/><rect x="7" y="13" width="10" height="7"/></svg> Save changes</button>
+        <button class="btn btn-blue" onclick="submitEditDev()">💾 Save changes</button>
       </div>
     </div>
 
     <!-- CREATE DEVELOPER ACCOUNT DIALOG -->
-    <div class="overlay overlay-center" id="create-dev-overlay">
+    <div class="overlay" id="create-dev-overlay">
       <div class="dialog" style="position:relative">
         <button onclick="closeCreateDeveloper()" style="position:absolute;top:16px;right:16px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         <h3 style="padding-right:36px">Create Developer account</h3>
-        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg>️ Developer accounts have full access to everything. Create with care.</p>
+        <p style="margin-bottom:14px;font-size:13px;color:var(--text2)">⚠️ Developer accounts have full access to everything. Create with care.</p>
         <div class="field">
           <label>Username</label>
           <input type="text" id="create-dev-name" autocorrect="off" autocapitalize="none" placeholder="Enter username">
@@ -3289,7 +2834,7 @@
           <label>Password</label>
           <input type="password" id="create-dev-pass" placeholder="Enter password">
         </div>
-        <button class="btn btn-blue" onclick="submitCreateDeveloper()"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg> Create account</button>
+        <button class="btn btn-blue" onclick="submitCreateDeveloper()">✅ Create account</button>
       </div>
     </div>
 
@@ -3311,147 +2856,6 @@
     let recentAdded = [];
 
     const DB_CACHE_KEY = 'bbuy_db_cache';
-    const THEME_KEY = 'bbuy_theme';
-    const RECENT_SEARCH_KEY = 'bbuy_recent_searches';
-    const LOW_STOCK_SEEN_KEY = 'bbuy_low_stock_seen_count';
-    const LOW_BANNER_DISMISS_KEY = 'bbuy_low_banner_dismissed_for';
-
-    // ── DARK MODE ────────────────────────────────────────────────────
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      const icon = document.getElementById('ham-theme-icon');
-      const label = document.getElementById('ham-theme-label');
-      if (icon) {
-        icon.innerHTML = theme === 'dark'
-          ? '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21.5"/><line x1="4.2" y1="4.2" x2="6" y2="6"/><line x1="18" y1="18" x2="19.8" y2="19.8"/><line x1="2.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21.5" y2="12"/><line x1="4.2" y1="19.8" x2="6" y2="18"/><line x1="18" y1="6" x2="19.8" y2="4.2"/></svg>'
-          : '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>';
-      }
-      if (label) label.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', '#000000');
-    }
-
-    function toggleDarkMode() {
-      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-      try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
-    }
-
-    (function initTheme() {
-      let saved = null;
-      try { saved = localStorage.getItem(THEME_KEY); } catch(e) {}
-      // Always default to light unless the person has explicitly chosen
-      // dark mode before — don't auto-follow the OS/browser preference,
-      // since that was silently flipping the app to dark (black bg,
-      // lighter blue) for anyone whose device defaults to dark mode.
-      const theme = saved || 'light';
-      applyTheme(theme);
-    })();
-
-    // ── RECENT SEARCHES ──────────────────────────────────────────────
-    function getRecentSearches() {
-      try { return JSON.parse(localStorage.getItem(RECENT_SEARCH_KEY) || '[]'); } catch(e) { return []; }
-    }
-
-    function saveRecentSearch(q) {
-      q = (q || '').trim();
-      if (!q || q.length < 2) return;
-      let list = getRecentSearches().filter(x => x.toLowerCase() !== q.toLowerCase());
-      list.unshift(q);
-      list = list.slice(0, 4);
-      try { localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(list)); } catch(e) {}
-    }
-
-    function renderRecentSearchChips() {
-      // Recent-search chips feature removed per request — keep this as a
-      // no-op (rather than deleting every call site) so nothing else
-      // breaks. The element stays hidden always.
-      const wrap = document.getElementById('recent-search-chips');
-      if (wrap) { wrap.innerHTML = ''; wrap.style.display = 'none'; }
-    }
-
-    function applyRecentSearch(q) {
-      const input = document.getElementById('search-input');
-      if (input) { input.value = q; }
-      onSearchInput(q);
-    }
-
-    // ── LOW STOCK ALERT BANNER ───────────────────────────────────────
-    const WARN_ICON_SVG = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg>';
-
-    function renderLowStockBanner() {
-      const el = document.getElementById('low-stock-banner');
-      if (!el) return;
-      if (!db.length) { el.style.display = 'none'; return; }
-      const lowCount = db.filter(e => parseInt(e.stock) <= 5 && parseInt(e.stock) > 0).length;
-      const outCount = db.filter(e => parseInt(e.stock) === 0).length;
-      const total = lowCount + outCount;
-      if (total === 0) { el.style.display = 'none'; return; }
-      let dismissedFor = null;
-      try { dismissedFor = localStorage.getItem(LOW_BANNER_DISMISS_KEY); } catch(e) {}
-      if (dismissedFor === String(total)) { el.style.display = 'none'; return; }
-      el.style.display = 'flex';
-      el.innerHTML = `
-        <span class="low-stock-banner-icon">${WARN_ICON_SVG}</span>
-        <span class="low-stock-banner-text"><strong>${total}</strong> item${total === 1 ? '' : 's'} running low${outCount ? ` · ${outCount} out of stock` : ''}</span>
-        <button class="low-stock-banner-view" onclick="viewLowStockFromBanner()">View</button>
-        <button class="low-stock-banner-close" onclick="dismissLowStockBanner(${total})" aria-label="Dismiss">✕</button>`;
-    }
-
-    function dismissLowStockBanner(total) {
-      try { localStorage.setItem(LOW_BANNER_DISMISS_KEY, String(total)); } catch(e) {}
-      const el = document.getElementById('low-stock-banner');
-      if (!el) return;
-      el.classList.add('dismissing');
-      setTimeout(() => { el.style.display = 'none'; el.classList.remove('dismissing'); }, 180);
-    }
-
-    function viewLowStockFromBanner() {
-      showTab('s-inventory');
-      setTimeout(() => {
-        const cb = document.getElementById('inv-low-stock');
-        const chip = document.getElementById('chip-inv-low-stock');
-        if (cb && chip && !cb.checked) {
-          cb.checked = true;
-          chip.classList.add('checked');
-          renderInventory();
-          updateInvClearBtn();
-        }
-      }, 80);
-    }
-
-    // ── BOTTOM NAV LOW-STOCK BADGE ───────────────────────────────────
-    // Shows a small dot on the Inventory nav icon when the low+out-of-stock
-    // count has grown since the last time the user actually opened Inventory.
-    function updateNavLowStockBadge() {
-      if (!db.length) return;
-      const currentCount = db.filter(e => (parseInt(e.stock) || 0) <= 5).length;
-      let seenCount = 0;
-      try { seenCount = parseInt(localStorage.getItem(LOW_STOCK_SEEN_KEY) || '0'); } catch(e) {}
-      const show = currentCount > seenCount;
-      document.querySelectorAll('.nav-btn[onclick*="s-inventory"]').forEach(btn => {
-        let dot = btn.querySelector('.nav-badge-dot');
-        if (show) {
-          if (!dot) {
-            dot = document.createElement('span');
-            dot.className = 'nav-badge-dot';
-            btn.querySelector('.nav-icon')?.appendChild(dot);
-          }
-        } else if (dot) {
-          dot.remove();
-        }
-      });
-    }
-
-    // Called when the user actually lands on the Inventory tab — marks the
-    // current low-stock count as "seen" so the nav badge clears.
-    function markInventorySeen() {
-      if (!db.length) return;
-      const currentCount = db.filter(e => (parseInt(e.stock) || 0) <= 5).length;
-      try { localStorage.setItem(LOW_STOCK_SEEN_KEY, String(currentCount)); } catch(e) {}
-      updateNavLowStockBadge();
-    }
 
     function loadCachedDB() {
       try {
@@ -3470,9 +2874,6 @@
         // off-screen and nothing is touching it, is exactly as safe as it
         // is for search and avoids the rebuild ever colliding with a touch.
         renderInventory();
-        renderRecentSearchChips();
-        renderLowStockBanner();
-        updateNavLowStockBadge();
         return true;
       } catch(e) { return false; }
     }
@@ -3552,15 +2953,12 @@
         if (changed) {
           updateTopbarCount();
           doSearch('');
-          renderRecentSearchChips();
           // Render inventory immediately and unconditionally — same as
           // search. See the matching comment in loadCachedDB() for why the
           // old "only render if visible, else mark dirty for later" approach
           // was the actual cause of the inventory-only lag: it pushed the
           // rebuild to collide with the user's next touch on that tab.
           renderInventory();
-          renderLowStockBanner();
-          updateNavLowStockBadge();
         }
 
       } catch (err) {
@@ -3588,21 +2986,6 @@
 
     let navLock = false;
     let navTimer = null;
-    let navLockSetAt = 0;
-
-    // Safety net: navLock is only ever meant to block taps for the ~300ms
-    // of a slide animation. If a setTimeout gets delayed or dropped (tab
-    // backgrounded, phone briefly locked, low-power throttling, etc.) the
-    // lock could otherwise stay stuck "true" forever and every subsequent
-    // tap on the bottom nav would silently do nothing. Treat any lock
-    // older than 600ms as stale and release it automatically.
-    function isNavLocked() {
-      if (navLock && Date.now() - navLockSetAt > 600) {
-        navLock = false;
-        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
-      }
-      return navLock;
-    }
 
     function showTab(id) {
 
@@ -3617,7 +3000,6 @@
       }
 
       if (id === "s-users") loadUsers();
-      if (id === "s-inventory") markInventorySeen();
 
       if (id === "s-account") {
         document.getElementById('account-avatar').textContent = (currentUser || '?')[0].toUpperCase();
@@ -3640,7 +3022,6 @@
         void addEl.offsetWidth;
         addEl.classList.add('slide-in');
         navLock = true;
-      navLockSetAt = Date.now();
         if (navTimer) clearTimeout(navTimer);
         navTimer = setTimeout(() => {
           navTimer = null;
@@ -3684,7 +3065,7 @@
         return;
       }
 
-      if (isNavLocked()) {
+      if (navLock) {
         // Cancel the pending cleanup so it can't fire after we snap state
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         // Add destination first, then clean up — prevents any frame with nothing visible
@@ -3722,7 +3103,6 @@
       next.classList.add(movingForward ? 'slide-in-right' : 'slide-in-left');
 
       navLock = true;
-      navLockSetAt = Date.now();
       const animCurrent = current;
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -3747,7 +3127,7 @@
       // once the in-flight transition finishes — otherwise a swipe that lands
       // during that 300ms window just did nothing (felt "stuck"), and the
       // next swipe attempt would then fire with stale state and skip its animation.
-      if (isNavLocked()) { pendingGoBack = true; return; }
+      if (navLock) { pendingGoBack = true; return; }
 
       const current = document.querySelector('.screen.active');
       const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
@@ -3773,7 +3153,6 @@
       // second goBack() call during the 300 ms window is blocked by navLock
       // (above) rather than snapping to the wrong screen with a stale prevScreen.
       navLock = true;
-      navLockSetAt = Date.now();
       const animCurrent = current;
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -3792,19 +3171,11 @@
     }
 
     // ── HAMBURGER MENU ────────────────────────────────────────────────
-    const HAM_ICON_BARS = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>';
-    const HAM_ICON_X = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
-    function toggleHamburger(e) {
-      // Stop this click from also reaching the document-level "click
-      // outside closes the menu" listener below. Without this, the same
-      // tap that opens the menu could also be seen by that listener and
-      // occasionally fight with it, which is what made the menu
-      // intermittently fail to open/close.
-      if (e) e.stopPropagation();
+    function toggleHamburger() {
       const menu = document.getElementById('hamburger-menu');
       const icon = document.getElementById('ham-icon');
       const isOpen = menu.classList.toggle('open');
-      icon.innerHTML = isOpen ? HAM_ICON_X : HAM_ICON_BARS;
+      icon.textContent = isOpen ? '✕' : '☰';
     }
     document.addEventListener('click', function(e) {
       const btn = document.getElementById('hamburger-btn');
@@ -3812,24 +3183,14 @@
       if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
         menu.classList.remove('open');
         const icon = document.getElementById('ham-icon');
-        if (icon) icon.innerHTML = HAM_ICON_BARS;
+        if (icon) icon.textContent = '☰';
       }
     });
 
     // ── TOAST ─────────────────────────────────────────────────────────
-    const TOAST_ICON_CHECK = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 6"/></svg>';
-    const TOAST_ICON_ALERT = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>';
-
     function toast(msg) {
       const t = document.getElementById('toast');
-      const iconEl = document.getElementById('toast-icon');
-      const bodyEl = document.getElementById('toast-body');
-      const lower = (msg || '').toLowerCase();
-      const isBad = /fail|error|invalid|unable|cannot|already exists|locked|expired|timed out|not/.test(lower);
-      if (iconEl) iconEl.innerHTML = isBad ? TOAST_ICON_ALERT : TOAST_ICON_CHECK;
-      if (bodyEl) bodyEl.textContent = msg; else t.textContent = msg;
-      t.classList.remove('show');
-      void t.offsetWidth;
+      t.textContent = msg;
       t.classList.add('show');
       clearTimeout(t._tid);
       t._tid = setTimeout(() => t.classList.remove('show'), 2400);
@@ -3870,19 +3231,9 @@
 
     // ── SEARCH ────────────────────────────────────────────────────────
 
-    let _searchSaveTimer = null;
     function onSearchInput(val) {
       const clearBtn = document.getElementById('search-clear-btn');
       if (clearBtn) clearBtn.classList.toggle('visible', val.length > 0);
-      const chips = document.getElementById('recent-search-chips');
-      if (chips) {
-        if (val.trim().length === 0) { renderRecentSearchChips(); }
-        else { chips.style.display = 'none'; }
-      }
-      clearTimeout(_searchSaveTimer);
-      if (val.trim().length >= 2) {
-        _searchSaveTimer = setTimeout(() => saveRecentSearch(val), 900);
-      }
       doSearch(val);
     }
 
@@ -3891,7 +3242,6 @@
       const clearBtn = document.getElementById('search-clear-btn');
       if (input) { input.value = ''; input.focus(); }
       if (clearBtn) clearBtn.classList.remove('visible');
-      renderRecentSearchChips();
       doSearch('');
     }
 
@@ -3972,17 +3322,12 @@
     function searchResultCard(e) {
       const idx = db.indexOf(e);
       return `
- <div class="result-card swipe-host" style="padding:0">
-   <div class="swipe-actions">
-     <button class="stepper-btn minus" onclick="quickUpdateStock(${idx},-1)">−</button>
-     <button class="stepper-btn plus" onclick="quickUpdateStock(${idx},1)">+</button>
-   </div>
-   <div class="swipe-content-inner" style="padding:14px" onclick="showDetail('${CSS.escape(e.model)}')">
+ <div class="result-card" onclick="showDetail('${CSS.escape(e.model)}')">
    <div style="display:flex;align-items:center;gap:10px">
-     <div class="result-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="11" y1="18.5" x2="13" y2="18.5"/></svg></div>
+     <div class="result-icon">📱</div>
      <div class="result-body">
        <div class="result-model">${e.model}</div>
-       <div class="result-loc"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg> ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
+       <div class="result-loc">📍 ${e.shelf.split('|')[0]} · ${e.row} · ${e.col}</div>
      </div>
      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
        <div class="stock-stepper">
@@ -3994,7 +3339,6 @@
      </div>
    </div>
    <div id="sb-${idx}" style="display:flex;flex-wrap:nowrap;align-items:center;gap:5px;margin-top:8px">${stockBadge(e.stock)} ${floorBadge(e.shelf.split('|')[1], e.shelf.split('|')[0])}</div>
-   </div>
  </div>`;
     }
 
@@ -4006,7 +3350,7 @@
         const idx = db.indexOf(e);
         return `
    <div class="loc-card-item" onclick="showDetail('${CSS.escape(e.model)}')">
-     <div class="result-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="11" y1="18.5" x2="13" y2="18.5"/></svg></div>
+     <div class="result-icon">📱</div>
      <div class="result-body">
        <div class="result-model">${e.model}</div>
        <div id="sb-${idx}" style="display:flex;flex-wrap:nowrap;align-items:center;gap:5px">${stockBadge(e.stock)}</div>
@@ -4025,7 +3369,7 @@
       return `
  <div class="result-card location-card">
    <div class="loc-card-loc">
-     <span><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg> ${shelfName} · ${e0.row} · ${e0.col}</span>
+     <span>📍 ${shelfName} · ${e0.row} · ${e0.col}</span>
      <span class="loc-count-badge">${group.length} models here</span>
    </div>
    ${items}
@@ -4036,9 +3380,9 @@
     // ── BADGE ─────────────────────────────────────────────────────────
     function stockBadge(n) {
       n = parseInt(n) || 0;
-      if (n === 0) return `<span class="badge badge-out"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg> Out of stock</span>`;
-      if (n <= 5) return `<span class="badge badge-low"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg> ${n} left — low</span>`;
-      return `<span class="badge badge-ok"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 6"/></svg> ${n} in stock</span>`;
+      if (n === 0) return `<span class="badge badge-out">⚠ Out of stock</span>`;
+      if (n <= 5) return `<span class="badge badge-low">⚡ ${n} left — low</span>`;
+      return `<span class="badge badge-ok">✓ ${n} in stock</span>`;
     }
 
     function floorBadge(floor, shelfName) {
@@ -4050,9 +3394,9 @@
 
     function dotColor(n) {
       n = parseInt(n) || 0;
-      if (n === 0) return 'var(--dot-red)';
-      if (n <= 5) return 'var(--dot-amber)';
-      return 'var(--dot-green)';
+      if (n === 0) return '#ef4444';
+      if (n <= 5) return '#f59e0b';
+      return '#10b981';
     }
 
     // ── LOCATION GROUPING ────────────────────────────────────────────
@@ -4082,7 +3426,7 @@
       // the back button/swipe to the wrong tab later. Snap the animation to its
       // finished state immediately (same cleanup showTab()'s own timer would do)
       // before reading which screen is current.
-      if (isNavLocked()) {
+      if (navLock) {
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         document.querySelectorAll('.screen.active').forEach(s => {
           if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
@@ -4108,7 +3452,7 @@
       const siblings = db.filter(x => x.model !== e.model && locationKey(x) === locationKey(e));
       const siblingHtml = siblings.length ? `
     <div class="detail-section">
-      <div class="section-eyebrow"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4.5L21 8v8l-9 4.5L3 16z"/><path d="M3 8l9 4.5L21 8"/><line x1="12" y1="12.5" x2="12" y2="21"/></svg> Also stored in this slot</div>
+      <div class="section-eyebrow">📦 Also stored in this slot</div>
       ${siblings.map(s => `
       <div class="sibling-item" onclick="showDetail('${CSS.escape(s.model)}')">
         <div>
@@ -4121,21 +3465,8 @@
 
       document.getElementById('detail-title').textContent = e.model;
       document.getElementById('detail-content').innerHTML = `
-    <div class="detail-hero">
-      <div class="detail-hero-top">
-        <div>
-          <div class="detail-hero-num" id="detail-stock-num">${e.stock}</div>
-          <div class="detail-hero-label">units available</div>
-        </div>
-        <div class="detail-hero-steppers">
-          <button class="stepper-btn minus" onclick="quickUpdateStock(${idx},-1)">−</button>
-          <button class="stepper-btn plus" onclick="quickUpdateStock(${idx},1)">+</button>
-        </div>
-      </div>
-      <div class="detail-hero-badge-row" id="detail-stock-badge">${stockBadge(e.stock)}</div>
-    </div>
     <div class="detail-section">
-      <div class="section-eyebrow"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg> Location</div>
+      <div class="section-eyebrow">📍 Location</div>
       <div class="loc-grid">
         <div class="loc-tile">
           <div class="loc-tile-val">${shelfName || e.shelf}</div>
@@ -4151,8 +3482,22 @@
         </div>
       </div>
       <div class="floor-banner">
-        <span>${floor === '1st Floor' ? '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg> Upstairs' : '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Downstairs'}</span>
+        <span>${floor === '1st Floor' ? '🔼 Upstairs' : '🔽 Downstairs'}</span>
         <span>${floor || ''}</span>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-eyebrow">📦 Stock</div>
+      <div class="stock-display">
+        <div class="stock-num" id="detail-stock-num">${e.stock}</div>
+        <div class="stock-meta">
+          <div class="stock-label">units available</div>
+          <div id="detail-stock-badge">${stockBadge(e.stock)}</div>
+        </div>
+        <div class="stock-stepper" style="margin-left:auto">
+          <button class="stepper-btn minus" style="width:36px;height:36px;font-size:20px" onclick="quickUpdateStock(${idx},-1)">−</button>
+          <button class="stepper-btn plus" style="width:36px;height:36px;font-size:20px" onclick="quickUpdateStock(${idx},1)">+</button>
+        </div>
       </div>
     </div>
     <div class="btn-row" style="margin-top:4px">
@@ -4170,7 +3515,6 @@
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
       navLock = true;
-      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -4240,7 +3584,7 @@
       if (secB2) secB2.style.display = '';
 
       document.getElementById('add-title').textContent = 'Add new model';
-      document.getElementById('add-logo').innerHTML = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      document.getElementById('add-logo').textContent = '➕';
       document.getElementById('add-back-btn').style.display = 'none';
       document.getElementById('edit-delete-btn').style.display = 'none';
       // Clear button always hidden on a blank form
@@ -4303,10 +3647,10 @@
             onmousedown="pickSuggestion('${safeModel}','${id}')"
             ontouchstart="pickSuggestion('${safeModel}','${id}')"
           >
-            <div class="model-suggest-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="11" y1="18.5" x2="13" y2="18.5"/></svg></div>
+            <div class="model-suggest-icon">📱</div>
             <div class="model-suggest-info">
               <div class="model-suggest-name">${highlighted}</div>
-              <div class="model-suggest-loc"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg> ${escHtml(loc)}</div>
+              <div class="model-suggest-loc">📍 ${escHtml(loc)}</div>
             </div>
           </div>`;
         }).join('');
@@ -4468,7 +3812,7 @@
       const uniqueSlots = new Set(onShelf.map(e => e.row + '|' + e.col)).size;
       const usedRowList = [...usedRows].sort((a,b) => sortNums(a,b,'Row ')).join(', ');
       hint.innerHTML =
-        `<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg>️ <strong>${uniqueSlots} slot${uniqueSlots !== 1 ? 's' : ''} already used on this shelf.</strong><br>` +
+        `⚠️ <strong>${uniqueSlots} slot${uniqueSlots !== 1 ? 's' : ''} already used on this shelf.</strong><br>` +
         `Rows with entries: <strong>${usedRowList}</strong> — select a row to see used columns.`;
       hint.classList.add('visible');
     }
@@ -4520,7 +3864,7 @@
       // Update hint banner for this specific row
       if (!usedCols.size) {
         hint.innerHTML =
-          `<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg> <strong>${rowValue}</strong> on this shelf has no entries yet — all columns are free.`;
+          `✅ <strong>${rowValue}</strong> on this shelf has no entries yet — all columns are free.`;
         hint.classList.add('visible');
         return;
       }
@@ -4530,7 +3874,7 @@
         ? ` <span style="color:var(--blue-dark)">· ${recentCols.size} added this session</span>`
         : '';
       hint.innerHTML =
-        `<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2 20.5h20z"/><line x1="12" y1="10" x2="12" y2="14.3"/><circle cx="12" cy="17.3" r="0.7" fill="currentColor" stroke="none"/></svg>️ <strong>${usedCols.size} col${usedCols.size !== 1 ? 's' : ''} already used on ${rowValue}.</strong>${recentNote}<br>` +
+        `⚠️ <strong>${usedCols.size} col${usedCols.size !== 1 ? 's' : ''} already used on ${rowValue}.</strong>${recentNote}<br>` +
         `Cols in use: <strong>${usedColList}</strong>`;
       hint.classList.add('visible');
     }
@@ -4690,7 +4034,7 @@
       // '.screen.active' here could pick up the OLD screen instead of the one
       // the user is actually on — corrupting prevScreen/originScreen for the
       // back button. Snap any in-flight animation to its finished state first.
-      if (isNavLocked()) {
+      if (navLock) {
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         document.querySelectorAll('.screen.active').forEach(s => {
           if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
@@ -4709,7 +4053,7 @@
       
 
       document.getElementById('add-title').textContent = 'Edit entry';
-      document.getElementById('add-logo').innerHTML = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.8-3.8L15.6 5.4a1.7 1.7 0 0 1 2.4 0l1.6 1.6a1.7 1.7 0 0 1 0 2.4L8.8 20.2z"/><line x1="14" y1="7" x2="17" y2="10"/></svg>';
+      document.getElementById('add-logo').textContent = '✏️';
       document.getElementById('f-model').value = e.model;
       document.getElementById('f-shelf').value = e.shelf;
       onShelfChange(e.shelf);   // highlight used rows/cols for this shelf
@@ -4821,7 +4165,6 @@
       addEl.classList.add('active');
       addEl.classList.add('slide-in');
       navLock = true;
-      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -5130,13 +4473,10 @@
     // order, which could silently patch a hidden, stale copy instead of the one
     // the user is actually looking at — so every matching node gets updated here.
     function updateStockDOM(idx, stock, entry) {
-      // Stepper count(s) — flash color + a quick scale "pop" so the change feels confirmed
+      // Stepper count(s)
       document.querySelectorAll('[id="sc-' + idx + '"]').forEach(countEl => {
         countEl.textContent = stock;
         countEl.style.color = stock === 0 ? 'var(--red)' : stock <= 5 ? 'var(--amber)' : 'var(--text)';
-        countEl.classList.remove('stepper-pop');
-        void countEl.offsetWidth;
-        countEl.classList.add('stepper-pop');
       });
       // Dot color(s)
       document.querySelectorAll('[id="sd-' + idx + '"]').forEach(dotEl => {
@@ -5162,16 +4502,9 @@
       if (detailTitle && detailTitle.textContent === entry.model) {
         const numEl = document.getElementById('detail-stock-num');
         const badgeEl = document.getElementById('detail-stock-badge');
-        if (numEl) {
-          numEl.textContent = stock;
-          numEl.classList.remove('stepper-pop');
-          void numEl.offsetWidth;
-          numEl.classList.add('stepper-pop');
-        }
+        if (numEl) numEl.textContent = stock;
         if (badgeEl) badgeEl.innerHTML = stockBadge(stock);
       }
-      renderLowStockBanner();
-      updateNavLowStockBadge();
     }
 
     
@@ -5205,7 +4538,7 @@
       const el = document.getElementById('inv-content');
       const sub = document.getElementById('inv-sub');
       if (!db.length) {
-        el.innerHTML = `<div class="empty"><div class="empty-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></div><h3>No entries yet</h3><p>Add your first phone model using the Add tab.</p></div>`;
+        el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>No entries yet</h3><p>Add your first phone model using the Add tab.</p></div>`;
         if (sub) sub.textContent = '0 models';
         return;
       }
@@ -5258,25 +4591,19 @@
       const makeItem = e => {
         const idx = db.indexOf(e);
         return `
-      <div class="inv-item swipe-host">
-        <div class="swipe-actions">
-          <button class="stepper-btn minus" onclick="quickUpdateStock(${idx},-1)">−</button>
-          <button class="stepper-btn plus" onclick="quickUpdateStock(${idx},1)">+</button>
+      <div class="inv-item" onclick="showDetail('${CSS.escape(e.model)}')">
+        <div class="inv-dot" id="sd-${idx}" style="background:${dotColor(e.stock)}"></div>
+        <div class="inv-info">
+          <div class="inv-name">${e.model}</div>
+          <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col} · <span style="color:var(--blue-dark);font-size:11px;font-weight:600">${e.shelf.split('|')[1]}</span></div>
         </div>
-        <div class="swipe-content-inner" onclick="showDetail('${CSS.escape(e.model)}')">
-          <div class="inv-dot" id="sd-${idx}" style="background:${dotColor(e.stock)}"></div>
-          <div class="inv-info">
-            <div class="inv-name">${e.model}</div>
-            <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col} · <span style="color:var(--blue-dark);font-size:11px;font-weight:600">${e.shelf.split('|')[1]}</span></div>
+        <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
+          <div class="stock-stepper">
+            <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock(${idx},-1)">−</button>
+            <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
+            <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock(${idx},1)">+</button>
           </div>
-          <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
-            <div class="stock-stepper">
-              <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock(${idx},-1)">−</button>
-              <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
-              <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock(${idx},1)">+</button>
-            </div>
-            <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center">›</span>
-          </div>
+          <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center">›</span>
         </div>
       </div>`;
       };
@@ -5289,7 +4616,7 @@
     </div>`;
 
       if (!filtered.length) {
-        html += `<div class="empty"><div class="empty-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></div><h3>No matching items</h3><p>Try a different search or clear the filters.</p></div>`;
+        html += `<div class="empty"><div class="empty-icon">🔍</div><h3>No matching items</h3><p>Try a different search or clear the filters.</p></div>`;
         el.innerHTML = html;
         return;
       }
@@ -5304,7 +4631,7 @@
       const makeGroup = group => {
         if (group.length === 1) return makeItem(group[0]);
         return `<div class="inv-loc-group">
-          <div class="inv-loc-group-label"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4.5L21 8v8l-9 4.5L3 16z"/><path d="M3 8l9 4.5L21 8"/><line x1="12" y1="12.5" x2="12" y2="21"/></svg> Shared slot · ${group[0].shelf.split('|')[0]} · ${group[0].row} · ${group[0].col}</div>
+          <div class="inv-loc-group-label">📦 Shared slot · ${group[0].shelf.split('|')[0]} · ${group[0].row} · ${group[0].col}</div>
           ${group.map(makeItem).join('')}
         </div>`;
       };
@@ -5316,17 +4643,17 @@
         const flipCover = pageItems.filter(e => e.shelf.split('|')[0] === 'Flip Cover');
 
         if (ground.length) {
-          html += `<div class="floor-heading"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Ground Floor (Downstairs)</div><div class="inv-card">`;
+          html += `<div class="floor-heading">🔽 Ground Floor (Downstairs)</div><div class="inv-card">`;
           html += groupByLocation(ground).map(makeGroup).join('');
           html += '</div>';
         }
         if (upper.length) {
-          html += `<div class="floor-heading"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg> 1st Floor (Upstairs)</div><div class="inv-card">`;
+          html += `<div class="floor-heading">🔼 1st Floor (Upstairs)</div><div class="inv-card">`;
           html += groupByLocation(upper).map(makeGroup).join('');
           html += '</div>';
         }
         if (flipCover.length) {
-          html += `<div class="floor-heading"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="11" y1="18.5" x2="13" y2="18.5"/></svg> Flip Cover</div><div class="inv-card">`;
+          html += `<div class="floor-heading">📱 Flip Cover</div><div class="inv-card">`;
           html += groupByLocation(flipCover).map(makeGroup).join('');
           html += '</div>';
         }
@@ -5421,7 +4748,6 @@
         const searchScreen = document.getElementById('s-search');
         searchScreen.classList.add('slide-in');
         navLock = true;
-      navLockSetAt = Date.now();
         if (navTimer) clearTimeout(navTimer);
         navTimer = setTimeout(() => {
           navTimer = null;
@@ -5557,7 +4883,6 @@
       devEl.classList.add('active');
       devEl.classList.add('slide-in');
       navLock = true;
-      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -5667,7 +4992,7 @@
       const toVal     = document.getElementById('dev-log-to').value;
       const searchVal = document.getElementById('dev-log-search').value.trim();
       const logEl   = document.getElementById('dev-act-log');
-      logEl.innerHTML = '<div class="skel-card"><div class="skel-row w-75"></div><div class="skel-row w-40"></div></div><div class="skel-card"><div class="skel-row w-90"></div><div class="skel-row w-60"></div></div><div class="skel-card"><div class="skel-row w-75"></div><div class="skel-row w-40"></div></div>';
+      logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:16px;font-size:13px">Loading…</div>';
       try {
         let url = API_URL + '?action=getActivityLog&token=' + encodeURIComponent(currentToken);
         if (fromVal)   url += '&from=' + encodeURIComponent(fromVal);
@@ -5692,15 +5017,15 @@
         }
 
         const actionIcon = a => {
-          if (a === 'Login') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 7.5-2"/></svg>';
-          if (a === 'Stock Update' || a === 'Update Inventory') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4.5L21 8v8l-9 4.5L3 16z"/><path d="M3 8l9 4.5L21 8"/><line x1="12" y1="12.5" x2="12" y2="21"/></svg>';
-          if (a === 'Add Inventory') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-          if (a === 'Delete Inventory') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
-          if (a === 'Create User') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg>';
-          if (a === 'Delete User') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>';
-          if (a === 'Force Logout') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
-          if (a === 'Unlock Account') return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 7.5-2"/></svg>';
-          if (a.includes('Failed')) return '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.5" y1="18.5" x2="18.5" y2="5.5"/></svg>';
+          if (a === 'Login') return '🔓';
+          if (a === 'Stock Update' || a === 'Update Inventory') return '📦';
+          if (a === 'Add Inventory') return '➕';
+          if (a === 'Delete Inventory') return '🗑';
+          if (a === 'Create User') return '👤';
+          if (a === 'Delete User') return '❌';
+          if (a === 'Force Logout') return '⏏';
+          if (a === 'Unlock Account') return '🔓';
+          if (a.includes('Failed')) return '🚫';
           return '•';
         };
 
@@ -5777,7 +5102,7 @@
         console.error(err);
         toast('Cleanup failed');
       } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2z"/><path d="M18.5 14l.6 2.4l2.4.6-2.4.6-.6 2.4-.6-2.4-2.4-.6 2.4-.6z"/></svg> Clean up expired sessions'; }
+        if (btn) { btn.disabled = false; btn.textContent = '🧹 Clean up expired sessions'; }
       }
     }
 
@@ -5809,20 +5134,20 @@
     // ── LOCKED ACCOUNTS ───────────────────────────────────────────────
     async function loadLockedAccounts() {
       const el = document.getElementById('dev-locked-list');
-      el.innerHTML = '<div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div>';
+      el.innerHTML = '<div style="color:var(--text3);font-size:13px">Loading…</div>';
       try {
         const res    = await fetch(API_URL + '?action=getLockedAccounts&token=' + encodeURIComponent(currentToken));
         const result = await res.json();
         if (!result.success) { toast(result.message || 'Failed'); return; }
         if (!result.locked.length) {
-          el.innerHTML = '<div style="color:var(--green);font-size:13px;padding:8px 0"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg> No locked accounts</div>';
+          el.innerHTML = '<div style="color:var(--green);font-size:13px;padding:8px 0">✅ No locked accounts</div>';
           return;
         }
         el.innerHTML = result.locked.map(u => `
           <div class="account-row" style="flex-wrap:wrap;gap:8px;padding:10px 0;align-items:center">
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:14px;color:var(--text)">${u.username}</div>
-              <div style="font-size:12px;color:var(--red);margin-top:2px"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg> Locked — ${u.minLeft} min remaining · ${u.failCount} failed attempts</div>
+              <div style="font-size:12px;color:var(--red);margin-top:2px">🔒 Locked — ${u.minLeft} min remaining · ${u.failCount} failed attempts</div>
             </div>
             <button class="btn btn-blue btn-sm" style="width:auto;padding:8px 14px" onclick="unlockAccount('${u.username}')">Unlock</button>
           </div>`).join('');
@@ -5962,7 +5287,7 @@
         const canManage = currentRole === 'Developer'
           || (currentRole === 'Manager' && user.role !== 'Developer');
         const forceLogoutBtn = currentRole === 'Developer'
-          ? `<button class="user-action-btn" style="background:#fde8e8;color:var(--red);border:1px solid #fca5a5" onclick="promptForceLogout('${user.username}')"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button>`
+          ? `<button class="user-action-btn" style="background:#fde8e8;color:var(--red);border:1px solid #fca5a5" onclick="promptForceLogout('${user.username}')">⏏ Logout</button>`
           : '';
         const deleteBtn = currentRole === 'Developer'
           ? `<button class="user-action-btn delete" onclick="promptDeleteUser('${user.username}')">Delete</button>`
@@ -6090,7 +5415,6 @@
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
       navLock = true;
-      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -6444,7 +5768,7 @@
             showSplash();
             scheduleHide(1400);
             // App was reopened from background (e.g. recents/app switcher) —
-            // silently refresh data, same as pressing the <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg> Refresh button,
+            // silently refresh data, same as pressing the 🔄 Refresh button,
             // so the user sees the latest stock/inventory before tapping anything.
             loadDB();
           } else {
@@ -6459,7 +5783,7 @@
 
     async function loadDevAccounts() {
       const listEl = document.getElementById('dev-accounts-list');
-      listEl.innerHTML = '<div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div><div class="skel-card"><div class="skel-row w-60"></div><div class="skel-row w-40"></div></div>';
+      listEl.innerHTML = '<div style="color:var(--text3);font-size:13px">Loading…</div>';
       try {
         const response = await fetch(API_URL + '?action=getUsers&token=' + encodeURIComponent(currentToken));
         const users = await response.json();
@@ -6669,36 +5993,9 @@
       renderInventory();
     }
 
-    // ── SCROLL-TO-TOP ────────────────────────────────────────────────
-    // The topbar used to collapse (shrink padding) as you scrolled. It's
-    // a normal in-flow element, not fixed/sticky, so resizing it on every
-    // scroll tick changed the height of the screen layout itself while
-    // the browser was still mid-scroll — that fight between "my height
-    // just changed" and "the user is actively scrolling" is what caused
-    // the vibrating/shaky feeling. Removed entirely; only the
-    // scroll-to-top button (which doesn't touch layout) remains.
-    function initScrollBehaviors() {
-      document.querySelectorAll('.screen').forEach(screen => {
-        const scrollArea = screen.querySelector('.scroll-area');
-        const btn = screen.querySelector('.scroll-top-btn');
-        if (!scrollArea || !btn) return;
-        let ticking = false;
-        scrollArea.addEventListener('scroll', () => {
-          if (ticking) return;
-          ticking = true;
-          requestAnimationFrame(() => {
-            btn.classList.toggle('visible', scrollArea.scrollTop > 900);
-            ticking = false;
-          });
-        }, { passive: true });
-      });
-    }
-    initScrollBehaviors();
-
     // ── INIT ──────────────────────────────────────────────────────────
     loadDB();
   </script>
 </body>
 
 </html>
-
