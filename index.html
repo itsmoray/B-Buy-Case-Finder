@@ -2076,6 +2076,13 @@
     .act-action { font-size: 13px; color: var(--text); }
     .act-detail { font-size: 12px; color: var(--text2); margin-top:2px; }
     .act-time   { font-size: 11px; color: var(--text3); }
+    .search-hit {
+      background: var(--amber-bg);
+      color: var(--amber);
+      font-weight: 700;
+      padding: 0 2px;
+      border-radius: 3px;
+    }
 
   </style>
   <link rel="manifest" href="manifest.json">
@@ -2708,8 +2715,20 @@
 
         <!-- ACTIVITY TAB -->
         <div id="dev-panel-activity">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-            <input type="date" id="dev-log-date" style="flex:1;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+          <div style="margin-bottom:8px">
+            <input type="text" id="dev-log-search" placeholder="🔍 Search by user, action, or detail…" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onkeydown="if(event.key==='Enter') loadActivityLog()">
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="flex:1">
+              <div style="font-size:11px;color:var(--text2);margin-bottom:3px">From</div>
+              <input type="date" id="dev-log-from" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+            </div>
+            <div style="flex:1">
+              <div style="font-size:11px;color:var(--text2);margin-bottom:3px">To</div>
+              <input type="date" id="dev-log-to" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
             <button class="btn btn-blue btn-sm" style="width:auto;padding:10px 16px" onclick="loadActivityLog()">Load</button>
           </div>
           <!-- Summary cards -->
@@ -4843,12 +4862,15 @@
       if (tab === 'security') loadLockedAccounts();
       if (tab === 'accounts') loadDevAccounts();
       if (tab === 'activity') {
-        // Set today's date as default if not already set
-        const di = document.getElementById('dev-log-date');
-        if (!di.value) {
+        // Set today's date as default for both ends of the range if not already set
+        const fromEl = document.getElementById('dev-log-from');
+        const toEl   = document.getElementById('dev-log-to');
+        if (!fromEl.value || !toEl.value) {
           const today = new Date();
           const ist = new Date(today.getTime() + 5.5 * 60 * 60000);
-          di.value = ist.toISOString().slice(0, 10);
+          const todayStr = ist.toISOString().slice(0, 10);
+          if (!fromEl.value) fromEl.value = todayStr;
+          if (!toEl.value)   toEl.value   = todayStr;
         }
       }
     }
@@ -4870,20 +4892,86 @@
       }, 300);
       // Default to activity tab and load today
       switchDevTab('activity');
-      const di = document.getElementById('dev-log-date');
       const today = new Date();
       const ist = new Date(today.getTime() + 5.5 * 60 * 60000);
-      di.value = ist.toISOString().slice(0, 10);
+      const todayStr = ist.toISOString().slice(0, 10);
+      document.getElementById('dev-log-from').value = todayStr;
+      document.getElementById('dev-log-to').value   = todayStr;
+      document.getElementById('dev-log-search').value = '';
       loadActivityLog();
     }
 
     // ── ACTIVITY LOG ──────────────────────────────────────────────────
+    function escapeHtml_(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Highlights `query` inside `text` for display. Tries an exact
+    // case-insensitive substring match first (covers the common case and
+    // highlights a clean, contiguous run); if the field doesn't contain the
+    // query as a straight substring, falls back to marking the individual
+    // characters that make up a fuzzy (in-order, possibly scattered) match —
+    // mirrors the same fuzzy logic the backend uses to decide what counts as
+    // a match, so anything shown here was actually part of why this row
+    // appeared in the results.
+    function highlightMatch_(rawText, rawQuery) {
+      const escText = escapeHtml_(rawText);
+      if (!rawQuery) return escText;
+
+      const escQuery = escapeHtml_(rawQuery);
+      const escapedForRegex = escQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const exactRe = new RegExp('(' + escapedForRegex + ')', 'ig');
+      if (exactRe.test(escText)) {
+        return escText.replace(exactRe, '<mark class="search-hit">$1</mark>');
+      }
+
+      // Fuzzy fallback: find query chars in order within this field only.
+      const lowerText  = escText.toLowerCase();
+      const lowerQuery = escQuery.toLowerCase();
+      let ti = 0;
+      const positions = [];
+      for (let qi = 0; qi < lowerQuery.length; qi++) {
+        const ch = lowerQuery[qi];
+        let found = -1;
+        for (let j = ti; j < lowerText.length; j++) {
+          if (lowerText[j] === ch) { found = j; break; }
+        }
+        if (found === -1) { return escText; } // no full fuzzy match in this field — leave plain
+        positions.push(found);
+        ti = found + 1;
+      }
+
+      let result = '';
+      let last = 0;
+      let i = 0;
+      while (i < positions.length) {
+        let start = positions[i];
+        let end = start;
+        while (i + 1 < positions.length && positions[i + 1] === end + 1) { end++; i++; }
+        result += escText.slice(last, start) + '<mark class="search-hit">' + escText.slice(start, end + 1) + '</mark>';
+        last = end + 1;
+        i++;
+      }
+      result += escText.slice(last);
+      return result;
+    }
+
     async function loadActivityLog() {
-      const dateVal = document.getElementById('dev-log-date').value;
+      const fromVal   = document.getElementById('dev-log-from').value;
+      const toVal     = document.getElementById('dev-log-to').value;
+      const searchVal = document.getElementById('dev-log-search').value.trim();
       const logEl   = document.getElementById('dev-act-log');
       logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:16px;font-size:13px">Loading…</div>';
       try {
-        const url = API_URL + '?action=getActivityLog&token=' + encodeURIComponent(currentToken) + (dateVal ? '&date=' + dateVal : '');
+        let url = API_URL + '?action=getActivityLog&token=' + encodeURIComponent(currentToken);
+        if (fromVal)   url += '&from=' + encodeURIComponent(fromVal);
+        if (toVal)     url += '&to=' + encodeURIComponent(toVal);
+        if (searchVal) url += '&search=' + encodeURIComponent(searchVal);
         const res    = await fetch(url);
         const result = await res.json();
         if (!result.success) { toast(result.message || 'Failed to load log'); return; }
@@ -4897,7 +4985,7 @@
         document.getElementById('dev-act-updates').textContent = updates;
 
         if (!entries.length) {
-          logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:14px">No activity on this date</div>';
+          logEl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:14px">No matching activity found</div>';
           return;
         }
 
@@ -4925,17 +5013,18 @@
           let hh12 = hh % 12;
           if (hh12 === 0) hh12 = 12;
           const timeStr = `${hh12}:${String(mm).padStart(2,'0')} ${suffix}`;
+          const datePart = e.timestamp.slice(0, 10); // "yyyy-MM-dd"
           return `<div class="act-entry">
             <div class="act-entry-top">
               <div style="display:flex;align-items:center;gap:7px">
                 <span style="font-size:16px">${actionIcon(e.action)}</span>
-                <span class="act-user">${e.username}</span>
-                <span class="act-role ${e.role}">${e.role}</span>
+                <span class="act-user">${highlightMatch_(e.username, searchVal)}</span>
+                <span class="act-role ${escapeHtml_(e.role)}">${escapeHtml_(e.role)}</span>
               </div>
-              <span class="act-time">${timeStr}</span>
+              <span class="act-time">${datePart} · ${timeStr}</span>
             </div>
-            <div class="act-action">${e.action}</div>
-            ${e.detail ? `<div class="act-detail">${e.detail}</div>` : ''}
+            <div class="act-action">${highlightMatch_(e.action, searchVal)}</div>
+            ${e.detail ? `<div class="act-detail">${highlightMatch_(e.detail, searchVal)}</div>` : ''}
           </div>`;
         }).join('');
       } catch(err) {
