@@ -3581,6 +3581,21 @@
 
     let navLock = false;
     let navTimer = null;
+    let navLockSetAt = 0;
+
+    // Safety net: navLock is only ever meant to block taps for the ~300ms
+    // of a slide animation. If a setTimeout gets delayed or dropped (tab
+    // backgrounded, phone briefly locked, low-power throttling, etc.) the
+    // lock could otherwise stay stuck "true" forever and every subsequent
+    // tap on the bottom nav would silently do nothing. Treat any lock
+    // older than 600ms as stale and release it automatically.
+    function isNavLocked() {
+      if (navLock && Date.now() - navLockSetAt > 600) {
+        navLock = false;
+        if (navTimer) { clearTimeout(navTimer); navTimer = null; }
+      }
+      return navLock;
+    }
 
     function showTab(id) {
 
@@ -3618,6 +3633,7 @@
         void addEl.offsetWidth;
         addEl.classList.add('slide-in');
         navLock = true;
+      navLockSetAt = Date.now();
         if (navTimer) clearTimeout(navTimer);
         navTimer = setTimeout(() => {
           navTimer = null;
@@ -3661,7 +3677,7 @@
         return;
       }
 
-      if (navLock) {
+      if (isNavLocked()) {
         // Cancel the pending cleanup so it can't fire after we snap state
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         // Add destination first, then clean up — prevents any frame with nothing visible
@@ -3699,6 +3715,7 @@
       next.classList.add(movingForward ? 'slide-in-right' : 'slide-in-left');
 
       navLock = true;
+      navLockSetAt = Date.now();
       const animCurrent = current;
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -3723,7 +3740,7 @@
       // once the in-flight transition finishes — otherwise a swipe that lands
       // during that 300ms window just did nothing (felt "stuck"), and the
       // next swipe attempt would then fire with stale state and skip its animation.
-      if (navLock) { pendingGoBack = true; return; }
+      if (isNavLocked()) { pendingGoBack = true; return; }
 
       const current = document.querySelector('.screen.active');
       const target = (prevScreen === current.id || !prevScreen) ? 's-search' : prevScreen;
@@ -3749,6 +3766,7 @@
       // second goBack() call during the 300 ms window is blocked by navLock
       // (above) rather than snapping to the wrong screen with a stale prevScreen.
       navLock = true;
+      navLockSetAt = Date.now();
       const animCurrent = current;
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -4051,7 +4069,7 @@
       // the back button/swipe to the wrong tab later. Snap the animation to its
       // finished state immediately (same cleanup showTab()'s own timer would do)
       // before reading which screen is current.
-      if (navLock) {
+      if (isNavLocked()) {
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         document.querySelectorAll('.screen.active').forEach(s => {
           if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
@@ -4139,6 +4157,7 @@
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
       navLock = true;
+      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -4658,7 +4677,7 @@
       // '.screen.active' here could pick up the OLD screen instead of the one
       // the user is actually on — corrupting prevScreen/originScreen for the
       // back button. Snap any in-flight animation to its finished state first.
-      if (navLock) {
+      if (isNavLocked()) {
         if (navTimer) { clearTimeout(navTimer); navTimer = null; }
         document.querySelectorAll('.screen.active').forEach(s => {
           if (s.classList.contains('slide-out-left') || s.classList.contains('slide-out-right')) {
@@ -4789,6 +4808,7 @@
       addEl.classList.add('active');
       addEl.classList.add('slide-in');
       navLock = true;
+      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -5388,6 +5408,7 @@
         const searchScreen = document.getElementById('s-search');
         searchScreen.classList.add('slide-in');
         navLock = true;
+      navLockSetAt = Date.now();
         if (navTimer) clearTimeout(navTimer);
         navTimer = setTimeout(() => {
           navTimer = null;
@@ -5523,6 +5544,7 @@
       devEl.classList.add('active');
       devEl.classList.add('slide-in');
       navLock = true;
+      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -6055,6 +6077,7 @@
       detailEl.classList.add('active');
       detailEl.classList.add('slide-in');
       navLock = true;
+      navLockSetAt = Date.now();
       if (navTimer) clearTimeout(navTimer);
       navTimer = setTimeout(() => {
         navTimer = null;
@@ -6633,30 +6656,25 @@
       renderInventory();
     }
 
-    // ── COLLAPSING TOPBAR + SCROLL-TO-TOP ──────────────────────────────
+    // ── SCROLL-TO-TOP ────────────────────────────────────────────────
+    // The topbar used to collapse (shrink padding) as you scrolled. It's
+    // a normal in-flow element, not fixed/sticky, so resizing it on every
+    // scroll tick changed the height of the screen layout itself while
+    // the browser was still mid-scroll — that fight between "my height
+    // just changed" and "the user is actively scrolling" is what caused
+    // the vibrating/shaky feeling. Removed entirely; only the
+    // scroll-to-top button (which doesn't touch layout) remains.
     function initScrollBehaviors() {
       document.querySelectorAll('.screen').forEach(screen => {
-        const topbar = screen.querySelector('.topbar');
         const scrollArea = screen.querySelector('.scroll-area');
-        if (!topbar || !scrollArea) return;
-        let lastTop = 0;
+        const btn = screen.querySelector('.scroll-top-btn');
+        if (!scrollArea || !btn) return;
         let ticking = false;
         scrollArea.addEventListener('scroll', () => {
-          // Coalesce to one update per animation frame instead of running
-          // on every scroll event — was causing layout thrashing (and
-          // felt like "scroll not working well") on longer lists.
           if (ticking) return;
           ticking = true;
           requestAnimationFrame(() => {
-            const st = scrollArea.scrollTop;
-            if (st > 36 && st > lastTop) {
-              topbar.classList.add('collapsed');
-            } else if (st < lastTop - 2 || st <= 8) {
-              topbar.classList.remove('collapsed');
-            }
-            lastTop = st;
-            const btn = screen.querySelector('.scroll-top-btn');
-            if (btn) btn.classList.toggle('visible', st > 900);
+            btn.classList.toggle('visible', scrollArea.scrollTop > 900);
             ticking = false;
           });
         }, { passive: true });
