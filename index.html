@@ -2716,16 +2716,16 @@
         <!-- ACTIVITY TAB -->
         <div id="dev-panel-activity">
           <div style="margin-bottom:8px">
-            <input type="text" id="dev-log-search" placeholder="🔍 Search by user, action, or detail…" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onkeydown="if(event.key==='Enter') loadActivityLog()">
+            <input type="text" id="dev-log-search" placeholder="🔍 Search by user, action, or detail…" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" oninput="onDevLogSearchInput()">
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="flex:1">
+            <div style="flex:1 1 0;min-width:0">
               <div style="font-size:11px;color:var(--text2);margin-bottom:3px">From</div>
-              <input type="date" id="dev-log-from" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+              <input type="date" id="dev-log-from" style="width:100%;max-width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onchange="loadActivityLog()">
             </div>
-            <div style="flex:1">
+            <div style="flex:1 1 0;min-width:0">
               <div style="font-size:11px;color:var(--text2);margin-bottom:3px">To</div>
-              <input type="date" id="dev-log-to" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)">
+              <input type="date" id="dev-log-to" style="width:100%;max-width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);font-size:14px;color:var(--text);background:var(--surface)" onchange="loadActivityLog()">
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
@@ -4961,7 +4961,21 @@
       return result;
     }
 
+    let devLogSearchTimer = null;
+    function onDevLogSearchInput() {
+      // Debounced live search — mirrors the instant feel of the Home tab
+      // search, but with a short delay since this one hits the server
+      // instead of filtering an already-loaded local list.
+      if (devLogSearchTimer) clearTimeout(devLogSearchTimer);
+      devLogSearchTimer = setTimeout(() => {
+        devLogSearchTimer = null;
+        loadActivityLog();
+      }, 350);
+    }
+
+    let devLogRequestSeq = 0;
     async function loadActivityLog() {
+      const mySeq = ++devLogRequestSeq;
       const fromVal   = document.getElementById('dev-log-from').value;
       const toVal     = document.getElementById('dev-log-to').value;
       const searchVal = document.getElementById('dev-log-search').value.trim();
@@ -4974,6 +4988,7 @@
         if (searchVal) url += '&search=' + encodeURIComponent(searchVal);
         const res    = await fetch(url);
         const result = await res.json();
+        if (mySeq !== devLogRequestSeq) return; // a newer search/reload has since superseded this one
         if (!result.success) { toast(result.message || 'Failed to load log'); return; }
 
         const entries = result.entries || [];
