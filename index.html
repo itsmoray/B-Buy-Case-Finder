@@ -147,7 +147,7 @@
     html,
     body {
       height: 100%;
-      background: #000;
+      background: var(--bg);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: var(--text);
       margin: 0;
@@ -168,7 +168,7 @@
       width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      background: #000;
+      background: var(--bg);
       position: relative;
       overflow: hidden;
       /* Makes #app the containing block for any position:fixed children
@@ -2297,7 +2297,10 @@
       position: sticky;
       top: -1px;
       z-index: 4;
-      backdrop-filter: blur(6px);
+      /* No backdrop-filter here — blurring a sticky element on every
+         scroll frame is expensive and was causing scroll jank on the
+         home screen. The solid var(--bg) background above already
+         fully covers content passing underneath. */
     }
 
     /* ── STEPPER "POP" CONFIRMATION ─────────────────────────────────── */
@@ -3330,7 +3333,11 @@
     (function initTheme() {
       let saved = null;
       try { saved = localStorage.getItem(THEME_KEY); } catch(e) {}
-      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      // Always default to light unless the person has explicitly chosen
+      // dark mode before — don't auto-follow the OS/browser preference,
+      // since that was silently flipping the app to dark (black bg,
+      // lighter blue) for anyone whose device defaults to dark mode.
+      const theme = saved || 'light';
       applyTheme(theme);
     })();
 
@@ -3349,13 +3356,11 @@
     }
 
     function renderRecentSearchChips() {
+      // Recent-search chips feature removed per request — keep this as a
+      // no-op (rather than deleting every call site) so nothing else
+      // breaks. The element stays hidden always.
       const wrap = document.getElementById('recent-search-chips');
-      if (!wrap) return;
-      const list = getRecentSearches();
-      if (!list.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-      wrap.style.display = 'flex';
-      wrap.innerHTML = `<div class="recent-chips-label">Recent searches</div>
-        <div class="recent-chips-row">${list.map(q => `<button class="recent-chip" onclick="applyRecentSearch('${escHtml(q).replace(/'/g, "\\'")}')">${escHtml(q)}</button>`).join('')}</div>`;
+      if (wrap) { wrap.innerHTML = ''; wrap.style.display = 'none'; }
     }
 
     function applyRecentSearch(q) {
@@ -6634,16 +6639,25 @@
         const scrollArea = screen.querySelector('.scroll-area');
         if (!topbar || !scrollArea) return;
         let lastTop = 0;
+        let ticking = false;
         scrollArea.addEventListener('scroll', () => {
-          const st = scrollArea.scrollTop;
-          if (st > 36 && st > lastTop) {
-            topbar.classList.add('collapsed');
-          } else if (st < lastTop - 2 || st <= 8) {
-            topbar.classList.remove('collapsed');
-          }
-          lastTop = st;
-          const btn = screen.querySelector('.scroll-top-btn');
-          if (btn) btn.classList.toggle('visible', st > 900);
+          // Coalesce to one update per animation frame instead of running
+          // on every scroll event — was causing layout thrashing (and
+          // felt like "scroll not working well") on longer lists.
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            const st = scrollArea.scrollTop;
+            if (st > 36 && st > lastTop) {
+              topbar.classList.add('collapsed');
+            } else if (st < lastTop - 2 || st <= 8) {
+              topbar.classList.remove('collapsed');
+            }
+            lastTop = st;
+            const btn = screen.querySelector('.scroll-top-btn');
+            if (btn) btn.classList.toggle('visible', st > 900);
+            ticking = false;
+          });
         }, { passive: true });
       });
     }
