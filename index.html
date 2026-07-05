@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BBuy Case Finder">
   <meta name="theme-color" content="#000000">
   <title>B Buy Case Finder — Store Inventory</title>
@@ -152,6 +152,7 @@
       color: var(--text);
       margin: 0;
       overflow: hidden;
+      overscroll-behavior: none;
     }
 
     /* Center the app card horizontally on screens wider than the app itself */
@@ -454,6 +455,12 @@
       touch-action: pan-y;
       padding: 18px 16px 28px;
       min-height: 0;
+      /* Stop rubber-band/bounce at the top or bottom of the list from
+         "chaining" into the app shell behind it. Without this, scrolling
+         fast to the bottom can make the whole shell appear to jump/shake
+         for a frame as the browser tries to bounce something that has
+         nowhere further to go. */
+      overscroll-behavior-y: contain;
     }
 
     /* BOTTOM NAV */
@@ -2533,7 +2540,7 @@
   <meta name="theme-color" content="#000000">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BBuy">
 
   <link rel="apple-touch-icon" href="icon-512.png">
