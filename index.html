@@ -876,7 +876,7 @@
       gap: 12px;
     }
 
-    .inv-item:last-child {
+    .swipe-wrap:last-child .inv-item {
       border-bottom: none;
     }
 
@@ -1398,7 +1398,7 @@
       box-shadow: var(--shadow);
     }
 
-    .inv-loc-group .inv-item:last-child {
+    .inv-loc-group .swipe-wrap:last-child .inv-item {
       border-bottom: 1px solid var(--border);
     }
 
@@ -2146,6 +2146,314 @@
       border-radius: 3px;
     }
 
+    /* ============================================================
+       APP UPDATE — additional polish pass
+       ============================================================ */
+
+    /* STICKY FLOOR SECTION HEADERS */
+    .floor-heading {
+      position: sticky;
+      top: 0;
+      z-index: 6;
+    }
+
+    /* LOW/OUT STOCK ALERT BANNER */
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--amber-bg);
+      color: var(--amber);
+      border-radius: var(--radius-lg);
+      padding: 13px 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      animation: fadeSlideIn .25s ease both;
+    }
+    .alert-banner.alert-out {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+    .alert-banner-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .alert-banner-text {
+      flex: 1;
+      min-width: 0;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .alert-banner-arrow {
+      font-size: 18px;
+      opacity: .7;
+      flex-shrink: 0;
+    }
+    .alert-banner-dismiss {
+      background: rgba(255,255,255,.55);
+      border: none;
+      color: inherit;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* STEPPER "POP" FEEDBACK ON CHANGE */
+    @keyframes stockPop {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .stepper-count.pop,
+    .stock-num.pop {
+      animation: stockPop .32s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    /* MODAL / DIALOG ENTRY ANIMATION */
+    @keyframes dialogScaleIn {
+      from { opacity: 0; transform: translateY(10px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .overlay.show .dialog {
+      animation: dialogScaleIn .22s cubic-bezier(.25,.46,.45,.94) both;
+    }
+    @keyframes modalScaleIn {
+      from { opacity: 0; transform: scale(.94); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .modal-overlay.show .modal-card,
+    .edit-user-card,
+    #edit-user-overlay.show > div,
+    #change-pass-overlay.show > div,
+    #edit-dev-overlay.show > div,
+    #create-dev-overlay.show > div {
+      animation: modalScaleIn .22s cubic-bezier(.25,.46,.45,.94) both;
+    }
+
+    /* TOAST ICON */
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      animation: toastIconIn .3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes toastIconIn {
+      from { transform: scale(.4); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    /* DARK MODE */
+    #app[data-theme="dark"] {
+      --text: #f1f1f4;
+      --text2: #a3a3ad;
+      --text3: #75757f;
+      --border: #2b2b33;
+      --border2: #38383f;
+      --surface: #1c1c22;
+      --bg: #131317;
+      --blue-light: #1c2946;
+    }
+    #app[data-theme="dark"] .topbar {
+      background: linear-gradient(165deg, #12245e, #060f2e);
+    }
+    #app[data-theme="dark"] .bottom-nav,
+    #app[data-theme="dark"] .stat-card,
+    #app[data-theme="dark"] .result-card,
+    #app[data-theme="dark"] .inv-card,
+    #app[data-theme="dark"] .detail-section,
+    #app[data-theme="dark"] .form-card,
+    #app[data-theme="dark"] .account-card,
+    #app[data-theme="dark"] .dialog {
+      box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px rgba(0,0,0,.35);
+    }
+    #app[data-theme="dark"] .floor-heading {
+      background: #23232b;
+      color: #c7c7d1;
+    }
+    #app[data-theme="dark"] .search-box input,
+    #app[data-theme="dark"] .field input,
+    #app[data-theme="dark"] .field select {
+      background: var(--surface);
+      color: var(--text);
+    }
+    #app[data-theme="dark"] .loc-tile {
+      background: #232329;
+    }
+    #app[data-theme="dark"] .empty-icon svg circle[fill="var(--blue-light)"] {
+      fill: #1c2946;
+    }
+    .theme-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      margin-top: 10px;
+    }
+
+    /* SWIPE-TO-ADJUST STOCK ON LIST ITEMS */
+    .swipe-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+    .swipe-actions {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-end;
+      z-index: 0;
+    }
+    .swipe-action-btn {
+      width: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border: none;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .swipe-action-btn.swipe-edit { background: var(--blue); }
+    .swipe-action-btn svg { width: 18px; height: 18px; }
+    .swipe-content {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      transition: transform .18s ease;
+      touch-action: pan-y;
+    }
+
+    /* COLLAPSING TOPBAR ON SCROLL */
+    .topbar {
+      transition: padding .2s ease, border-radius .2s ease;
+    }
+    .topbar-title, .topbar-sub {
+      transition: font-size .2s ease, opacity .2s ease, max-height .2s ease;
+    }
+    .topbar.topbar-collapsed {
+      padding-top: calc(env(safe-area-inset-top) + 10px);
+      padding-bottom: 12px;
+      border-radius: 0 0 18px 18px;
+    }
+    .topbar.topbar-collapsed .topbar-title {
+      font-size: 15px;
+    }
+    .topbar.topbar-collapsed .topbar-sub {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    /* SCROLL-TO-TOP BUTTON */
+    .scroll-top-btn {
+      position: absolute;
+      right: 16px;
+      bottom: 88px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(13,60,163,.35);
+      opacity: 0;
+      transform: translateY(8px) scale(.9);
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 40;
+      cursor: pointer;
+    }
+    .scroll-top-btn.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .scroll-top-btn svg { width: 20px; height: 20px; }
+
+    /* RECENT SEARCH CHIPS */
+    .recent-searches {
+      margin-bottom: 4px;
+    }
+    .recent-searches-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .recent-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .recent-chip {
+      background: var(--surface);
+      border: 1.5px solid var(--border2);
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .recent-chip svg { width: 13px; height: 13px; opacity: .6; }
+
+    /* NAV BADGE DOT (new low-stock indicator) */
+    .nav-btn { position: relative; }
+    .nav-alert-dot {
+      position: absolute;
+      top: 4px;
+      right: calc(50% - 16px);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 1.5px solid var(--surface);
+      display: none;
+    }
+    .nav-alert-dot.visible { display: block; }
+
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1565ff">
@@ -2344,6 +2652,8 @@
         <div class="search-box" style="margin-bottom:0">
           <span class="ico"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>
           <input type="text" id="search-input" placeholder="Search phone model…" oninput="onSearchInput(this.value)"
+            onblur="recordRecentSearch(this.value)"
+            onkeydown="if(event.key==='Enter'){recordRecentSearch(this.value);this.blur();}"
             autocomplete="off" autocorrect="off" spellcheck="false" />
           <button class="search-clear-btn" id="search-clear-btn" onclick="clearSearch()" aria-label="Clear search">✕</button>
         </div>
@@ -2362,12 +2672,14 @@
             <h3>Search any phone model</h3>
             <p>Type a model name above to find its case, shelf location, and stock.</p>
           </div>
+          <div id="recent-searches-slot"></div>
         </div>
       </div>
+      <button class="scroll-top-btn" id="scrolltop-search" onclick="scrollAreaToTop(this)" aria-label="Scroll to top"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
       <div class="bottom-nav">
         <button class="nav-btn active" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -2386,7 +2698,7 @@
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -2539,7 +2851,7 @@
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn active" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -2594,7 +2906,7 @@
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
         <button class="nav-btn active" onclick="showTab('s-inventory')"><span
-            class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+            class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -2648,7 +2960,7 @@
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn active" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
 
@@ -2751,7 +3063,7 @@
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -2859,7 +3171,7 @@
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showTab('s-search')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span>Search</button>
         <button class="nav-btn" onclick="showTab('s-add')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
-        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory</button>
+        <button class="nav-btn" onclick="showTab('s-inventory')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></span>Inventory<span class="nav-alert-dot"></span></button>
         <button class="nav-btn" onclick="showTab('s-users')"><span class="nav-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg></span>Users</button>
       </div>
     </div>
@@ -3063,6 +3375,12 @@
 
       if (id === "s-users") loadUsers();
 
+      if (id === "s-inventory") {
+        const lowStockCount = db.filter(e => parseInt(e.stock) <= 5 && parseInt(e.stock) > 0).length;
+        const outStockCount = db.filter(e => parseInt(e.stock) === 0).length;
+        markAlertsSeen(lowStockCount, outStockCount);
+      }
+
       if (id === "s-account") {
         document.getElementById('account-avatar').textContent = (currentUser || '?')[0].toUpperCase();
         document.getElementById('account-name').textContent = currentUser || '';
@@ -3252,7 +3570,11 @@
     // ── TOAST ─────────────────────────────────────────────────────────
     function toast(msg) {
       const t = document.getElementById('toast');
-      t.textContent = msg;
+      const isError = /fail|invalid|cannot|empty|enter |wrong|error|denied/i.test(msg);
+      const icon = isError
+        ? '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>'
+        : '<svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><polyline points="4 12.5 9.5 18 20 6"/></svg>';
+      t.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
       t.classList.add('show');
       clearTimeout(t._tid);
       t._tid = setTimeout(() => t.classList.remove('show'), 2400);
@@ -3456,9 +3778,59 @@
 
     function dotColor(n) {
       n = parseInt(n) || 0;
-      if (n === 0) return '#ef4444';
-      if (n <= 5) return '#f59e0b';
-      return '#10b981';
+      if (n === 0) return 'var(--red)';
+      if (n <= 5) return 'var(--amber)';
+      return 'var(--green)';
+    }
+
+    // ── LOW/OUT STOCK ALERT BANNER ─────────────────────────────────────
+    function buildAlertBanner(lowStockCount, outStockCount) {
+      if (!lowStockCount && !outStockCount) return '';
+      const sig = `${lowStockCount}-${outStockCount}`;
+      if (localStorage.getItem('alertBannerDismissed') === sig) return '';
+      const isOut = outStockCount > 0;
+      const parts = [];
+      if (outStockCount) parts.push(`${outStockCount} out of stock`);
+      if (lowStockCount) parts.push(`${lowStockCount} running low`);
+      const msg = parts.join(' · ');
+      return `
+    <div class="alert-banner${isOut ? ' alert-out' : ''}" onclick="focusLowStockFilter(${isOut})">
+      <div class="alert-banner-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></div>
+      <div class="alert-banner-text">${msg} — tap to view</div>
+      <span class="alert-banner-arrow">›</span>
+      <button class="alert-banner-dismiss" onclick="event.stopPropagation();dismissAlertBanner('${sig}')" aria-label="Dismiss">✕</button>
+    </div>`;
+    }
+
+    function dismissAlertBanner(sig) {
+      localStorage.setItem('alertBannerDismissed', sig);
+      renderInventory();
+    }
+
+    function focusLowStockFilter(isOut) {
+      const cbId = isOut ? 'inv-out-stock' : 'inv-low-stock';
+      const chipId = isOut ? 'chip-inv-out-stock' : 'chip-inv-low-stock';
+      const cb = document.getElementById(cbId);
+      const chip = document.getElementById(chipId);
+      if (cb) cb.checked = true;
+      if (chip) chip.classList.add('checked');
+      if (typeof updateInvClearBtn === 'function') updateInvClearBtn();
+      renderInventory();
+    }
+
+    // ── BOTTOM-NAV "NEW LOW STOCK" DOT ─────────────────────────────────
+    function updateNavAlertDot(lowStockCount, outStockCount) {
+      const total = (lowStockCount || 0) + (outStockCount || 0);
+      const lastSeen = parseInt(localStorage.getItem('lastSeenAlertCount') || '0', 10);
+      document.querySelectorAll('.nav-alert-dot').forEach(d => {
+        d.classList.toggle('visible', total > lastSeen);
+      });
+    }
+
+    function markAlertsSeen(lowStockCount, outStockCount) {
+      const total = (lowStockCount || 0) + (outStockCount || 0);
+      localStorage.setItem('lastSeenAlertCount', String(total));
+      document.querySelectorAll('.nav-alert-dot').forEach(d => d.classList.remove('visible'));
     }
 
     // ── LOCATION GROUPING ────────────────────────────────────────────
@@ -4539,6 +4911,9 @@
       document.querySelectorAll('[id="sc-' + idx + '"]').forEach(countEl => {
         countEl.textContent = stock;
         countEl.style.color = stock === 0 ? 'var(--red)' : stock <= 5 ? 'var(--amber)' : 'var(--text)';
+        countEl.classList.remove('pop');
+        void countEl.offsetWidth;
+        countEl.classList.add('pop');
       });
       // Dot color(s)
       document.querySelectorAll('[id="sd-' + idx + '"]').forEach(dotEl => {
@@ -4555,6 +4930,7 @@
         statCards[2].querySelector('.stat-val').textContent = newOut;
         statCards[2].classList.toggle('stat-out', newOut > 0);
       }
+      updateNavAlertDot(newLow, newOut);
       // Search result badge(s)
       document.querySelectorAll('[id="sb-' + idx + '"]').forEach(badgeSearchEl => {
         badgeSearchEl.innerHTML = stockBadge(stock) + ' ' + floorBadge(entry.shelf.split('|')[1], entry.shelf.split('|')[0]);
@@ -4564,7 +4940,12 @@
       if (detailTitle && detailTitle.textContent === entry.model) {
         const numEl = document.getElementById('detail-stock-num');
         const badgeEl = document.getElementById('detail-stock-badge');
-        if (numEl) numEl.textContent = stock;
+        if (numEl) {
+          numEl.textContent = stock;
+          numEl.classList.remove('pop');
+          void numEl.offsetWidth;
+          numEl.classList.add('pop');
+        }
         if (badgeEl) badgeEl.innerHTML = stockBadge(stock);
       }
     }
@@ -4653,19 +5034,27 @@
       const makeItem = e => {
         const idx = db.indexOf(e);
         return `
-      <div class="inv-item" onclick="showDetail('${CSS.escape(e.model)}')">
-        <div class="inv-dot" id="sd-${idx}" style="background:${dotColor(e.stock)}"></div>
-        <div class="inv-info">
-          <div class="inv-name">${e.model}</div>
-          <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col} · <span style="color:var(--blue-dark);font-size:11px;font-weight:600">${e.shelf.split('|')[1]}</span></div>
+      <div class="swipe-wrap">
+        <div class="swipe-actions">
+          <button class="swipe-action-btn swipe-edit" onclick="event.stopPropagation();editEntry('${CSS.escape(e.model)}')">
+            <svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Edit
+          </button>
         </div>
-        <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
-          <div class="stock-stepper">
-            <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock(${idx},-1)">−</button>
-            <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
-            <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock(${idx},1)">+</button>
+        <div class="swipe-content inv-item" onclick="showDetail('${CSS.escape(e.model)}')">
+          <div class="inv-dot" id="sd-${idx}" style="background:${dotColor(e.stock)}"></div>
+          <div class="inv-info">
+            <div class="inv-name">${e.model}</div>
+            <div class="inv-loc">${e.shelf.split('|')[0]} · ${e.row} · ${e.col} · <span style="color:var(--blue-dark);font-size:11px;font-weight:600">${e.shelf.split('|')[1]}</span></div>
           </div>
-          <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center">›</span>
+          <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
+            <div class="stock-stepper">
+              <button class="stepper-btn minus" onclick="event.stopPropagation();quickUpdateStock(${idx},-1)">−</button>
+              <span class="stepper-count" id="sc-${idx}" style="color:${parseInt(e.stock) === 0 ? 'var(--red)' : parseInt(e.stock) <= 5 ? 'var(--amber)' : 'var(--text)'}">${e.stock}</span>
+              <button class="stepper-btn plus" onclick="event.stopPropagation();quickUpdateStock(${idx},1)">+</button>
+            </div>
+            <span style="color:var(--text3);font-size:22px;cursor:pointer;padding:4px 2px;display:flex;align-items:center">›</span>
+          </div>
         </div>
       </div>`;
       };
@@ -4676,6 +5065,9 @@
       <div class="stat-card${lowStockCount > 0 ? ' stat-low' : ''}"><div class="stat-val" style="color:var(--amber)">${lowStockCount}</div><div class="stat-lbl">Low stock</div></div>
       <div class="stat-card${outStockCount > 0 ? ' stat-out' : ''}"><div class="stat-val" style="color:var(--red)">${outStockCount}</div><div class="stat-lbl">Out of stock</div></div>
     </div>`;
+
+      html += buildAlertBanner(lowStockCount, outStockCount);
+      updateNavAlertDot(lowStockCount, outStockCount);
 
       if (!filtered.length) {
         html += `<div class="empty"><div class="empty-icon"><svg class="icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></div><h3>No matching items</h3><p>Try a different search or clear the filters.</p></div>`;
@@ -6061,4 +6453,3 @@
 </body>
 
 </html>
-
